@@ -27,7 +27,7 @@ class FPGTDHints:
         A = rho * np.outer(x, x - self.gamma * xp)
         g = np.concatenate((-A.T @ self.y, A @ self.theta + M @ self.y - b)) # of dim 2d, one gradient for each param
         
-        self.theta, self.y = self.OLO(self, g)
+        self.theta, self.y = self.OLO(g)
 
     def OLO(self, g):
         # assume g = (g_\theta, -g_y)

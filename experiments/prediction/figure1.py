@@ -17,12 +17,16 @@ from agents.HTD import HTD
 from agents.GTD2 import GTD2
 from agents.TDRC import TDRC
 from agents.Vtrace import Vtrace
+# from agents.PFGTDHints import PFGTDHints
+
+import os
 
 # --------------------------------
 # Set up parameters for experiment
 # --------------------------------
 
 RUNS = 5
+# LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC, PFGTDHints]
 LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC]
 
 PROBLEMS = [
@@ -255,4 +259,7 @@ for i, problem in enumerate(PROBLEMS):
 
         ax.bar(x, relative_auc, yerr=relative_stderr, color=COLORS[learner], tick_label='')
 
-plt.show()
+# plt.show()
+fig_dir = "figures/prediction/"
+os.makedirs(fig_dir, exist_ok=True)
+plt.savefig(f"{fig_dir}tabular.png")
