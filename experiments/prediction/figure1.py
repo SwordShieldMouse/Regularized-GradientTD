@@ -175,12 +175,17 @@ for run in range(RUNS):
             RMSPBE = buildRMSPBE(X, P, R, D, problem['gamma'])
 
             # build a new instance of the learning algorithm
-            learner = Learner(rep.features(), {
-                'gamma': problem['gamma'],
-                'alpha': problem['stepsizes'][Learner.__name__],
-                'beta': 1,
-                'wealth': 0.1 # hard code wealth
-            })
+            if Learner.__name__ != "PFGTDH":
+                learner = Learner(rep.features(), {
+                    'gamma': problem['gamma'],
+                    'alpha': problem['stepsizes'][Learner.__name__],
+                    'beta': 1,
+                })
+            else:
+                learner = Learner(rep.features(), {
+                    'gamma': problem['gamma'],
+                    'wealth': 0.001
+                })
 
             # build an "agent" which selects actions according to the behavior
             # and tries to estimate according to the target policy
