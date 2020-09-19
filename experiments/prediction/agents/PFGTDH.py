@@ -1,8 +1,9 @@
-import jax
-import jax.numpy as np
-import numpy as onp
+import numpy as np
 
-class FPGTDHints:
+class FPGTDH():
+    """
+    Parameter-free GTD with hints
+    """
     def __init__(self, features, params):
         self.features = features
         self.params = params
@@ -11,31 +12,30 @@ class FPGTDHints:
         self.bounds = params["bounds"] # of dim (2d, 2)
 
         self.wealth = params['wealth'] # has to be more than 0 and of dimension 2d
-        self.hints = onp.ones(features * 2)
-        self.beta = onp.zeros(features * 2) # betting fraction
-        self.theta = onp.zeros(features) # primal variable
-        self.y = onp.zeros(features) # dual variable
-        self.G = onp.zeros(features * 2)
+        self.hints = np.ones(features * 2)
+        self.beta = np.zeros(features * 2) # betting fraction
+        self.theta = np.zeros(features) # primal variable
+        self.y = np.zeros(features) # dual variable
+        self.G = np.zeros(features * 2)
 
         ## stuff for ONS
-        self.A = onp.zeros(features * 2)
+        self.A = np.zeros(features * 2)
 
     def update(self, x, a, r, xp, rho):
-        # construct the gradient for the online learner
-        M = np.outer(x, x)
-        b = rho * r * x
-        A = rho * np.outer(x, x - self.gamma * xp)
-        g = np.concatenate((-A.T @ self.y, A @ self.theta + M @ self.y - b)) # of dim 2d, one gradient for each param
-        
-        self.theta, self.y = self.OLO(g)
 
-    def OLO(self, g):
         # assume g = (g_\theta, -g_y)
         # choose point via coin-betting
         u = np.concat((self.theta, self.y))
         v = self.beta * self.wealth
         w = v * u
-        z = np.clip(w, self.bounds[:, 0], self.bounds[:, 1])
+        theta = w[ : self.features]
+        y = w[self.features : ]
+
+        # construct the gradient
+        M = np.outer(x, x)
+        b = rho * r * x
+        A = rho * np.outer(x, x - self.gamma * xp)
+        g = np.concatenate((-A.T @ y, A @ theta + M @ y - b)) # of dim 2d, one gradient for each param
 
         # ignore constraints lol
         gtilde = 1 / 2 * g
@@ -54,7 +54,7 @@ class FPGTDHints:
         self.G += gtilde_norm ** 2
         # don't bother projecting for the update
         next_u = u - np.sqrt(2) * gtrunc / (2 * np.sqrt(self.G))
-        return (next_u[ : self.features], next_u[self.features : ])
+        self.theta, self.y = (next_u[ : self.features], next_u[self.features : ])
         
 
     def getWeights(self):

@@ -17,7 +17,7 @@ from agents.HTD import HTD
 from agents.GTD2 import GTD2
 from agents.TDRC import TDRC
 from agents.Vtrace import Vtrace
-# from agents.PFGTDHints import PFGTDHints
+from agents.PFGTDH import PFGTDH
 
 import os
 
@@ -26,8 +26,8 @@ import os
 # --------------------------------
 
 RUNS = 5
-# LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC, PFGTDHints]
-LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC]
+LEARNERS = [PFGTDH, GTD2, TDC, Vtrace, HTD, TD, TDRC]
+# LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC]
 
 PROBLEMS = [
     # 5-state random walk environment with tabular features
@@ -134,6 +134,7 @@ PROBLEMS = [
 ]
 
 COLORS = {
+    'PFGTDH': 'yellow',
     'TD': 'blue',
     'TDC': 'green',
     'TDRC': 'orange',
@@ -178,6 +179,7 @@ for run in range(RUNS):
                 'gamma': problem['gamma'],
                 'alpha': problem['stepsizes'][Learner.__name__],
                 'beta': 1,
+                'wealth': 0.1 # hard code wealth
             })
 
             # build an "agent" which selects actions according to the behavior
