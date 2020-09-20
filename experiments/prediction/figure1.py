@@ -184,7 +184,7 @@ for run in range(RUNS):
             else:
                 learner = Learner(rep.features(), {
                     'gamma': problem['gamma'],
-                    'wealth': 0.001
+                    'wealth': 1.0
                 })
 
             # build an "agent" which selects actions according to the behavior
