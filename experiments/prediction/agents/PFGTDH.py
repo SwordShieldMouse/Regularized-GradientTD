@@ -33,18 +33,23 @@ class Param:
         # NOTE: have completely removed the constraint set for now
 
         gradnorm = norm(g)
+        #print(f"grad: {g}")
+        #print(f"gradnorm: {gradnorm}")
         gtrunc = g if gradnorm < self.h else self.h*g / (gradnorm + self.eps)
-        self.h = max(self.h, gradnorm)
+        #self.h = max(self.h, gradnorm)
+        #print(f"h: {self.h}")
 
         s = np.dot(gtrunc, self.u)
         m = s / (1.0 - self.beta * s)
         self.A += m**2
-        self.beta = max(min(self.beta - 2.0*m / ((2.0-np.log2(3))*self.A + self.eps), 0.5 / (self.h + self.eps)), -0.5 / (self.h + self.eps))
+        self.beta = max(min(self.beta - 2.0*m / ((2.0-np.log2(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)), -0.5 / (self.h + self.eps))
         self.W -= s*self.v
+        print(f"W: {self.W}")
 
         self.G += norm(gtrunc)**2
         u = self.u - np.sqrt(2)/(2*np.sqrt(self.G) + self.eps) * gtrunc
-        self.u = u / norm(u)
+        self.u = u if norm(u)<= 1 else u / norm(u)
+
 
 class PFGTDH:
     """
@@ -67,7 +72,7 @@ class PFGTDH:
 
         ## for numerical stability
         self.eps = 1e-5
-        self.t = 0
+        self.t = 0.0
 
     def update(self, x, a, r, xp, rho):
         self.t +=1
@@ -83,11 +88,16 @@ class PFGTDH:
         # construct gradients
         # NOTE: trying to implicitly compute A to avoid the outerproduct op
         d = x - self.gamma * xp
-        g_theta = - rho * x * np.dot(d, y_t)
-        g_y = np.dot(rho * x * np.dot(d, theta_t) - rho * r * x, y_t) + x * np.dot(x, y_t)
+        At = rho * x * d.transpose()
+        bt = rho* r * x
+        Mt = x * x.transpose()
+        g_theta = - At.transpose() * y_t
+        g_y = np.dot(At * theta_t - bt, y_t) + Mt * y_t
 
         self.theta.update(g_theta)
+        print("---")
         self.y.update(g_y)
+        print()
 
     def getWeights(self):
         return self.av_theta

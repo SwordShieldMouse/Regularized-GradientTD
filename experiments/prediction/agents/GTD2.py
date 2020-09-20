@@ -12,7 +12,12 @@ class GTD2:
         self.w = np.zeros(features)
         self.h = np.zeros(features)
 
+        self.avw = np.zeros(features)
+        self.t=0.0
+
     def update(self, x, a, r, xp, rho):
+        self.t+=1
+
         v = self.w.dot(x)
         vp = self.w.dot(xp)
 
@@ -25,5 +30,7 @@ class GTD2:
         self.w = self.w + self.alpha * dw
         self.h = self.h + self.eta * self.alpha * dh
 
+        self.avw += 1.0/self.t * (self.w - self.avw)
+
     def getWeights(self):
-        return self.w
+        return self.avw
