@@ -10,16 +10,14 @@ class Param:
         # initial bet
         self.v = self.beta * self.W
        
-        # random initial direction
+        # random initial direction and normalize
         self.u = 2 * np.random.rand(features) - 1.0
-       
-        # u should be on the unit sphere
         self.u /= norm(self.u)
 
         self.A = 0.0
         self.G = 0.0
 
-        self.eps = 1e-8
+        self.eps = 1e-5
 
         # NOTE: unused for now
         self.lower_bound = np.finfo(np.float64).min / 1e150
@@ -82,18 +80,41 @@ class PFGTDH:
         theta_t = self.theta.bet()
         y_t = self.y.bet()
 
-        # update averages
-        self.av_theta += 1.0 / self.t * (theta_t - self.av_theta)
-        self.av_y += 1.0 / self.t * (y_t - self.av_y)
-
         # construct gradients
-        # NOTE: implicitly compute A to avoid the outerproduct op
+        #
+        # ================================
+        # --- EFFICIENT IMPLEMENTATION ---
+        # ================================
+        #  implicitly compute A to avoid
+        #  the outerproduct op
+        # --------------------------------
         d = x - self.gamma * xp
-        g_theta = - rho * x * np.dot(d, y_t)
+        g_theta = - rho * d * np.dot(x, y_t)
         g_y = rho * x * np.dot(d, theta_t) - rho * r * x + x * np.dot(x, y_t)
+
+        # ===========================
+        # --- Slow implementation ---
+        # ===========================
+        # useful for debugging
+        # ---------------------------
+        # d = x - self.gamma * xp
+        # At = rho * np.outer(x, d)
+        # bt = rho* r * x
+        # Mt = np.outer(x, x)
+        #
+        # g_theta = np.matmul(- At.transpose(), y_t)
+        # g_y = np.matmul(At, theta_t) - bt + np.matmul(Mt, y_t)
 
         self.theta.update(g_theta)
         self.y.update(g_y)
+
+        # update averages
+        # TODO: it makes sense to update the averages after the updates right?
+        # otherwise when we check the RMSPBE it won't reflect our
+        # updated avg given the current sample. This is probably such a minor
+        # difference that it doesn't matter though
+        self.av_theta += 1.0 / self.t * (self.theta.bet() - self.av_theta)
+        self.av_y += 1.0 / self.t * (self.y.bet() - self.av_y)
 
     def getWeights(self):
         return self.av_theta
