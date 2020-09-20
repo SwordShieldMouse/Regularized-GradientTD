@@ -18,6 +18,7 @@ from agents.GTD2 import GTD2
 from agents.TDRC import TDRC
 from agents.Vtrace import Vtrace
 from agents.PFGTDH import PFGTDH
+from agents.CWPFGTD import CWPFGTD
 
 import os
 
@@ -25,8 +26,8 @@ import os
 # Set up parameters for experiment
 # --------------------------------
 
-RUNS = 5
-LEARNERS = [PFGTDH, GTD2, TDC, Vtrace, HTD, TD, TDRC]
+RUNS = 30
+LEARNERS = [PFGTDH, CWPFGTD, GTD2, TDC, Vtrace, HTD, TD, TDRC]
 # LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC]
 
 PROBLEMS = [
@@ -135,6 +136,7 @@ PROBLEMS = [
 
 COLORS = {
     'PFGTDH': 'yellow',
+    'CWPFGTD': 'pink',
     'TD': 'blue',
     'TDC': 'green',
     'TDRC': 'orange',
@@ -175,7 +177,7 @@ for run in range(RUNS):
             RMSPBE = buildRMSPBE(X, P, R, D, problem['gamma'])
 
             # build a new instance of the learning algorithm
-            if Learner.__name__ != "PFGTDH":
+            if Learner.__name__ not in ["PFGTDH", "CWPFGTD"]:
                 learner = Learner(rep.features(), {
                     'gamma': problem['gamma'],
                     'alpha': problem['stepsizes'][Learner.__name__],
@@ -198,12 +200,7 @@ for run in range(RUNS):
                 if Learner.__name__ != "PFGTDH":
                     learner.w = problem['starting_condition'].copy()
                 else:
-                    u = problem['starting_condition'].copy()
-                    unorm = np.linalg.norm(u)
-                    learner.theta.u = u/unorm
-                    learner.theta.W = unorm/2
-                    learner.theta.beta = 0.5
-                    learner.av_theta = learner.theta.bet()
+                    learner.setInitialBet(problem['starting_condition'].copy())
 
 
             # build the experiment runner

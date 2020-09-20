@@ -1,62 +1,52 @@
 import numpy as np
 from numpy.linalg import norm
 
-class Param:
+class CWParam:
     def __init__(self, features: int, W0: float, g: float, beta:float):
-        self.beta = beta
-        self.W = W0
-        self.h = g
+        self.beta = beta * np.ones(features)
+        self.W = W0 * np.ones(features)
+        self.h = g * np.ones(features)
 
         # initial bet
-        self.v = self.beta * self.W
-       
-        # random initial direction and normalize
-        self.u = 2 * np.random.rand(features) - 1.0
-        self.u /= norm(self.u)
+        self.x = np.multiply(self.beta, self.W)
 
-        self.A = 0.0
-        self.G = 0.0
+        self.A = np.zeros(features)
 
-        self.eps = 1e-5
+        self.eps = 1e-8
 
         # NOTE: unused for now
         self.lower_bound = np.finfo(np.float64).min / 1e150
         self.upper_bound = np.finfo(np.float64).max / 1e150
 
     def bet(self):
-        self.v = self.beta * self.W
-        return self.v * self.u
+        self.x = np.multiply(self.beta, self.W)
+        return self.x
 
     def update(self, g):
         # NOTE: have completely removed the constraint set for now
 
         # Incorporate grad bound
-        gradnorm = norm(g)
-        gtrunc = g if gradnorm < self.h else self.h*g / (gradnorm + self.eps)
-        self.h = max(self.h, gradnorm)
+        gradnorm = np.abs(g)
+
+        gtrunc = g.copy()
+        truncIdx = np.argwhere(gradnorm > self.h)
+        gtrunc[truncIdx] = np.multiply(self.h[truncIdx], g[truncIdx]) / (gradnorm[truncIdx] + self.eps)
+        self.h = np.maximum(self.h, gradnorm)
 
         # update betting fraction
-        s = np.dot(gtrunc, self.u)
-        m = s / (1.0 - self.beta * s)
-        self.A += m**2
-        self.beta = max(
-            min(self.beta - 2.0*m / ((2.0-np.log2(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
+        m = np.divide(gtrunc,  1.0 - np.multiply(self.beta, gtrunc))
+        self.A += np.power(m,2)
+        self.beta = np.maximum(
+            np.minimum(self.beta - 2.0 * np.divide(m, (2.0-np.log2(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
             -0.5 / (self.h + self.eps)
         )
 
         # update wealth
-        self.W -= s*self.v
+        self.W -= np.multiply(gtrunc,self.x)
 
-        # update directional weights
-        self.G += norm(gtrunc)**2
-        u = self.u - np.sqrt(2)/(2*np.sqrt(self.G) + self.eps) * gtrunc
-
-        unorm = norm(u)
-        self.u = u if unorm<=1 else u / unorm
-
-class PFGTDH:
+class CWPFGTD:
     """
-    Parameter-free GTD with hints
+    Coordinate-wise Parameter-free GTD with hints
     """
     def __init__(self, features, params):
         self.features = features
@@ -64,8 +54,8 @@ class PFGTDH:
         self.gamma = params['gamma']
 
         # opt params
-        self.theta = Param(features, params["wealth"], params["hint"], params["beta"])
-        self.y = Param(features, params["wealth"], params["hint"], params["beta"])
+        self.theta = CWParam(features, params["wealth"], params["hint"], params["beta"])
+        self.y = CWParam(features, params["wealth"], params["hint"], params["beta"])
 
         # Average decisions
         self.av_theta = np.zeros(features)
@@ -115,8 +105,6 @@ class PFGTDH:
         return self.av_theta
 
     def setInitialBet(self, u):
-        unorm = norm(u)
-        self.theta.u = u/unorm
-        self.theta.W = unorm/2
+        self.theta.W = u / 2
         self.theta.beta = 0.5
         self.av_theta = self.theta.bet()
