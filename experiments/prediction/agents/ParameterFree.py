@@ -4,7 +4,7 @@ from numpy.linalg import norm
 from agents.OLO import Param, SCParam, CWParam
 
 class ParameterFree:
-    def __init__(self, features, params):
+    def __init__(self, features: int, params: dict):
         self.features = features
         self.params = params
         self.gamma = params['gamma']
@@ -63,7 +63,7 @@ class PFGTD(ParameterFree):
     """
     Parameter-free GTD with hints
     """
-    def __init__(self, features, params):
+    def __init__(self, features: int, params: dict):
         super().__init__(features, params)
        
         # opt params
@@ -83,7 +83,7 @@ class SCPFGTD(PFGTD):
     Parameter-free GTD with hints and curvature adaptation in
     the dual variables y
     """
-    def __init__(self, features, params):
+    def __init__(self, features: int, params: dict):
         super().__init__(features,params)
 
         # opt params
@@ -95,7 +95,7 @@ class CWPFGTD(ParameterFree):
     """
     Coordinate-wise Parameter-free GTD with hints
     """
-    def __init__(self, features, params):
+    def __init__(self, features: int, params: dict):
         super().__init__(features, params)
 
         # opt params

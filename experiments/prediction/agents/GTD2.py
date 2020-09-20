@@ -58,7 +58,7 @@ class BatchGTD2:
         self.w = self.w + self.alpha * dw
         self.h = self.h + self.eta * self.alpha * dh
 
-        self.av_w += 1.0/self.t * (self.w - self.avw)
+        self.av_w += 1.0/self.t * (self.w - self.av_w)
 
     def getWeights(self):
         return self.av_w

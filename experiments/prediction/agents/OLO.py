@@ -9,7 +9,7 @@ class Param:
     '''
     Parameter-free OLO algorithm with gradient-bound hints
     '''
-    def __init__(self, features: int, W0: float, g: float, beta:float):
+    def __init__(self, features: int, W0: float, g: float, beta: float):
         self.beta = beta
         self.W = W0
         self.h = g

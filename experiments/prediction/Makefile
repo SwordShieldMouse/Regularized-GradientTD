@@ -1,6 +1,6 @@
 all:
 	python3.6 figure1.py
-tabular:
-	gnome-open ./figures/prediction/tabular.png
+auc:
+	gnome-open ./figures/prediction/auc.png
 lc:
 	gnome-open ./figures/prediction/learning_curves/*.png

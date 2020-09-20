@@ -14,7 +14,7 @@ from environments.Baird import Baird, BairdRep
 from agents.TD import TD
 from agents.TDC import TDC
 from agents.HTD import HTD
-from agents.GTD2 import GTD2
+from agents.GTD2 import GTD2, BatchGTD2
 from agents.TDRC import TDRC
 from agents.Vtrace import Vtrace
 
@@ -47,6 +47,7 @@ PROBLEMS = [
             'TDRC': 0.03125,
             'TDC': 0.0625,
             'GTD2': 0.03125,
+            'BatchGTD2': 0.03125,
             'HTD': 0.03125,
             'Vtrace': 0.03125,
         }
@@ -67,6 +68,7 @@ PROBLEMS = [
             'TDRC': 0.03125,
             'TDC': 0.0625,
             'GTD2': 0.0625,
+            'BatchGTD2': 0.0625,
             'HTD': 0.03125,
             'Vtrace': 0.03125,
         }
@@ -87,6 +89,7 @@ PROBLEMS = [
             'TDRC': 0.125,
             'TDC': 0.125,
             'GTD2': 0.125,
+            'BatchGTD2': 0.125,
             'HTD': 0.125,
             'Vtrace': 0.125,
         }
@@ -107,6 +110,7 @@ PROBLEMS = [
             'TDRC': 0.0625,
             'TDC': 0.5,
             'GTD2': 0.5,
+            'BatchGTD2': 0.5,
             'HTD': 0.0625,
             'Vtrace': 0.0625,
         }
@@ -128,6 +132,7 @@ PROBLEMS = [
             'TDRC': 0.015625,
             'TDC': 0.00390625,
             'GTD2': 0.00390625,
+            'BatchGTD2': 0.00390625,
             'HTD': 0.00390625,
             'Vtrace': 0.00390625,
         }
@@ -141,6 +146,7 @@ COLORS = {
     'TDC': 'green',
     'TDRC': 'orange',
     'GTD2': 'grey',
+    'BatchGTD2': 'cyan',
     'Vtrace': 'red',
     'HTD': 'purple',
 }
@@ -284,7 +290,7 @@ for i, problem in enumerate(PROBLEMS):
 # plt.show()
 fig_dir = "figures/prediction/"
 os.makedirs(fig_dir, exist_ok=True)
-plt.savefig(f"{fig_dir}tabular.png")
+plt.savefig(f"{fig_dir}auc.png")
 
 # =======================
 # --- LEARNING CURVES ---
