@@ -32,12 +32,13 @@ class Param:
         s = np.dot(gtrunc, self.u)
         m = s / (1.0 - self.beta * s)
         self.A += m**2
-        self.beta = max(min(self.beta - 2*m / ((2-np.log(3))*self.A + self.eps), 0.5 / (self.h + self.eps)), -0.5 / (self.h + self.eps))
+        self.beta = max(min(self.beta - 2.0*m / ((2.0-np.log(3))*self.A + self.eps), 0.5 / (self.h + self.eps)), -0.5 / (self.h + self.eps))
         self.W -= s*self.v
 
         self.G += norm(gtrunc)**2
-        self.u -= np.sqrt(2)/(2*np.sqrt(self.G) + self.eps) * gtrunc
-
+        u = self.u - np.sqrt(2)/(2*np.sqrt(self.G) + self.eps) * gtrunc
+        unorm = norm(u)
+        self.u = u if unorm <= 1.0 else u/unorm
 
 class PFGTDH:
     """
