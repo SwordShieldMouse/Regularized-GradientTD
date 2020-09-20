@@ -11,8 +11,8 @@ class PFGTDH:
         self.gamma = params['gamma']
         # self.bounds = params["bounds"] # of dim (2d, 2)
 
-        self.lower_bound = np.finfo(np.float64).min / 1e150
-        self.upper_bound = np.finfo(np.float64).max / 1e150
+        self.lower_bound = -1e5
+        self.upper_bound = 1e5
         self.wealth = params['wealth'] # has to be more than 0 and of dimension 2d
         self.hints = np.ones(features * 2)
         self.beta = np.zeros(features * 2) # betting fraction
