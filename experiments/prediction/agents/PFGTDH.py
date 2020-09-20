@@ -19,7 +19,7 @@ class Param:
         self.A = 0.0
         self.G = 0.0
 
-        self.eps = 1e-5
+        self.eps = 1e-8
 
         # NOTE: unused for now
         self.lower_bound = np.finfo(np.float64).min / 1e150
@@ -40,11 +40,16 @@ class Param:
         #print(f"h: {self.h}")
 
         s = np.dot(gtrunc, self.u)
+        self.W -= s*self.v
+
         m = s / (1.0 - self.beta * s)
         self.A += m**2
+        print(s)
+        print(m)
+        print(self.beta)
+        print(self.A)
+        print(self.beta)
         self.beta = max(min(self.beta - 2.0*m / ((2.0-np.log2(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)), -0.5 / (self.h + self.eps))
-        self.W -= s*self.v
-        print(f"W: {self.W}")
 
         self.G += norm(gtrunc)**2
         u = self.u - np.sqrt(2)/(2*np.sqrt(self.G) + self.eps) * gtrunc
@@ -88,11 +93,11 @@ class PFGTDH:
         # construct gradients
         # NOTE: trying to implicitly compute A to avoid the outerproduct op
         d = x - self.gamma * xp
-        At = rho * x * d.transpose()
+        At = rho * np.outer(x, d)
         bt = rho* r * x
-        Mt = x * x.transpose()
-        g_theta = - At.transpose() * y_t
-        g_y = np.dot(At * theta_t - bt, y_t) + Mt * y_t
+        Mt = np.outer(x, x)
+        g_theta = np.matmul(- At.transpose(), y_t)
+        g_y = np.dot(np.matmul(At, theta_t) - bt, y_t) + np.matmul(Mt.transpose(), y_t)
 
         self.theta.update(g_theta)
         print("---")

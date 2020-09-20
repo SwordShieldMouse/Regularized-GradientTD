@@ -100,7 +100,7 @@ PROBLEMS = [
         # take each action equally
         'behavior': matrixToPolicy([[.5, .5]] * 10 + [[1., 0.]] * 2),
         'gamma': 1.0,
-        'steps': 10000,
+        'steps': 1000,
         # hardcode stepsizes found from parameter study
         'stepsizes': {
             'TD': 0.0625,
@@ -223,7 +223,7 @@ for run in range(RUNS):
 
                 # evaluate the RMPSBE
                 # subsample to reduce computational cost
-                if step % 100 == 0:
+                if step % 1 == 0:
                     w = learner.getWeights()
                     rmspbe = RMSPBE(w)
 
