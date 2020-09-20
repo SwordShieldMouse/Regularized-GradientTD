@@ -105,6 +105,6 @@ class CWPFGTD:
         return self.av_theta
 
     def setInitialBet(self, u):
-        self.theta.W = u / 2
+        self.theta.W = 2*u
         self.theta.beta = 0.5
         self.av_theta = self.theta.bet()

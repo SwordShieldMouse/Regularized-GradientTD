@@ -117,6 +117,6 @@ class PFGTDH:
     def setInitialBet(self, u):
         unorm = norm(u)
         self.theta.u = u/unorm
-        self.theta.W = unorm/2
+        self.theta.W = unorm * 2
         self.theta.beta = 0.5
         self.av_theta = self.theta.bet()

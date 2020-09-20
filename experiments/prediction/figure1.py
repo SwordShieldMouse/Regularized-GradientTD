@@ -152,6 +152,14 @@ COLORS = {
 # a convenience object to store data collected during runs
 collector = Collector()
 
+def log_err(learner, err_fn, data_key):
+    w = learner.getWeights()
+    err = err_fn(w)
+
+    # store the data in the "collector" until we need it for plotting
+    collector.collect(data_key, err)
+
+
 for run in range(RUNS):
     for problem in PROBLEMS:
         for Learner in LEARNERS:
@@ -170,7 +178,8 @@ for run in range(RUNS):
             Rep = problem['representation']
             rep = Rep()
 
-            print(run, Env.__name__, Rep.__name__, Learner.__name__)
+            data_key = f'{Env.__name__}-{Rep.__name__}-{Learner.__name__}'
+            print(run, *data_key.split('-'))
 
             # build the X, P, R, and D matrices for computing RMSPBE
             X, P, R, D = env.getXPRD(target, rep)
@@ -195,6 +204,7 @@ for run in range(RUNS):
             # and tries to estimate according to the target policy
             agent = RlGlueCompatWrapper(learner, behavior, target, rep.encode)
 
+
             # for Baird's counter-example, set the initial value function manually
             if problem.get('starting_condition') is not None:
                 if Learner.__name__ != "PFGTDH":
@@ -202,11 +212,14 @@ for run in range(RUNS):
                 else:
                     learner.setInitialBet(problem['starting_condition'].copy())
 
+            # Log initial error
+            log_err(learner, RMSPBE, data_key)
 
             # build the experiment runner
             # ties together the agent and environment
             # and allows executing the agent-environment interface from Sutton-Barto
             glue = RlGlue(agent, env)
+
 
             # start the episode (env produces a state then agent produces an action)
             glue.start()
@@ -221,14 +234,8 @@ for run in range(RUNS):
 
                 # evaluate the RMPSBE
                 # subsample to reduce computational cost
-                if step % 100 == 0:
-                    w = learner.getWeights()
-                    rmspbe = RMSPBE(w)
-
-                    #  create a unique key to store the data for this env/representation/agent tuple
-                    data_key = f'{Env.__name__}-{Rep.__name__}-{Learner.__name__}'
-                    # store the data in the "collector" until we need it for plotting
-                    collector.collect(data_key, rmspbe)
+                if (step+1) % 100 == 0:
+                    log_err(learner, RMSPBE, data_key)
 
             # tell the data collector we're done collecting data for this env/learner/rep combination
             collector.reset()
