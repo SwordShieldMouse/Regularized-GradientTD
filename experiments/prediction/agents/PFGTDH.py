@@ -18,6 +18,7 @@ class PFGTDH:
         self.theta = np.zeros(features) # primal variable
         self.y = np.zeros(features) # dual variable
         self.G = np.zeros(features * 2)
+        self.u = np.random.uniform(size = 2 * features) # initial direction
 
         # average weights
         self.avg_theta = np.zeros(features)
@@ -84,8 +85,8 @@ class PFGTDH:
 
         # update the weights
         self.G += gtilde_norm ** 2
-        # don't bother projecting for the update
-        next_u = np.clip(u - np.sqrt(2) * gtrunc / (2 * np.sqrt(self.G) + self.eps), self.lower_bound, self.upper_bound)
+        next_u = self.u - np.sqrt(2) * gtrunc / (2 * np.sqrt(self.G) + self.eps)
+        self.u = next_u / np.abs(next_u)
         self.theta, self.y = (next_u[ : self.features], next_u[self.features : ])
         assert np.isnan(self.theta).sum() == 0, "nans in theta"
         assert np.isnan(self.y).sum() == 0, "nans in y"
