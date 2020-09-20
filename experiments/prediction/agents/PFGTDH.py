@@ -33,6 +33,12 @@ class PFGTDH:
         ## stuff for ONS
         self.A = np.zeros(features * 2)
 
+    def grad_norm(self, g):
+        return np.abs(g) # 2-norm
+
+    def vec_norm(self, v):
+        return np.abs(v) # 2-norm
+
     def update(self, x, a, r, xp, rho):
 
         # assume g = (g_\theta, -g_y)
@@ -57,19 +63,17 @@ class PFGTDH:
         g = np.concatenate((-A.T @ y, A @ theta + M @ y - b))
 
         # constrained reduction to unconstrained
-        g_norm = np.abs(g)
         S_Z_grad = np.zeros(2 * self.features)
         for i in range(2 * self.features):
             if w[i] < self.lower_bound:
                 S_Z_grad[i] = w[i] - self.lower_bound
             elif w[i] > self.upper_bound:
                 S_Z_grad[i] = w[i] - self.upper_bound
-        gtilde = 1 / 2 * g + g_norm * S_Z_grad
-        gtilde_norm = np.abs(gtilde)
-        ineq_ind = (gtilde_norm > self.hints).astype(int)
-        gtrunc = ineq_ind * (self.hints * gtilde / (gtilde_norm + self.eps)) + (1 - ineq_ind) * gtilde # added a numerical constant for stability
+        gtilde = 1 / 2 * g + self.grad_norm(g) * S_Z_grad
+        ineq_ind = (self.grad_norm(gtilde) > self.hints).astype(int)
+        gtrunc = ineq_ind * (self.hints * gtilde / (self.grad_norm(gtilde) + self.eps)) + (1 - ineq_ind) * gtilde # added a numerical constant for stability
         assert np.isnan(gtrunc).sum() == 0, "nans in gtrunc"
-        self.hints = np.maximum(self.hints, gtilde_norm)
+        self.hints = np.maximum(self.hints, self.grad_norm(gtilde))
         
         # update betting parameters
         s = gtrunc @ u
@@ -84,9 +88,9 @@ class PFGTDH:
         self.wealth -= s * v
 
         # update the weights
-        self.G += gtilde_norm ** 2
+        self.G += self.grad_norm(gtrunc) ** 2
         next_u = self.u - np.sqrt(2) * gtrunc / (2 * np.sqrt(self.G) + self.eps)
-        self.u = next_u / np.abs(next_u)
+        self.u = next_u / self.vec_norm(next_u)
         self.theta, self.y = (next_u[ : self.features], next_u[self.features : ])
         assert np.isnan(self.theta).sum() == 0, "nans in theta"
         assert np.isnan(self.y).sum() == 0, "nans in y"
