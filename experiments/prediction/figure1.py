@@ -17,8 +17,8 @@ from agents.HTD import HTD
 from agents.GTD2 import GTD2
 from agents.TDRC import TDRC
 from agents.Vtrace import Vtrace
-from agents.PFGTDH import PFGTDH
-from agents.CWPFGTD import CWPFGTD
+
+from agents.ParameterFree import ParameterFree, PFGTD, CWPFGTD
 
 import os
 
@@ -27,7 +27,7 @@ import os
 # --------------------------------
 
 RUNS = 30
-LEARNERS = [PFGTDH, CWPFGTD, GTD2, TDC, Vtrace, HTD, TD, TDRC]
+LEARNERS = [PFGTD, CWPFGTD, GTD2, TDC, Vtrace, HTD, TD, TDRC]
 # LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC]
 
 PROBLEMS = [
@@ -135,7 +135,7 @@ PROBLEMS = [
 ]
 
 COLORS = {
-    'PFGTDH': 'yellow',
+    'PFGTD': 'yellow',
     'CWPFGTD': 'pink',
     'TD': 'blue',
     'TDC': 'green',
@@ -186,18 +186,18 @@ for run in range(RUNS):
             RMSPBE = buildRMSPBE(X, P, R, D, problem['gamma'])
 
             # build a new instance of the learning algorithm
-            if Learner.__name__ not in ["PFGTDH", "CWPFGTD"]:
-                learner = Learner(rep.features(), {
-                    'gamma': problem['gamma'],
-                    'alpha': problem['stepsizes'][Learner.__name__],
-                    'beta': 1,
-                })
-            else:
+            if issubclass(Learner, ParameterFree):
                 learner = Learner(rep.features(), {
                     'gamma': problem['gamma'],
                     'wealth': 1.0,
                     'hint': 1.0,
                     'beta': 0.0
+                })
+            else:
+                learner = Learner(rep.features(), {
+                    'gamma': problem['gamma'],
+                    'alpha': problem['stepsizes'][Learner.__name__],
+                    'beta': 1,
                 })
 
             # build an "agent" which selects actions according to the behavior
@@ -207,10 +207,10 @@ for run in range(RUNS):
 
             # for Baird's counter-example, set the initial value function manually
             if problem.get('starting_condition') is not None:
-                if Learner.__name__ != "PFGTDH":
-                    learner.w = problem['starting_condition'].copy()
-                else:
+                if issubclass(Learner, ParameterFree):
                     learner.setInitialBet(problem['starting_condition'].copy())
+                else:
+                    learner.w = problem['starting_condition'].copy()
 
             # Log initial error
             log_err(learner, RMSPBE, data_key)
@@ -304,7 +304,7 @@ for i, problem in enumerate(PROBLEMS):
         ax.plot(np.arange(len(mean_curve)), mean_curve, color=COLORS[learner], label=learner)
         ax.fill_between(np.arange(len(mean_curve)), mean_curve - stderr_curve, mean_curve + stderr_curve, alpha=0.2, color=COLORS[learner])
 
-    ax.set_title(env)
+    ax.set_title(f"{env} {rep}")
     ax.legend()
 
     fig_dir = "figures/prediction/learning_curves/"
