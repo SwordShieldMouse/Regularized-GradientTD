@@ -195,7 +195,16 @@ for run in range(RUNS):
 
             # for Baird's counter-example, set the initial value function manually
             if problem.get('starting_condition') is not None:
-                learner.w = problem['starting_condition'].copy()
+                if Learner.__name__ != "PFGTDH":
+                    learner.w = problem['starting_condition'].copy()
+                else:
+                    u = problem['starting_condition'].copy()
+                    unorm = np.linalg.norm(u)
+                    learner.theta.u = u/unorm
+                    learner.theta.W = unorm/2
+                    learner.theta.beta = 0.5
+                    learner.av_theta = learner.theta.bet()
+
 
             # build the experiment runner
             # ties together the agent and environment
@@ -276,7 +285,6 @@ plt.savefig(f"{fig_dir}tabular.png")
 # =======================
 # --- LEARNING CURVES ---
 # =======================
-
 for i, problem in enumerate(PROBLEMS):
     # additional offset between problems
     # creates space between the problems

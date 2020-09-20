@@ -80,6 +80,9 @@ class PFGTDH:
         theta_t = self.theta.bet()
         y_t = self.y.bet()
 
+        self.av_theta += 1.0 / self.t * (theta_t - self.av_theta)
+        self.av_y += 1.0 / self.t * (y_t - self.av_y)
+
         # construct gradients
         #
         # ================================
@@ -107,14 +110,6 @@ class PFGTDH:
 
         self.theta.update(g_theta)
         self.y.update(g_y)
-
-        # update averages
-        # TODO: it makes sense to update the averages after the updates right?
-        # otherwise when we check the RMSPBE it won't reflect our
-        # updated avg given the current sample. This is probably such a minor
-        # difference that it doesn't matter though
-        self.av_theta += 1.0 / self.t * (self.theta.bet() - self.av_theta)
-        self.av_y += 1.0 / self.t * (self.y.bet() - self.av_y)
 
     def getWeights(self):
         return self.av_theta
