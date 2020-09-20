@@ -193,7 +193,11 @@ for run in range(RUNS):
 
             # for Baird's counter-example, set the initial value function manually
             if problem.get('starting_condition') is not None:
-                learner.w = problem['starting_condition'].copy()
+                if Learner.__name__ != "PFGTDH":
+                    learner.w = problem['starting_condition'].copy()
+                else:
+                    learner.theta = problem['starting_condition'].copy()
+                
 
             # build the experiment runner
             # ties together the agent and environment

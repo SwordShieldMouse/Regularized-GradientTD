@@ -11,17 +11,19 @@ class PFGTDH:
         
         self.gamma = params['gamma']
 
-        self.lower_bound = -1e5
-        self.upper_bound = 1e5
+        self.lower_bound = -1e6
+        self.upper_bound = 1e6
         self.wealth = np.array(params['wealth'])
         self.hints = np.ones(2)
         self.beta = np.zeros(2) # betting fraction, one for each of primal and dual
-        self.theta = np.zeros(features) # primal variable
-        self.y = np.zeros(features) # dual variable
         self.G = np.zeros((features, 2))
         self.u = np.random.uniform(size = (features, 2)) # initial direction for each of primal and dual
         self.u /= self.norm(self.u)
         self.A = np.zeros(2)
+
+        # weights
+        self.theta = np.zeros(features) # primal variable
+        self.y = np.zeros(features) # dual variable
 
         # average weights
         self.avg_theta = np.zeros(features)
