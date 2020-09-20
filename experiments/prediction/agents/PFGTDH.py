@@ -97,7 +97,7 @@ class PFGTDH:
         bt = rho* r * x
         Mt = np.outer(x, x)
         g_theta = np.matmul(- At.transpose(), y_t)
-        g_y = np.dot(np.matmul(At, theta_t) - bt, y_t) + np.matmul(Mt.transpose(), y_t)
+        g_y = np.dot(np.matmul(At, theta_t) - bt, y_t) + np.matmul(Mt, y_t)
 
         self.theta.update(g_theta)
         print("---")
