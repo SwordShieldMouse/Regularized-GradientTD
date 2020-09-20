@@ -270,3 +270,29 @@ for i, problem in enumerate(PROBLEMS):
 fig_dir = "figures/prediction/"
 os.makedirs(fig_dir, exist_ok=True)
 plt.savefig(f"{fig_dir}tabular.png")
+
+
+# =======================
+# --- LEARNING CURVES ---
+# =======================
+for i, problem in enumerate(PROBLEMS):
+    # additional offset between problems
+    # creates space between the problems
+    fig, ax = plt.subplots()
+
+    env = problem['env'].__name__
+    rep = problem['representation'].__name__
+    for j, Learner in enumerate(LEARNERS):
+        learner = Learner.__name__
+
+        mean_curve, stderr_curve, runs = collector.getStats(f'{env}-{rep}-{learner}')
+
+        ax.plot(np.arange(len(mean_curve)), mean_curve, color=COLORS[learner], label=learner)
+        ax.fill_between(np.arange(len(mean_curve)), mean_curve - stderr_curve, mean_curve + stderr_curve, alpha=0.2)
+
+    ax.set_title(env)
+    ax.legend()
+
+    fig_dir = "figures/prediction/learning_curves/"
+    os.makedirs(fig_dir, exist_ok=True)
+    plt.savefig(f"{fig_dir}{env}_{rep}.png")

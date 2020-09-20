@@ -9,7 +9,6 @@ class PFGTDH:
         self.params = params
         
         self.gamma = params['gamma']
-        # self.bounds = params["bounds"] # of dim (2d, 2)
 
         self.lower_bound = -1e5
         self.upper_bound = 1e5
@@ -20,8 +19,15 @@ class PFGTDH:
         self.y = np.zeros(features) # dual variable
         self.G = np.zeros(features * 2)
 
+        # average weights
+        self.avg_theta = np.zeros(features)
+        self.avg_y = np.zeros(features)
+
+        # keep track of time
+        self.t = 0
+
         ## for numerical stability
-        self.eps = 1e-5
+        self.eps = 1e-8
 
         ## stuff for ONS
         self.A = np.zeros(features * 2)
@@ -75,17 +81,21 @@ class PFGTDH:
         self.beta = np.maximum(beta_maxarg1, beta_maxarg2)
         assert np.isnan(self.beta).sum() == 0, "nans in beta"
         self.wealth -= s * v
-        # print(s.max(), w.max(), S_Z_grad.max())
 
         # update the weights
         self.G += gtilde_norm ** 2
         # don't bother projecting for the update
         next_u = np.clip(u - np.sqrt(2) * gtrunc / (2 * np.sqrt(self.G) + self.eps), self.lower_bound, self.upper_bound)
         self.theta, self.y = (next_u[ : self.features], next_u[self.features : ])
-
         assert np.isnan(self.theta).sum() == 0, "nans in theta"
         assert np.isnan(self.y).sum() == 0, "nans in y"
+
+        # update averages
+        self.t += 1
+        self.avg_theta = self.avg_theta * (self.t - 1) / self.t + self.theta / self.t
+        self.avg_y = self.avg_y * (self.t - 1) / self.t + self.y / self.t
+
         
 
     def getWeights(self):
-        return self.theta
+        return self.avg_theta
