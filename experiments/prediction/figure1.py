@@ -24,73 +24,71 @@ import os
 # --------------------------------
 # Set up parameters for experiment
 # --------------------------------
-figure1=False
 RUNS = 5
-LEARNERS = [PFGTDH, GTD2]
-#LEARNERS = [PFGTDH, GTD2, TDC, Vtrace, HTD, TD, TDRC]
+LEARNERS = [PFGTDH, GTD2, TDC, Vtrace, HTD, TD, TDRC]
 # LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC]
 
 PROBLEMS = [
     # 5-state random walk environment with tabular features
-    # {
-    #     'env': RandomWalk,
-    #     'representation': TabularRep,
-    #     # go LEFT 40% of the time
-    #     'target': actionArrayToPolicy([0.4, 0.6]),
-    #     # take each action equally
-    #     'behavior': actionArrayToPolicy([0.5, 0.5]),
-    #     'gamma': 1.0,
-    #     'steps': 3000,
-    #     # hardcode stepsizes found from parameter study
-    #     'stepsizes': {
-    #         'TD': 0.03125,
-    #         'TDRC': 0.03125,
-    #         'TDC': 0.0625,
-    #         'GTD2': 0.03125,
-    #         'HTD': 0.03125,
-    #         'Vtrace': 0.03125,
-    #     }
-    # },
-    # # 5-state random walk environment with dependent features
-    # {
-    #     'env': RandomWalk,
-    #     'representation': DependentRep,
-    #     # go LEFT 40% of the time
-    #     'target': actionArrayToPolicy([0.4, 0.6]),
-    #     # take each action equally
-    #     'behavior': actionArrayToPolicy([0.5, 0.5]),
-    #     'gamma': 1.0,
-    #     'steps': 3000,
-    #     # hardcode stepsizes found from parameter study
-    #     'stepsizes': {
-    #         'TD': 0.03125,
-    #         'TDRC': 0.03125,
-    #         'TDC': 0.0625,
-    #         'GTD2': 0.0625,
-    #         'HTD': 0.03125,
-    #         'Vtrace': 0.03125,
-    #     }
-    # },
-    # # 5-state random walk environment with inverted features
-    # {
-    #     'env': RandomWalk,
-    #     'representation': InvertedRep,
-    #     # go LEFT 40% of the time
-    #     'target': actionArrayToPolicy([0.4, 0.6]),
-    #     # take each action equally
-    #     'behavior': actionArrayToPolicy([0.5, 0.5]),
-    #     'gamma': 1.0,
-    #     'steps': 3000,
-    #     # hardcode stepsizes found from parameter study
-    #     'stepsizes': {
-    #         'TD': 0.125,
-    #         'TDRC': 0.125,
-    #         'TDC': 0.125,
-    #         'GTD2': 0.125,
-    #         'HTD': 0.125,
-    #         'Vtrace': 0.125,
-    #     }
-    # },
+    {
+        'env': RandomWalk,
+        'representation': TabularRep,
+        # go LEFT 40% of the time
+        'target': actionArrayToPolicy([0.4, 0.6]),
+        # take each action equally
+        'behavior': actionArrayToPolicy([0.5, 0.5]),
+        'gamma': 1.0,
+        'steps': 3000,
+        # hardcode stepsizes found from parameter study
+        'stepsizes': {
+            'TD': 0.03125,
+            'TDRC': 0.03125,
+            'TDC': 0.0625,
+            'GTD2': 0.03125,
+            'HTD': 0.03125,
+            'Vtrace': 0.03125,
+        }
+    },
+    # 5-state random walk environment with dependent features
+    {
+        'env': RandomWalk,
+        'representation': DependentRep,
+        # go LEFT 40% of the time
+        'target': actionArrayToPolicy([0.4, 0.6]),
+        # take each action equally
+        'behavior': actionArrayToPolicy([0.5, 0.5]),
+        'gamma': 1.0,
+        'steps': 3000,
+        # hardcode stepsizes found from parameter study
+        'stepsizes': {
+            'TD': 0.03125,
+            'TDRC': 0.03125,
+            'TDC': 0.0625,
+            'GTD2': 0.0625,
+            'HTD': 0.03125,
+            'Vtrace': 0.03125,
+        }
+    },
+    # 5-state random walk environment with inverted features
+    {
+        'env': RandomWalk,
+        'representation': InvertedRep,
+        # go LEFT 40% of the time
+        'target': actionArrayToPolicy([0.4, 0.6]),
+        # take each action equally
+        'behavior': actionArrayToPolicy([0.5, 0.5]),
+        'gamma': 1.0,
+        'steps': 3000,
+        # hardcode stepsizes found from parameter study
+        'stepsizes': {
+            'TD': 0.125,
+            'TDRC': 0.125,
+            'TDC': 0.125,
+            'GTD2': 0.125,
+            'HTD': 0.125,
+            'Vtrace': 0.125,
+        }
+    },
     # Boyan's chain
     {
         'env': Boyan,
@@ -100,7 +98,7 @@ PROBLEMS = [
         # take each action equally
         'behavior': matrixToPolicy([[.5, .5]] * 10 + [[1., 0.]] * 2),
         'gamma': 1.0,
-        'steps': 1000,
+        'steps': 10000,
         # hardcode stepsizes found from parameter study
         'stepsizes': {
             'TD': 0.0625,
@@ -112,26 +110,26 @@ PROBLEMS = [
         }
     },
     # Baird's Counter-example domain
-    # {
-    #     'env': Baird,
-    #     'representation': BairdRep,
-    #     # go LEFT 40% of the time
-    #     'target': actionArrayToPolicy([6/7, 1/7]),
-    #     # take each action equally
-    #     'behavior': actionArrayToPolicy([0., 1.]),
-    #     'starting_condition': np.array([1, 1, 1, 1, 1, 1, 1, 10]),
-    #     'gamma': 0.99,
-    #     'steps': 20000,
-    #     # hardcode stepsizes found from parameter study
-    #     'stepsizes': {
-    #         'TD': 0.00390625,
-    #         'TDRC': 0.015625,
-    #         'TDC': 0.00390625,
-    #         'GTD2': 0.00390625,
-    #         'HTD': 0.00390625,
-    #         'Vtrace': 0.00390625,
-    #     }
-    # },
+    {
+        'env': Baird,
+        'representation': BairdRep,
+        # go LEFT 40% of the time
+        'target': actionArrayToPolicy([6/7, 1/7]),
+        # take each action equally
+        'behavior': actionArrayToPolicy([0., 1.]),
+        'starting_condition': np.array([1, 1, 1, 1, 1, 1, 1, 10]),
+        'gamma': 0.99,
+        'steps': 20000,
+        # hardcode stepsizes found from parameter study
+        'stepsizes': {
+            'TD': 0.00390625,
+            'TDRC': 0.015625,
+            'TDC': 0.00390625,
+            'GTD2': 0.00390625,
+            'HTD': 0.00390625,
+            'Vtrace': 0.00390625,
+        }
+    },
 ]
 
 COLORS = {
@@ -185,9 +183,9 @@ for run in range(RUNS):
             else:
                 learner = Learner(rep.features(), {
                     'gamma': problem['gamma'],
-                    'wealth': 10.0,
+                    'wealth': 1.0,
                     'hint': 1.0,
-                    'beta': 2*np.random.rand()-1.0,
+                    'beta': 0.0
                 })
 
             # build an "agent" which selects actions according to the behavior
@@ -240,48 +238,50 @@ for run in range(RUNS):
 # ---------------------
 import matplotlib.pyplot as plt
 
-if figure1:
-    ax = plt.gca()
-    f = plt.gcf()
+ax = plt.gca()
+f = plt.gcf()
 
-    # get TDRC's baseline performance for each problem
-    baselines = [None] * len(PROBLEMS)
-    for i, problem in enumerate(PROBLEMS):
+# get TDRC's baseline performance for each problem
+baselines = [None] * len(PROBLEMS)
+for i, problem in enumerate(PROBLEMS):
+    env = problem['env'].__name__
+    rep = problem['representation'].__name__
+
+    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-TDRC')
+
+    # compute TDRC's AUC
+    baselines[i] = mean_curve.mean()
+
+# how far from the left side of the plot to put the bar
+offset = -3
+for i, problem in enumerate(PROBLEMS):
+    # additional offset between problems
+    # creates space between the problems
+    offset += 3
+    for j, Learner in enumerate(LEARNERS):
+        learner = Learner.__name__
         env = problem['env'].__name__
         rep = problem['representation'].__name__
 
-        mean_curve, _, _ = collector.getStats(f'{env}-{rep}-TDRC')
+        x = i * len(LEARNERS) + j + offset
 
-        # compute TDRC's AUC
-        baselines[i] = mean_curve.mean()
+        mean_curve, stderr_curve, runs = collector.getStats(f'{env}-{rep}-{learner}')
+        auc = mean_curve.mean()
+        auc_stderr = stderr_curve.mean()
 
-    # how far from the left side of the plot to put the bar
-    offset = -3
-    for i, problem in enumerate(PROBLEMS):
-        # additional offset between problems
-        # creates space between the problems
-        offset += 3
-        for j, Learner in enumerate(LEARNERS):
-            learner = Learner.__name__
-            env = problem['env'].__name__
-            rep = problem['representation'].__name__
+        relative_auc = auc / baselines[i]
+        relative_stderr = auc_stderr / baselines[i]
 
-            x = i * len(LEARNERS) + j + offset
+        ax.bar(x, relative_auc, yerr=relative_stderr, color=COLORS[learner], tick_label='')
 
-            mean_curve, stderr_curve, runs = collector.getStats(f'{env}-{rep}-{learner}')
-            auc = mean_curve.mean()
-            auc_stderr = stderr_curve.mean()
+# plt.show()
+fig_dir = "figures/prediction/"
+os.makedirs(fig_dir, exist_ok=True)
+plt.savefig(f"{fig_dir}tabular.png")
 
-            relative_auc = auc / baselines[i]
-            relative_stderr = auc_stderr / baselines[i]
-
-            ax.bar(x, relative_auc, yerr=relative_stderr, color=COLORS[learner], tick_label='')
-
-    # plt.show()
-    fig_dir = "figures/prediction/"
-    os.makedirs(fig_dir, exist_ok=True)
-    plt.savefig(f"{fig_dir}tabular.png")
-
+# =======================
+# --- LEARNING CURVES ---
+# =======================
 for i, problem in enumerate(PROBLEMS):
     # additional offset between problems
     # creates space between the problems

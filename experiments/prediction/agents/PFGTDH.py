@@ -32,25 +32,20 @@ class Param:
     def update(self, g):
         # NOTE: have completely removed the constraint set for now
 
+        # incorporate grad bound
         gradnorm = norm(g)
-        #print(f"grad: {g}")
-        #print(f"gradnorm: {gradnorm}")
         gtrunc = g if gradnorm < self.h else self.h*g / (gradnorm + self.eps)
-        #self.h = max(self.h, gradnorm)
-        #print(f"h: {self.h}")
 
+        # update betting fraction
         s = np.dot(gtrunc, self.u)
-        self.W -= s*self.v
-
         m = s / (1.0 - self.beta * s)
         self.A += m**2
-        print(s)
-        print(m)
-        print(self.beta)
-        print(self.A)
-        print(self.beta)
         self.beta = max(min(self.beta - 2.0*m / ((2.0-np.log2(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)), -0.5 / (self.h + self.eps))
 
+        # update wealth
+        self.W -= s*self.v
+
+        # update directional weights
         self.G += norm(gtrunc)**2
         u = self.u - np.sqrt(2)/(2*np.sqrt(self.G) + self.eps) * gtrunc
         self.u = u if norm(u)<= 1 else u / norm(u)
@@ -92,17 +87,19 @@ class PFGTDH:
 
         # construct gradients
         # NOTE: trying to implicitly compute A to avoid the outerproduct op
+        # TODO: aj broke this debugging; should change back to an efficient
+        # implementation eventually
         d = x - self.gamma * xp
         At = rho * np.outer(x, d)
         bt = rho* r * x
         Mt = np.outer(x, x)
         g_theta = np.matmul(- At.transpose(), y_t)
-        g_y = np.dot(np.matmul(At, theta_t) - bt, y_t) + np.matmul(Mt, y_t)
+        g_y = np.matmul(At, theta_t) - bt + np.matmul(Mt, y_t)
 
         self.theta.update(g_theta)
-        print("---")
+        #print("---")
         self.y.update(g_y)
-        print()
+        #print()
 
     def getWeights(self):
         return self.av_theta
