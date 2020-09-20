@@ -74,8 +74,8 @@ class PFGTDH:
         beta_maxarg2 = -1 / ( 2 * self.hints + self.eps)
         self.beta = np.maximum(beta_maxarg1, beta_maxarg2)
         assert np.isnan(self.beta).sum() == 0, "nans in beta"
-        self.wealth -= s * w
-        print(s.max(), w.max(), S_Z_grad.max())
+        self.wealth -= s * v
+        # print(s.max(), w.max(), S_Z_grad.max())
 
         # update the weights
         self.G += gtilde_norm ** 2
