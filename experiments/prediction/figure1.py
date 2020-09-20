@@ -186,7 +186,7 @@ for run in range(RUNS):
                     'gamma': problem['gamma'],
                     'wealth': 1.0,
                     'hint': 1.0,
-                    'beta': 2*np.random.rand()-1,
+                    'beta': 0.0
                 })
 
             # build an "agent" which selects actions according to the behavior
@@ -273,6 +273,10 @@ fig_dir = "figures/prediction/"
 os.makedirs(fig_dir, exist_ok=True)
 plt.savefig(f"{fig_dir}tabular.png")
 
+# =======================
+# --- LEARNING CURVES ---
+# =======================
+
 for i, problem in enumerate(PROBLEMS):
     # additional offset between problems
     # creates space between the problems
@@ -286,7 +290,7 @@ for i, problem in enumerate(PROBLEMS):
         mean_curve, stderr_curve, runs = collector.getStats(f'{env}-{rep}-{learner}')
 
         ax.plot(np.arange(len(mean_curve)), mean_curve, color=COLORS[learner], label=learner)
-        ax.fill_between(np.arange(len(mean_curve)), mean_curve - stderr_curve, mean_curve + stderr_curve, alpha=0.2)
+        ax.fill_between(np.arange(len(mean_curve)), mean_curve - stderr_curve, mean_curve + stderr_curve, alpha=0.2, color=COLORS[learner])
 
     ax.set_title(env)
     ax.legend()

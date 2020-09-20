@@ -19,7 +19,7 @@ class Param:
         self.A = 0.0
         self.G = 0.0
 
-        self.eps = 1e-5
+        self.eps = 1e-8
 
         # NOTE: unused for now
         self.lower_bound = np.finfo(np.float64).min / 1e150
@@ -32,19 +32,29 @@ class Param:
     def update(self, g):
         # NOTE: have completely removed the constraint set for now
 
+        # Incorporate grad bound
         gradnorm = norm(g)
         gtrunc = g if gradnorm < self.h else self.h*g / (gradnorm + self.eps)
         self.h = max(self.h, gradnorm)
 
+        # update betting fraction
         s = np.dot(gtrunc, self.u)
         m = s / (1.0 - self.beta * s)
         self.A += m**2
-        self.beta = max(min(self.beta - 2.0*m / ((2.0-np.log2(3))*self.A + self.eps), 0.5 / (self.h + self.eps)), -0.5 / (self.h + self.eps))
+        self.beta = max(
+            min(self.beta - 2.0*m / ((2.0-np.log2(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
+            -0.5 / (self.h + self.eps)
+        )
+
+        # update wealth
         self.W -= s*self.v
 
+        # update directional weights
         self.G += norm(gtrunc)**2
         u = self.u - np.sqrt(2)/(2*np.sqrt(self.G) + self.eps) * gtrunc
-        self.u = u / norm(u)
+
+        unorm = norm(u)
+        self.u = u if unorm<=1 else u / unorm
 
 class PFGTDH:
     """
@@ -53,21 +63,17 @@ class PFGTDH:
     def __init__(self, features, params):
         self.features = features
         self.params = params
-
-
         self.gamma = params['gamma']
-        # self.bounds = params["bounds"] # of dim (2d, 2)
 
         # opt params
         self.theta = Param(features, params["wealth"], params["hint"], params["beta"])
-        self.av_theta = np.zeros(features)
-
         self.y = Param(features, params["wealth"], params["hint"], params["beta"])
+
+        # Average decisions
+        self.av_theta = np.zeros(features)
         self.av_y = np.zeros(features)
 
-        ## for numerical stability
-        self.eps = 1e-5
-        self.t = 0
+        self.t = 0.0
 
     def update(self, x, a, r, xp, rho):
         self.t +=1
@@ -81,10 +87,10 @@ class PFGTDH:
         self.av_y += 1.0 / self.t * (y_t - self.av_y)
 
         # construct gradients
-        # NOTE: trying to implicitly compute A to avoid the outerproduct op
+        # NOTE: implicitly compute A to avoid the outerproduct op
         d = x - self.gamma * xp
         g_theta = - rho * x * np.dot(d, y_t)
-        g_y = np.dot(rho * x * np.dot(d, theta_t) - rho * r * x, y_t) + x * np.dot(x, y_t)
+        g_y = rho * x * np.dot(d, theta_t) - rho * r * x + x * np.dot(x, y_t)
 
         self.theta.update(g_theta)
         self.y.update(g_y)
