@@ -1,4 +1,6 @@
 all:
 	python3.6 figure1.py
-open:
+tabular:
 	gnome-open ./figures/prediction/tabular.png
+lc:
+	gnome-open ./figures/prediction/learning_curves/*.png

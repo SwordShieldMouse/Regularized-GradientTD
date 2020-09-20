@@ -2,21 +2,28 @@ import numpy as np
 from numpy.linalg import norm
 
 class Param:
-    def __init__(self, features: int, W0: float, g: float, beta:float=0.0):
+    def __init__(self, features: int, W0: float, g: float, beta:float):
         self.beta = beta
         self.W = W0
         self.h = g
 
+        # initial bet
         self.v = self.beta * self.W
-        self.u = np.zeros(features)
+       
+        # random initial direction
+        self.u = 2 * np.random.rand(features) - 1.0
+       
+        # u should be on the unit sphere
+        self.u /= norm(self.u)
 
         self.A = 0.0
         self.G = 0.0
 
+        self.eps = 1e-5
+
         # NOTE: unused for now
         self.lower_bound = np.finfo(np.float64).min / 1e150
         self.upper_bound = np.finfo(np.float64).max / 1e150
-        self.eps = 1e-6
 
     def bet(self):
         self.v = self.beta * self.W
@@ -37,8 +44,7 @@ class Param:
 
         self.G += norm(gtrunc)**2
         u = self.u - np.sqrt(2)/(2*np.sqrt(self.G) + self.eps) * gtrunc
-        unorm = norm(u)
-        self.u = u if unorm <= 1.0 else u/unorm
+        self.u = u / norm(u)
 
 class PFGTDH:
     """
@@ -47,15 +53,16 @@ class PFGTDH:
     def __init__(self, features, params):
         self.features = features
         self.params = params
-        
+
+
         self.gamma = params['gamma']
         # self.bounds = params["bounds"] # of dim (2d, 2)
 
         # opt params
-        self.theta = Param(features, params['wealth'], 1.0, beta = 0.0)
+        self.theta = Param(features, params["wealth"], params["hint"], params["beta"])
         self.av_theta = np.zeros(features)
 
-        self.y = Param(features, params['wealth'], 1.0, beta=0.0)
+        self.y = Param(features, params["wealth"], params["hint"], params["beta"])
         self.av_y = np.zeros(features)
 
         ## for numerical stability
@@ -67,9 +74,10 @@ class PFGTDH:
 
         # get bets
         theta_t = self.theta.bet()
-        self.av_theta += 1.0 / self.t * (theta_t - self.av_theta)
-
         y_t = self.y.bet()
+
+        # update averages
+        self.av_theta += 1.0 / self.t * (theta_t - self.av_theta)
         self.av_y += 1.0 / self.t * (y_t - self.av_y)
 
         # construct gradients
