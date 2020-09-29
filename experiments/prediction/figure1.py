@@ -19,6 +19,7 @@ from agents.TDRC import TDRC
 from agents.Vtrace import Vtrace
 
 from agents.ParameterFree import ParameterFree, PFGTD, CWPFGTD
+from agents.GTD2MP import GTD2MP
 
 import os
 
@@ -27,7 +28,7 @@ import os
 # --------------------------------
 
 RUNS = 30
-LEARNERS = [PFGTD, CWPFGTD, GTD2, TDC, Vtrace, HTD, TD, TDRC]
+LEARNERS = [PFGTD, GTD2MP, GTD2, TDC, Vtrace, HTD, TD, TDRC]
 # LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC]
 
 PROBLEMS = [
@@ -47,6 +48,7 @@ PROBLEMS = [
             'TDRC': 0.03125,
             'TDC': 0.0625,
             'GTD2': 0.03125,
+            'GTD2MP': 0.03125,
             'BatchGTD2': 0.03125,
             'HTD': 0.03125,
             'Vtrace': 0.03125,
@@ -68,6 +70,7 @@ PROBLEMS = [
             'TDRC': 0.03125,
             'TDC': 0.0625,
             'GTD2': 0.0625,
+            'GTD2MP': 0.0625,
             'BatchGTD2': 0.0625,
             'HTD': 0.03125,
             'Vtrace': 0.03125,
@@ -89,6 +92,7 @@ PROBLEMS = [
             'TDRC': 0.125,
             'TDC': 0.125,
             'GTD2': 0.125,
+            'GTD2MP': 0.125,
             'BatchGTD2': 0.125,
             'HTD': 0.125,
             'Vtrace': 0.125,
@@ -110,6 +114,7 @@ PROBLEMS = [
             'TDRC': 0.0625,
             'TDC': 0.5,
             'GTD2': 0.5,
+            'GTD2MP': 0.5,
             'BatchGTD2': 0.5,
             'HTD': 0.0625,
             'Vtrace': 0.0625,
@@ -132,6 +137,7 @@ PROBLEMS = [
             'TDRC': 0.015625,
             'TDC': 0.00390625,
             'GTD2': 0.00390625,
+            'GTD2MP': 0.00390625,
             'BatchGTD2': 0.00390625,
             'HTD': 0.00390625,
             'Vtrace': 0.00390625,
@@ -142,6 +148,7 @@ PROBLEMS = [
 COLORS = {
     'PFGTD': 'yellow',
     'CWPFGTD': 'pink',
+    'GTD2MP': 'black',
     'TD': 'blue',
     'TDC': 'green',
     'TDRC': 'orange',
@@ -215,6 +222,8 @@ for run in range(RUNS):
             if problem.get('starting_condition') is not None:
                 if issubclass(Learner, ParameterFree):
                     learner.setInitialBet(problem['starting_condition'].copy())
+                elif Learner == GTD2MP:
+                    learner.setInitialParam(problem['starting_condition'].copy())
                 else:
                     learner.w = problem['starting_condition'].copy()
 
@@ -291,6 +300,49 @@ for i, problem in enumerate(PROBLEMS):
 fig_dir = "figures/prediction/"
 os.makedirs(fig_dir, exist_ok=True)
 plt.savefig(f"{fig_dir}auc.png")
+
+# =========================
+# --- FINAL PERFORMANCE ---
+# =========================
+f, ax = plt.subplots()
+
+# get TDRC's baseline performance for each problem
+baselines = [None] * len(PROBLEMS)
+for i, problem in enumerate(PROBLEMS):
+    env = problem['env'].__name__
+    rep = problem['representation'].__name__
+
+    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-TDRC')
+
+    # compute TDRC's AUC
+    baselines[i] = mean_curve.mean()
+
+# how far from the left side of the plot to put the bar
+offset = -3
+for i, problem in enumerate(PROBLEMS):
+    # additional offset between problems
+    # creates space between the problems
+    offset += 3
+    for j, Learner in enumerate(LEARNERS):
+        learner = Learner.__name__
+        env = problem['env'].__name__
+        rep = problem['representation'].__name__
+
+        x = i * len(LEARNERS) + j + offset
+
+        mean_curve, stderr_curve, runs = collector.getStats(f'{env}-{rep}-{learner}')
+        auc = mean_curve[-1]
+        auc_stderr = stderr_curve[-1]
+
+        relative_auc = auc / baselines[i]
+        relative_stderr = auc_stderr / baselines[i]
+
+        ax.bar(x, relative_auc, yerr=relative_stderr, color=COLORS[learner], tick_label='')
+
+# plt.show()
+fig_dir = "figures/prediction/"
+os.makedirs(fig_dir, exist_ok=True)
+plt.savefig(f"{fig_dir}final.png")
 
 # =======================
 # --- LEARNING CURVES ---
