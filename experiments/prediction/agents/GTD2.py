@@ -60,5 +60,10 @@ class BatchGTD2:
 
         self.av_w += 1.0/self.t * (self.w - self.av_w)
 
+    def setInitialParam(self, u):
+        u = np.array(u, dtype='float64')
+        self.w = u
+        self.av_w = u
+
     def getWeights(self):
         return self.av_w

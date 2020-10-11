@@ -12,7 +12,7 @@ from environments.Boyan import Boyan, BoyanRep
 from environments.Baird import Baird, BairdRep
 
 from agents.TD import TD
-from agents.TDC import TDC
+from agents.TDC import TDC, BatchTDC
 from agents.HTD import HTD
 from agents.GTD2 import GTD2, BatchGTD2
 from agents.TDRC import TDRC
@@ -47,6 +47,7 @@ PROBLEMS = [
             'TD': 0.03125,
             'TDRC': 0.03125,
             'TDC': 0.0625,
+            'BatchTDC': 0.0625,
             'GTD2': 0.03125,
             'GTD2MP': 0.03125,
             'BatchGTD2': 0.03125,
@@ -69,6 +70,7 @@ PROBLEMS = [
             'TD': 0.03125,
             'TDRC': 0.03125,
             'TDC': 0.0625,
+            'BatchTDC': 0.0625,
             'GTD2': 0.0625,
             'GTD2MP': 0.0625,
             'BatchGTD2': 0.0625,
@@ -91,6 +93,7 @@ PROBLEMS = [
             'TD': 0.125,
             'TDRC': 0.125,
             'TDC': 0.125,
+            'BatchTDC': 0.125,
             'GTD2': 0.125,
             'GTD2MP': 0.125,
             'BatchGTD2': 0.125,
@@ -113,6 +116,7 @@ PROBLEMS = [
             'TD': 0.0625,
             'TDRC': 0.0625,
             'TDC': 0.5,
+            'BatchTDC': 0.5,
             'GTD2': 0.5,
             'GTD2MP': 0.5,
             'BatchGTD2': 0.5,
@@ -136,6 +140,7 @@ PROBLEMS = [
             'TD': 0.00390625,
             'TDRC': 0.015625,
             'TDC': 0.00390625,
+            'BatchTDC': 0.00390625,
             'GTD2': 0.00390625,
             'GTD2MP': 0.00390625,
             'BatchGTD2': 0.00390625,
@@ -151,6 +156,7 @@ COLORS = {
     'GTD2MP': 'black',
     'TD': 'blue',
     'TDC': 'green',
+    'BatchTDC': 'pink',
     'TDRC': 'orange',
     'GTD2': 'grey',
     'BatchGTD2': 'cyan',
@@ -221,8 +227,8 @@ for run in range(RUNS):
             # for Baird's counter-example, set the initial value function manually
             if problem.get('starting_condition') is not None:
                 if issubclass(Learner, ParameterFree):
-                    learner.setInitialBet(problem['starting_condition'].copy())
-                elif Learner == GTD2MP:
+                    learner.initWeights(problem['starting_condition'].copy())
+                elif Learner == GTD2MP or Learner == BatchGTD2 or Learner == BatchTDC:
                     learner.setInitialParam(problem['starting_condition'].copy())
                 else:
                     learner.w = problem['starting_condition'].copy()
@@ -269,7 +275,7 @@ for i, problem in enumerate(PROBLEMS):
     env = problem['env'].__name__
     rep = problem['representation'].__name__
 
-    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-TDRC')
+    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-GTD2')
 
     # compute TDRC's AUC
     baselines[i] = mean_curve.mean()
@@ -312,7 +318,7 @@ for i, problem in enumerate(PROBLEMS):
     env = problem['env'].__name__
     rep = problem['representation'].__name__
 
-    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-TDRC')
+    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-GTD2')
 
     # compute TDRC's AUC
     baselines[i] = mean_curve.mean()
@@ -364,6 +370,35 @@ for i, problem in enumerate(PROBLEMS):
 
     ax.set_title(f"{env} {rep}")
     ax.legend()
+
+    fig_dir = "figures/prediction/learning_curves/"
+    os.makedirs(fig_dir, exist_ok=True)
+    plt.savefig(f"{fig_dir}{env}_{rep}.png")
+
+# ========================================
+# --- LEARNING CURVES (INDIVIDUAL RUNS)---
+# ========================================
+for i, problem in enumerate(PROBLEMS):
+    # additional offset between problems
+    # creates space between the problems
+    fig, ax = plt.subplots()
+
+    env = problem['env'].__name__
+    rep = problem['representation'].__name__
+    for j, Learner in enumerate(LEARNERS):
+        learner = Learner.__name__
+
+        all_data = collector.all_data[f'{env}-{rep}-{learner}']
+
+        for d in all_data:
+            data = np.array(d)
+            ax.plot(np.arange(len(d)), d,  color=COLORS[learner], alpha=0.2)
+
+        mean_curve = np.mean(np.array(all_data), axis=0)
+        ax.plot(np.arange(len(mean_curve)), mean_curve,  color=COLORS[learner], label=learner, linewidth=2.0)
+
+    ax.legend()
+    ax.set_title(f"{env} {rep}")
 
     fig_dir = "figures/prediction/learning_curves/"
     os.makedirs(fig_dir, exist_ok=True)
