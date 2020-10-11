@@ -47,7 +47,7 @@ class Param:
         m = s / (1.0 - self.beta * s)
         self.A += m**2
         self.beta = max(
-            min(self.beta - 2.0*m / ((2.0-np.log2(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
+            min(self.beta - 2.0*m / ((2.0-np.log(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
             -0.5 / (self.h + self.eps)
         )
 
@@ -111,7 +111,7 @@ class SCParam:
         m = s / (1.0 - self.beta * s)
         self.A += m**2
         self.beta = max(
-            min(self.beta - 2.0*m / ((2.0-np.log2(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
+            min(self.beta - 2.0*m / ((2.0-np.log(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
             -0.5 / (self.h + self.eps)
         )
 
@@ -165,7 +165,7 @@ class CWParam:
         m = np.divide(gtrunc,  1.0 - np.multiply(self.beta, gtrunc))
         self.A += np.power(m,2)
         self.beta = np.maximum(
-            np.minimum(self.beta - 2.0 * np.divide(m, (2.0-np.log2(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
+            np.minimum(self.beta - 2.0 * np.divide(m, (2.0-np.log(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
             -0.5 / (self.h + self.eps)
         )
 
