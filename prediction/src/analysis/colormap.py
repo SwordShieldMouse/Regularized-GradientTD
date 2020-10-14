@@ -1,0 +1,15 @@
+COLORS = {
+    'PFGTD': 'red',
+    'PFGTDUntrunc':'red',
+    'PFTDC': 'pink',
+    'CWPFGTD': 'pink',
+    'GTD2MP': 'black',
+    'TD': 'blue',
+    'BatchTDC': 'cyan',
+    'TDC': 'green',
+    'TDRC': 'orange',
+    'BatchGTD2': 'black',
+    'GTD2': 'grey',
+    'Vtrace': 'red',
+    'HTD': 'purple',
+}

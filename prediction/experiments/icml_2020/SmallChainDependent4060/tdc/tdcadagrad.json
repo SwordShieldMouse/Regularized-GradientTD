@@ -1,0 +1,10 @@
+{
+    "agent": "TDCadagrad",
+    "problem": "SmallChainDependent4060",
+    "subsample": 10,
+    "metaParameters": {
+        "ratio": [0.015625, 0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64],
+        "alpha": [4.0, 2.0, 1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125],
+        "use_ideal_h": false
+    }
+}

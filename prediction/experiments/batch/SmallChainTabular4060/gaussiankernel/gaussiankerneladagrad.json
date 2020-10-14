@@ -1,0 +1,12 @@
+{
+    "agent": "GaussianKerneladagrad",
+    "problem": "SmallChainTabular4060",
+    "subsample": 10,
+    "steps": 5000,
+    "metaParameters": {
+        "batch_size": [1, 2, 4, 8, 16, 32, 64],
+        "bandwidth": [0.3, 0.5, 0.7],
+        "alpha": [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.25, 0.125, 0.0625, 0.03125],
+        "use_ideal_h": false
+    }
+}
