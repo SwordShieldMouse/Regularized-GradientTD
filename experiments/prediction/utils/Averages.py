@@ -27,18 +27,17 @@ class WeightedAverage:
     def _get(self):
         raise(NotImplementedError('WeightedAverage: get not implemented'))
 
-class UniformAverage(WeightedAverage):
+class Uniform(WeightedAverage):
     def __init__(self, x0):
         super().__init__(x0)
 
     def _update(self):
-        self.t+=1
-        self.S+=1
+        self.t += 1.0
 
     def _get(self):
-        return self.t/self.S
+        return 1.0/self.t
 
-class SqrtAverage(WeightedAverage):
+class Sqrt(WeightedAverage):
     def __init__(self, x0):
         super().__init__(x0)
 
@@ -49,7 +48,7 @@ class SqrtAverage(WeightedAverage):
     def _get(self):
         return np.sqrt(self.t) / self.S
 
-class LinearAverage(WeightedAverage):
+class Linear(WeightedAverage):
     def __init__(self, x0):
         super().__init__(x0)
 

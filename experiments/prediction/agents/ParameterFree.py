@@ -1,6 +1,8 @@
 import numpy as np
 from numpy.linalg import norm
 
+from utils import Averages
+
 from agents.OLO import Param, SCParam, CWParam, ParamUntrunc
 
 class ParameterFree:
@@ -9,31 +11,24 @@ class ParameterFree:
         self.params = params
         self.gamma = params['gamma']
 
-        # Average decisions
-        self.av_theta = np.zeros(features)
-        self.av_y = np.zeros(features)
-
-        self.t = 0.0
-
     def update(self, x, a, r, xp, rho):
-        self.t += 1
 
-        # get bets
-        theta_t = self.theta.bet()
-        y_t = self.y.bet()
+        g_theta, g_y  = self.grads(x,r,xp,rho)
+        self.theta.update(g_theta); self.y.update(g_y)
 
-        self.av_theta += 1.0 / self.t * (theta_t - self.av_theta)
-        self.av_y += 1.0 / self.t * (y_t - self.av_y)
+        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
+        self.av_theta.update(self.theta_t); self.av_y.update(self.y_t)
 
-        # construct gradients
-        #
+    def grads(self, x, r, xp, rho):
         # ================================
         # --- EFFICIENT IMPLEMENTATION ---
         # ================================
         #  implicitly compute A to avoid
         #  the outerproduct op
         # --------------------------------
-        g_theta, g_y  = self.grads(x,r,xp,rho, theta_t, y_t)
+        d = x - self.gamma * xp
+        g_theta = - rho * d * np.dot(x, self.y_t)
+        g_y = rho * x * np.dot(d, self.theta_t) - rho * r * x + x * np.dot(x, self.y_t)
 
         # ===========================
         # --- Slow implementation ---
@@ -47,22 +42,18 @@ class ParameterFree:
         #
         # g_theta = np.matmul(- At.transpose(), y_t)
         # g_y = np.matmul(At, theta_t) - bt + np.matmul(Mt, y_t)
-
-        self.theta.update(g_theta)
-        self.y.update(g_y)
-
-    def grads(self, x, r, xp, rho, theta_t,  y_t):
-        # Default grads = GTD2
-        d = x - self.gamma * xp
-        g_theta = - rho * d * np.dot(x, y_t)
-        g_y = rho * x * np.dot(d, theta_t) - rho * r * x + x * np.dot(x, y_t)
         return g_theta, g_y
 
     def getWeights(self):
-        return self.av_theta
+        return self.av_theta.get()
 
     def initWeights(self, u):
-        raise(NotImplementedError('setInitialBet not implemented'))
+        u = np.array(u, dtype='float64')
+        unorm = norm(u)
+        self.theta.u = u/unorm
+        self.theta.W = unorm
+        self.theta.beta = 1.0
+        self.av_theta.reset(self.theta.bet())
 
 class PFGTD(ParameterFree):
     """
@@ -75,13 +66,18 @@ class PFGTD(ParameterFree):
         self.theta = Param(features, params["wealth"], params["hint"], params["beta"])
         self.y = Param(features, params["wealth"], params["hint"], params["beta"])
 
+        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
+
+        avg_t = getattr(Averages, params.get('averaging','Uniform'))
+        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
+
     def initWeights(self, u):
         u = np.array(u, dtype='float64')
         unorm = norm(u)
         self.theta.u = u/unorm
         self.theta.W = unorm
         self.theta.beta = 1.0
-        self.av_theta = self.theta.bet()
+        self.av_theta.reset(self.theta.bet())
 
 class PFGTDUntrunc(PFGTD):
     """
@@ -92,16 +88,15 @@ class PFGTDUntrunc(PFGTD):
         self.theta = ParamUntrunc(features, params["wealth"], params["hint"], params["beta"])
         self.y = ParamUntrunc(features, params["wealth"], params["hint"], params["beta"])
 
-class PFTDC(ParameterFree):
+        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
+        self.av_theta.reset(self.theta_t); self.av_y.reset(self.y_t)
+
+class PFTDC(PFGTD):
     """
     Parameter-free TDC with hints
     """
     def __init__(self, features: int, params: dict):
         super().__init__(features, params)
-
-        # opt params
-        self.theta = Param(features, params["wealth"], params["hint"], params["beta"])
-        self.y = Param(features, params["wealth"], params["hint"], params["beta"])
 
     def grads(self, x, r, xp, rho, theta_t,  y_t):
         # Default grads = GTD2
@@ -111,14 +106,6 @@ class PFTDC(ParameterFree):
         d = x - self.gamma * xp
         g_y = -rho * delta + np.dot(y_t,x) * x #rho * x * np.dot(d, theta_t) - rho * r * x + x * np.dot(x, y_t)
         return g_theta, g_y
-
-    def initWeights(self, u):
-        u = np.array(u, dtype='float64')
-        unorm = norm(u)
-        self.theta.u = u/unorm
-        self.theta.W = unorm
-        self.theta.beta = 1.0
-        self.av_theta = self.theta.bet()
 
 class SCPFGTD(PFGTD):
     """
@@ -148,5 +135,4 @@ class CWPFGTD(ParameterFree):
         u = np.array(u, dtype='float64')
         self.theta.W = u
         self.theta.beta = 1.0
-        self.av_theta = self.theta.bet()
-
+        self.av_theta.reset(self.theta.bet())

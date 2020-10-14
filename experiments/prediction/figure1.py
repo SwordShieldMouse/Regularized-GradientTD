@@ -28,7 +28,7 @@ import os
 # --------------------------------
 
 RUNS = 30
-LEARNERS = [PFGTD, PFGTDUntrunc]#, GTD2, TDC, Vtrace, HTD, TD, TDRC]
+LEARNERS = [PFGTD, PFGTDUntrunc, GTD2MP, GTD2, TDC, TDRC]
 #LEARNERS = [PFGTD, PFGTDUntrunc,BatchGTD2, BatchTDC, GTD2, TDC, TDRC]#, GTD2, TDC]
 #LEARNERS = [PFGTD,GTD2, TDC]
 
@@ -129,9 +129,7 @@ PROBLEMS = [
     {
         'env': Baird,
         'representation': BairdRep,
-        # go LEFT 40% of the time
         'behavior': actionArrayToPolicy([6/7, 1/7]),
-        # take each action equally
         'target': actionArrayToPolicy([0., 1.]),
         'starting_condition': np.array([1, 1, 1, 1, 1, 1, 1, 10]),
         'gamma': 0.99,
@@ -275,7 +273,7 @@ for i, problem in enumerate(PROBLEMS):
     env = problem['env'].__name__
     rep = problem['representation'].__name__
 
-    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-PFGTD')
+    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-TDRC')
 
     # compute TDRC's AUC
     baselines[i] = mean_curve.mean()
@@ -318,7 +316,7 @@ for i, problem in enumerate(PROBLEMS):
     env = problem['env'].__name__
     rep = problem['representation'].__name__
 
-    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-PFGTD')
+    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-TDRC')
 
     # compute TDRC's AUC
     baselines[i] = mean_curve.mean()

@@ -3,7 +3,7 @@ from PyExpUtils.utils.random import sample
 from src.utils.arrays import argmax
 from src.agents.BaseAgent import BaseAgent
 from src.agents.OLO import Param, ParamUntrunc
-from src.utils import Averagers
+from src.utils import Averages
 
 class ParameterFree(BaseAgent):
     def __init__(self, features, actions, params):
@@ -30,9 +30,9 @@ class ParameterFree(BaseAgent):
         self._update(g_theta, g_y, a)
 
         self.theta_t, self.y_t = self.bet()
+        self.av_theta.update(self.theta_t); self.av_y.update(self.y_t)
 
-        self.av_theta.update(self.theta_t)
-        self.av_y.update(self.y_t)
+        return None, None
 
     def grads(self, x, a, xp, r, gamma):
         # Default grads = GTD2
@@ -41,7 +41,7 @@ class ParameterFree(BaseAgent):
         pi = self.policy(x, self.theta_t)
         rho = pi[a] / mu[a]
 
-        # mu = self.policy(x, self.av_theta)
+        # mu = self.policy(x, self.getWeights())
         # rho = 1.0/mu[a] if np.argmax(self.theta_t.dot(x)) == a else 0.0
 
         q_a = self.theta_t[a].dot(x)
@@ -84,8 +84,8 @@ class PFGQ(ParameterFree):
 
         self.theta_t, self.y_t = self.bet()
 
-        averager = getattr(Averagers, params['averager'])
-        self.av_theta, self.av_y = averager(self.theta_t), averager(self.y_t)
+        avg_t = getattr(Averages, params.get('averaging', "Uniform"))
+        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
 
     def bet(self):
         theta_t = self.theta.bet().reshape(self.actions, self.features)
@@ -117,9 +117,7 @@ class PFGQUntrunc(PFGQ):
         self.y = ParamUntrunc(features * actions, params["wealth"], params["hint"], params["beta"])
 
         self.theta_t, self.y_t = self.bet()
-
-        averager = getattr(Averagers, params['averager'])
-        self.av_theta, self.av_y = averager(self.theta_t), averager(self.y_t)
+        self.av_theta.reset(self.theta_t); self.av_y.reset(self.y_t)
 
 class PFGQScaledGrad(PFGQ):
     """
@@ -135,6 +133,4 @@ class PFGQScaledGrad(PFGQ):
         self._update(g_theta, g_y, a)
 
         self.theta_t, self.y_t = self.bet()
-
-        self.av_theta.update(self.theta_t)
-        self.av_y.update(self.y_t)
+        self.av_theta.update(self.theta_t); self.av_y.update(self.y_t)
