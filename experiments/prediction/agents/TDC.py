@@ -19,8 +19,7 @@ class BatchTDC(TDRC):
         super().update(x,a,r,xp,rho)
         self.av_w += 1.0 / self.t * (self.w - self.av_w)
 
-    def setInitialParam(self, u):
-        u = np.array(u, dtype='float64')
+    def initWeights(self, u):
         self.w = u
         self.av_w = u
 

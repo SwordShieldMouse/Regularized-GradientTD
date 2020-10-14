@@ -18,7 +18,7 @@ from agents.GTD2 import GTD2, BatchGTD2
 from agents.TDRC import TDRC
 from agents.Vtrace import Vtrace
 
-from agents.ParameterFree import ParameterFree, PFGTD, CWPFGTD
+from agents.ParameterFree import ParameterFree, PFGTD, PFTDC, CWPFGTD, PFGTDUntrunc
 from agents.GTD2MP import GTD2MP
 
 import os
@@ -28,8 +28,9 @@ import os
 # --------------------------------
 
 RUNS = 30
-LEARNERS = [PFGTD, GTD2MP, GTD2, TDC, Vtrace, HTD, TD, TDRC]
-# LEARNERS = [GTD2, TDC, Vtrace, HTD, TD, TDRC]
+LEARNERS = [PFGTD, PFGTDUntrunc]#, GTD2, TDC, Vtrace, HTD, TD, TDRC]
+#LEARNERS = [PFGTD, PFGTDUntrunc,BatchGTD2, BatchTDC, GTD2, TDC, TDRC]#, GTD2, TDC]
+#LEARNERS = [PFGTD,GTD2, TDC]
 
 PROBLEMS = [
     # 5-state random walk environment with tabular features
@@ -129,9 +130,9 @@ PROBLEMS = [
         'env': Baird,
         'representation': BairdRep,
         # go LEFT 40% of the time
-        'target': actionArrayToPolicy([6/7, 1/7]),
+        'behavior': actionArrayToPolicy([6/7, 1/7]),
         # take each action equally
-        'behavior': actionArrayToPolicy([0., 1.]),
+        'target': actionArrayToPolicy([0., 1.]),
         'starting_condition': np.array([1, 1, 1, 1, 1, 1, 1, 10]),
         'gamma': 0.99,
         'steps': 20000,
@@ -150,16 +151,19 @@ PROBLEMS = [
     },
 ]
 
+
 COLORS = {
-    'PFGTD': 'yellow',
-    'CWPFGTD': 'pink',
+    'PFGTD': 'red',
+    'PFGTDUntrunc':'blue',
+    'PFTDC': 'pink',
+    #'CWPFGTD': 'pink',
     'GTD2MP': 'black',
     'TD': 'blue',
+    'BatchTDC': 'cyan',
     'TDC': 'green',
-    'BatchTDC': 'pink',
     'TDRC': 'orange',
+    'BatchGTD2': 'black',
     'GTD2': 'grey',
-    'BatchGTD2': 'cyan',
     'Vtrace': 'red',
     'HTD': 'purple',
 }
@@ -226,12 +230,8 @@ for run in range(RUNS):
 
             # for Baird's counter-example, set the initial value function manually
             if problem.get('starting_condition') is not None:
-                if issubclass(Learner, ParameterFree):
-                    learner.initWeights(problem['starting_condition'].copy())
-                elif Learner == GTD2MP or Learner == BatchGTD2 or Learner == BatchTDC:
-                    learner.setInitialParam(problem['starting_condition'].copy())
-                else:
-                    learner.w = problem['starting_condition'].copy()
+                u = np.array(problem['starting_condition'].copy(),dtype='float64')
+                learner.initWeights(u)
 
             # Log initial error
             log_err(learner, RMSPBE, data_key)
@@ -275,7 +275,7 @@ for i, problem in enumerate(PROBLEMS):
     env = problem['env'].__name__
     rep = problem['representation'].__name__
 
-    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-GTD2')
+    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-PFGTD')
 
     # compute TDRC's AUC
     baselines[i] = mean_curve.mean()
@@ -318,7 +318,7 @@ for i, problem in enumerate(PROBLEMS):
     env = problem['env'].__name__
     rep = problem['representation'].__name__
 
-    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-GTD2')
+    mean_curve, _, _ = collector.getStats(f'{env}-{rep}-PFGTD')
 
     # compute TDRC's AUC
     baselines[i] = mean_curve.mean()
@@ -402,4 +402,4 @@ for i, problem in enumerate(PROBLEMS):
 
     fig_dir = "figures/prediction/learning_curves/"
     os.makedirs(fig_dir, exist_ok=True)
-    plt.savefig(f"{fig_dir}{env}_{rep}.png")
+    plt.savefig(f"{fig_dir}{env}_{rep}_allRuns.png")

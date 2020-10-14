@@ -25,6 +25,9 @@ class GTD2:
         self.w = self.w + self.alpha * dw
         self.h = self.h + self.eta * self.alpha * dh
 
+    def initWeights(self, u):
+        self.w = u
+
     def getWeights(self):
         return self.w
 
@@ -60,7 +63,7 @@ class BatchGTD2:
 
         self.av_w += 1.0/self.t * (self.w - self.av_w)
 
-    def setInitialParam(self, u):
+    def initWeights(self, u):
         u = np.array(u, dtype='float64')
         self.w = u
         self.av_w = u

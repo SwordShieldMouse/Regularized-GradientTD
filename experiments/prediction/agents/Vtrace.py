@@ -19,5 +19,8 @@ class Vtrace:
         rho_hat = np.min((rho, 1))
         self.w = self.w + self.alpha * rho_hat * delta * x
 
+    def initWeights(self, u):
+        self.w = u
+
     def getWeights(self):
         return self.w

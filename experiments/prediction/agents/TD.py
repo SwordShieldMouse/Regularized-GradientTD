@@ -18,5 +18,8 @@ class TD:
 
         self.w = self.w + self.alpha * rho * delta * x
 
+    def initWeights(self, u):
+        self.w = u
+
     def getWeights(self):
         return self.w

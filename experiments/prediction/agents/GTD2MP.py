@@ -52,6 +52,6 @@ class GTD2MP:
     def getWeights(self):
         return self.av_theta
 
-    def setInitialParam(self, p):
-        self.theta = p
-        self.av_theta = p
+    def initWeights(self, u):
+        self.theta = u
+        self.av_theta = u

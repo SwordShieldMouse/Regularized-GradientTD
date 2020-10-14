@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import norm
 
-from agents.OLO import Param, SCParam, CWParam
+from agents.OLO import Param, SCParam, CWParam, ParamUntrunc
 
 class ParameterFree:
     def __init__(self, features: int, params: dict):
@@ -33,9 +33,7 @@ class ParameterFree:
         #  implicitly compute A to avoid
         #  the outerproduct op
         # --------------------------------
-        d = x - self.gamma * xp
-        g_theta = - rho * d * np.dot(x, y_t)
-        g_y = rho * x * np.dot(d, theta_t) - rho * r * x + x * np.dot(x, y_t)
+        g_theta, g_y  = self.grads(x,r,xp,rho, theta_t, y_t)
 
         # ===========================
         # --- Slow implementation ---
@@ -53,10 +51,17 @@ class ParameterFree:
         self.theta.update(g_theta)
         self.y.update(g_y)
 
+    def grads(self, x, r, xp, rho, theta_t,  y_t):
+        # Default grads = GTD2
+        d = x - self.gamma * xp
+        g_theta = - rho * d * np.dot(x, y_t)
+        g_y = rho * x * np.dot(d, theta_t) - rho * r * x + x * np.dot(x, y_t)
+        return g_theta, g_y
+
     def getWeights(self):
         return self.av_theta
 
-    def setInitialBet(self, u):
+    def initWeights(self, u):
         raise(NotImplementedError('setInitialBet not implemented'))
 
 class PFGTD(ParameterFree):
@@ -70,7 +75,44 @@ class PFGTD(ParameterFree):
         self.theta = Param(features, params["wealth"], params["hint"], params["beta"])
         self.y = Param(features, params["wealth"], params["hint"], params["beta"])
 
-    def setInitialBet(self, u):
+    def initWeights(self, u):
+        u = np.array(u, dtype='float64')
+        unorm = norm(u)
+        self.theta.u = u/unorm
+        self.theta.W = unorm
+        self.theta.beta = 1.0
+        self.av_theta = self.theta.bet()
+
+class PFGTDUntrunc(PFGTD):
+    """
+    Parameter-free GTD with hints
+    """
+    def __init__(self, features: int, params: dict):
+        super().__init__(features, params)
+        self.theta = ParamUntrunc(features, params["wealth"], params["hint"], params["beta"])
+        self.y = ParamUntrunc(features, params["wealth"], params["hint"], params["beta"])
+
+class PFTDC(ParameterFree):
+    """
+    Parameter-free TDC with hints
+    """
+    def __init__(self, features: int, params: dict):
+        super().__init__(features, params)
+
+        # opt params
+        self.theta = Param(features, params["wealth"], params["hint"], params["beta"])
+        self.y = Param(features, params["wealth"], params["hint"], params["beta"])
+
+    def grads(self, x, r, xp, rho, theta_t,  y_t):
+        # Default grads = GTD2
+        delta = r + self.gamma * np.dot(theta_t,xp) - np.dot(theta_t,x)
+        g_theta = - rho * delta * x + rho*self.gamma*np.dot(y_t,theta_t)*xp
+
+        d = x - self.gamma * xp
+        g_y = -rho * delta + np.dot(y_t,x) * x #rho * x * np.dot(d, theta_t) - rho * r * x + x * np.dot(x, y_t)
+        return g_theta, g_y
+
+    def initWeights(self, u):
         u = np.array(u, dtype='float64')
         unorm = norm(u)
         self.theta.u = u/unorm
@@ -102,7 +144,7 @@ class CWPFGTD(ParameterFree):
         self.theta = CWParam(features, params["wealth"], params["hint"], params["beta"])
         self.y = CWParam(features, params["wealth"], params["hint"], params["beta"])
 
-    def setInitialBet(self, u):
+    def initWeights(self, u):
         u = np.array(u, dtype='float64')
         self.theta.W = u
         self.theta.beta = 1.0

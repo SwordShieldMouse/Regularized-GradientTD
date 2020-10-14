@@ -28,3 +28,6 @@ class TDRC:
 
     def getWeights(self):
         return self.w
+
+    def initWeights(self, u):
+        self.w = u
