@@ -1,4 +1,9 @@
 env/
 .vscode
 *.pyc
-figures/
+*/figures/
+*/results/
+*.npy
+*.png
+*.svg
+*.pdf
