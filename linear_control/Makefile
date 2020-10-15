@@ -1,15 +1,17 @@
-tc:
-	parallel --jobs 2 python3.6 src/main.py 10 ./experiments/MC-TC/PFGQ.json {1} ::: 0 1 2
-	#parallel --jobs 2 python3.6 src/main.py 10 ./experiments/MC-TC/PFGQScaledGrad.json {1} ::: 0 1 2
-	#parallel --jobs 2 python3.6 src/main.py 10 ./experiments/MC-TC/PFGQUntrunc.json {1} ::: 0 1 2
-	#parallel --jobs 2 python3.6 src/main.py 10 ./experiments/MC-TC/QC.json {1} ::: 0 1 2 3
-	#parallel --jobs 2 python3.6 src/main.py 10 ./experiments/MC-TC/QRC.json {1} ::: 0 1 2 3
-	#parallel --jobs 2 python3.6 src/main.py 10 ./experiments/MC-TC/QLearning.json {1} ::: 0 1 2 3
-	python3.6 analysis/learning_curve.py ./experiments/MC-TC/*
-replay:
-	parallel --jobs 2 python3.6 src/main.py 10 ./experiments/MC-TC-Replay/PFGQ.json {1} ::: 0 1 2
-	parallel --jobs 2 python3.6 src/main.py 10 ./experiments/MC-TC-Replay/QC.json {1} ::: 0 1 2 3
-	parallel --jobs 2 python3.6 src/main.py 10 ./experiments/MC-TC-Replay/QRC.json {1} ::: 0 1 2 3
-	python3.6 analysis/learning_curve.py ./experiments/MC-TC-Replay/*
-lc:
-	python3.6 analysis/learning_curve.py ./experiments/MC-TC/*
+NUM_RUNS = 200
+
+# ===================
+# --- EXPERIMENTS ---
+# ===================
+MC = $(wildcard ./experiments/MC-TC/*.json)
+
+# ================
+# --- COMMANDS ---
+# ================
+Py = python3.6
+Run = $(Py) ./scripts/local.py ./src/main.py $(NUM_RUNS) ./results
+
+PlotMountainCar = $(Py) ../experiments/MC-TC/learning_curve.py
+
+mountaincar: 
+	$(Run) $(MC); $(PlotMountainCar) 

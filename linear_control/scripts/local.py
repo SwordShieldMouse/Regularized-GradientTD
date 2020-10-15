@@ -31,7 +31,7 @@ if __name__ == "__main__":
         'experiment_paths': sys.argv[4:],
         'base_path': sys.argv[3],
         'runs': 1,
-        'executable': "python " + sys.argv[1],
+        'executable': "python3.6 " + sys.argv[1],
     })
 
 
