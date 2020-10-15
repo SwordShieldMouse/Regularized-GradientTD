@@ -1,6 +1,8 @@
 import numpy as np
 
-class GTD2:
+from src.agents.BaseAgent import BaseAgent
+
+class GTD2(BaseAgent):
     def __init__(self, features, params):
         self.features = features
         self.params = params
@@ -31,7 +33,7 @@ class GTD2:
     def getWeights(self):
         return self.w
 
-class BatchGTD2:
+class BatchGTD2(BaseAgent):
     def __init__(self, features, params):
         self.features = features
         self.params = params

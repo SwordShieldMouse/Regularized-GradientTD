@@ -1,6 +1,8 @@
 import numpy as np
 
-class TDRC:
+from src.agents.BaseAgent import BaseAgent
+
+class TDRC(BaseAgent):
     def __init__(self, features, params):
         self.features = features
         self.params = params

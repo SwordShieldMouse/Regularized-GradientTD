@@ -6,7 +6,7 @@ from RlGlue import BaseAgent
 # this wrapper allows easy API compatibility with RLGlue, while allowing the learning code to remain small and simple (the complexity due to bookkeeping is pushed into this class)
 class RlGlueCompatWrapper(BaseAgent):
     def __init__(self, learner, behavior, target, representation):
-        self.learner = learner
+        self.agent = learner
         self.behavior = behavior
         self.target = target
         self.representation = representation
@@ -28,7 +28,7 @@ class RlGlueCompatWrapper(BaseAgent):
     def step(self, r, s):
         xp = self.representation(s)
         rho = self.target.ratio(self.behavior, self.s, self.a)
-        self.learner.update(self.x, self.a, r, xp, rho)
+        self.agent.update(self.x, self.a, r, xp, rho)
 
         self.s = s
         self.a = self.behavior.selectAction(s)
@@ -43,6 +43,6 @@ class RlGlueCompatWrapper(BaseAgent):
         # there is no next-state on the terminal state, so
         # encode the "next-state" as a zero vector to avoid accidental bootstrapping
         xp = np.zeros_like(self.x)
-        self.learner.update(self.x, self.a, r, xp, rho)
+        self.agent.update(self.x, self.a, r, xp, rho)
 
         self.x = xp

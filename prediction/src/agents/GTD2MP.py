@@ -1,6 +1,8 @@
 import numpy as np
 
-class GTD2MP:
+from src.agents.BaseAgent import BaseAgent
+
+class GTD2MP(BaseAgent):
     def __init__(self, features, params):
         self.features = features
         self.params = params

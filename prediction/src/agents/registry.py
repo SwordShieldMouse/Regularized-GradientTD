@@ -1,12 +1,12 @@
-from TD import TD
-from TDC import TDC, BatchTDC
-from HTD import HTD
-from GTD2 import GTD2, BatchGTD2
-from TDRC import TDRC
-from Vtrace import Vtrace
+from src.agents.TD import TD
+from src.agents.TDC import TDC, BatchTDC
+from src.agents.HTD import HTD
+from src.agents.GTD2 import GTD2, BatchGTD2
+from src.agents.TDRC import TDRC
+from src.agents.Vtrace import Vtrace
 
-from ParameterFree import PFGTD, PFTDC, CWPFGTD, PFGTDUntrunc
-from GTD2MP import GTD2MP
+from src.agents.ParameterFree import PFGTD, PFTDC, CWPFGTD, PFGTDUntrunc
+from src.agents.GTD2MP import GTD2MP
 
 def getAgent(name):
     if name == 'TD':
@@ -23,6 +23,8 @@ def getAgent(name):
         return BatchGTD2
     elif name == 'Vtrace':
         return Vtrace
+    elif name == 'TDRC':
+        return TDRC
 
     elif name == 'PFGTD':
         return PFGTD

@@ -1,38 +1,68 @@
 import os
 import sys
+import numpy as np
 import matplotlib.pyplot as plt
 sys.path.append(os.getcwd())
 
-from src.analysis.learning_curve import plot, save
-from src.analysis.results import loadResults, whereParameterEquals
+from src.analysis.learning_curve import plotBest
 from src.analysis.colormap import colors
-from src.utils.model import loadExperiment
+from src.experiment import ExperimentModel
+from PyExpUtils.results.results import loadResults
+from PyExpUtils.utils.arrays import first
 
-from src.utils.path import fileName
+def getBest(results):
+    best = first(results)
 
-def generatePlot(exp_paths):
-    ax = plt.gca()
-    # ax.semilogx()
+    for r in results:
+        a = r.load()[0]
+        b = best.load()[0]
+        am = np.mean(a)
+        bm = np.mean(b)
+        if am > bm:
+            best = r
+
+    return best
+
+def generatePlot(ax, exp_paths, bounds):
     for exp_path in exp_paths:
-        exp = loadExperiment(exp_path)
-        results = loadResults(exp)
+        exp = ExperimentModel.load(exp_path)
 
-        use_ideal_h = exp._d['metaParameters'].get('use_ideal_h', False)
-        dashed = use_ideal_h
-        color = colors[exp.agent]
+        results = loadResults(exp, 'rmspbe_summary.npy')
 
-        label = exp.agent.replace('adagrad', '')
-        if use_ideal_h:
-            label += '-h*'
+        best = getBest(results)
+        print('best parameters:', exp_path)
+        print(best.params)
 
-        plot(results, ax, label=label, color=color, dashed=dashed, bestBy='end')
+        alg = exp.agent
 
-    # plt.show()
-    save(exp, f'rmsve_learning-curve', type='svg')
-    plt.clf()
+        # if 'QC' in alg:
+        #     continue
+
+        dashed = False
+        stderr = True
+        label = alg
+
+        b = plotBest(best, ax, label=label, color=colors[alg], dashed=dashed, stderr=stderr)
+        bounds.append(b)
+
 
 if __name__ == "__main__":
-    exp_paths = sys.argv[1:]
-    tmp = loadExperiment(exp_paths[0])
+    f, axes = plt.subplots(1)
 
-    generatePlot(exp_paths)
+    bounds = []
+
+    exp_paths = sys.argv[1:]
+
+    generatePlot(axes, exp_paths, bounds)
+    # axes.set_ylim([-2000, 100])
+
+    #plt.show()
+    #exit()
+
+    save_path = 'figures'
+    os.makedirs(save_path, exist_ok=True)
+
+    width = 8
+    height = (24/5)
+    f.set_size_inches((width, height), forward=False)
+    plt.savefig(f'{save_path}/learning-curve.png', dpi=100)

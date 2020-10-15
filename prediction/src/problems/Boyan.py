@@ -2,7 +2,7 @@ import numpy as np
 from PyFixedReps.BaseRepresentation import BaseRepresentation
 from src.problems.BaseProblem import BaseProblem
 from src.environments.Boyan import Boyan as BoyanEnv
-from src.utils.rlglue import OffPolicyWrapper
+from src.utils.rl_glue import RlGlueCompatWrapper
 from src.utils.SampleGenerator import SampleGenerator
 
 import src.utils.policies as Policy
@@ -93,7 +93,7 @@ class Boyan(BaseProblem):
         return self.rep
 
     def getAgent(self):
-        return OffPolicyWrapper(self.agent, self.behavior, self.target, self.rep.encode)
+        return RlGlueCompatWrapper(self.agent, self.behavior, self.target, self.rep.encode)
 
     def sampleExperiences(self):
         clone = Boyan(self.exp, self.idx)

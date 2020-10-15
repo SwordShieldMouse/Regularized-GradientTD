@@ -3,7 +3,7 @@ from PyExpUtils.utils.fp import once
 from src.problems.BaseProblem import BaseProblem
 from src.environments.Collision import Collision as CollisionEnv
 from src.representations.BinaryEncoder import BinaryEncoder
-from src.utils.rlglue import OffPolicyWrapper
+from src.utils.rl_glue import RlGlueCompatWrapper
 from src.utils.SampleGenerator import SampleGenerator
 import src.utils.policies as Policy
 
@@ -67,7 +67,7 @@ class Collision(BaseProblem):
     def getAgent(self):
         # wrap the agent so that its API is consistent with the RLGlue API
         # this is just a compatibility layer between disparate APIs
-        return OffPolicyWrapper(self.agent, self.behavior, self.target, self.rep.encode)
+        return RlGlueCompatWrapper(self.agent, self.behavior, self.target, self.rep.encode)
 
     def sampleExperiences(self):
         clone = StandardCollision(self.exp, self.idx)

@@ -1,4 +1,4 @@
-COLORS = {
+colors = {
     'PFGTD': 'red',
     'PFGTDUntrunc':'red',
     'PFTDC': 'pink',

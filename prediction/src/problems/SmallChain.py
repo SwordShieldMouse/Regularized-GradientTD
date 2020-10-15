@@ -3,7 +3,7 @@ from PyFixedReps.BaseRepresentation import BaseRepresentation
 from src.representations.RandomCluster import RandomCluster, RandomOuterCluster
 from src.problems.Chain import BaseChain, Policy5050, Policy4060, Policy1090, RepDependent, RepInverted, RepTabular
 from src.environments.Chain import Chain as ChainEnv
-from src.utils.rlglue import OffPolicyWrapper
+from src.utils.rl_glue import RlGlueCompatWrapper
 from src.utils.policies import Policy
 
 class SmallChain(BaseChain):

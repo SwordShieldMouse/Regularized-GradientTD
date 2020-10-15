@@ -2,7 +2,7 @@ import numpy as np
 from PyFixedReps.BaseRepresentation import BaseRepresentation
 from src.problems.Chain import BaseChain, Policy2575, Policy4060, Policy5050, RepInverted, RepDependent, RepTabular
 from src.environments.Chain import Chain as ChainEnv
-from src.utils.rlglue import OffPolicyWrapper
+from src.utils.rl_glue import RlGlueCompatWrapper
 from src.utils.policies import Policy
 
 class MediumChain(BaseChain):

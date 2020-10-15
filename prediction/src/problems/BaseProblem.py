@@ -39,7 +39,7 @@ class BaseProblem:
         gen = SampleGenerator(clone)
         return gen
 
-    def evaluateStep(self, step_data):
+    def evaluateStep(self, step_data=None):
         X = getattr(self, 'X')
         db = getattr(self, 'db')
         v_star = getattr(self, 'v_star')
@@ -50,7 +50,7 @@ class BaseProblem:
         # weighted sum over squared distances
         rmsve = weightedNorm(d, np.diag(db))
 
-        w = agent.theta[0]
+        w = agent.getWeights()
         A = self.A
         b = self.b
         Cinv = self.Cinv
@@ -75,9 +75,6 @@ class BaseProblem:
         A = X.T.dot(dB).dot(np.eye(X.shape[0]) - gamma * P).dot(X)
         b = X.T.dot(dB).dot(R)
         C = X.T.dot(dB).dot(X)
-
-        print(np.linalg.eigvals(A))
-        exit()
 
         self.A = A
         self.b = b

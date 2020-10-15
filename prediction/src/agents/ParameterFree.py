@@ -3,9 +3,10 @@ from numpy.linalg import norm
 
 from src.utils import Averages
 
+from src.agents.BaseAgent import BaseAgent
 from src.agents.OLO import Param, SCParam, CWParam, ParamUntrunc
 
-class ParameterFree:
+class ParameterFree(BaseAgent):
     def __init__(self, features: int, params: dict):
         self.features = features
         self.params = params

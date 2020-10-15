@@ -2,7 +2,7 @@ import numpy as np
 from PyFixedReps.BaseRepresentation import BaseRepresentation
 from src.problems.BaseProblem import BaseProblem
 from src.environments.Baird import Baird
-from src.utils.rlglue import OffPolicyWrapper
+from src.utils.rl_glue import RlGlueCompatWrapper
 from src.utils.SampleGenerator import SampleGenerator
 
 import src.utils.policies as Policy
@@ -48,7 +48,7 @@ class BairdCounterexample(BaseProblem):
         self.target = Policy.fromActionArray([0.0, 1.0])
 
         # initialize agent with starting weight parameters
-        self.agent.theta[0] = np.array([1, 1, 1, 1, 1, 1, 1, 10])
+        self.agent.initWeights(np.array([1, 1, 1, 1, 1, 1, 1, 10]))
 
         # compute the observable value for each state once
         self.X = np.array([
@@ -79,7 +79,7 @@ class BairdCounterexample(BaseProblem):
         return self.rep
 
     def getAgent(self):
-        return OffPolicyWrapper(self.agent, self.behavior, self.target, self.rep.encode)
+        return RlGlueCompatWrapper(self.agent, self.behavior, self.target, self.rep.encode)
 
     def sampleExperiences(self):
         clone = BairdCounterexample(self.exp, self.idx)

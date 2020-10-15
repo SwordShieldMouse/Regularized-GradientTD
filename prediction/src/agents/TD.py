@@ -1,6 +1,8 @@
 import numpy as np
 
-class TD:
+from src.agents.BaseAgent import BaseAgent
+
+class TD(BaseAgent):
     def __init__(self, features, params):
         self.features = features
         self.params = params

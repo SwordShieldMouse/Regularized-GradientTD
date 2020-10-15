@@ -1,6 +1,8 @@
 import numpy as np
 
-class Vtrace:
+from src.agents.BaseAgent import BaseAgent
+
+class Vtrace(BaseAgent):
     def __init__(self, features, params):
         self.features = features
         self.params = params

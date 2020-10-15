@@ -2,7 +2,7 @@ import numpy as np
 from PyFixedReps.BaseRepresentation import BaseRepresentation
 from src.problems.BaseProblem import BaseProblem
 from src.environments.Chain import Chain
-from src.utils.rlglue import OffPolicyWrapper
+from src.utils.rl_glue import RlGlueCompatWrapper
 
 from src.utils.policies import Policy
 
@@ -89,7 +89,7 @@ class BaseChain(BaseProblem):
         return self.rep
 
     def getAgent(self):
-        return OffPolicyWrapper(self.agent, self.behavior, self.target, self.rep.encode)
+        return RlGlueCompatWrapper(self.agent, self.behavior, self.target, self.rep.encode)
 
     def compute_v(self, nstates, targetPolicy, reward_scale):
         gamma = self.getGamma()
