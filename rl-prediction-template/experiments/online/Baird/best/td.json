@@ -1,0 +1,9 @@
+{
+    "agent": "TD",
+    "problem": "Baird",
+    "steps": 5000,
+    "metaParameters": {
+        "ratio": 0,
+        "alpha": 0.00390625
+    }
+}

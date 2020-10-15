@@ -1,0 +1,8 @@
+{
+    "agent": "HTD",
+    "problem": "Boyan",
+    "steps": 10000,
+    "metaParameters": {
+        "alpha": 0.0625
+    }
+}
