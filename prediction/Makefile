@@ -1,7 +1,7 @@
 NUM_RUNS = 200
 
 best:
-	$(Run) $(BestOnline); $(RunBatch) $(bestBatch); $(PlotBest); $(PlotBestBatch)
+	$(Run) $(BestOnline); $(RunBatch) $(bestBatch); $(PlotBestOnline); $(PlotBestBatch)
 
 # =========================================
 # --- BEST SETTINGS FOR EACH EXPERIMENT ---
@@ -9,7 +9,7 @@ best:
 
 # --- [[ ONLINE ]] ---
 bestOnline:
-	$(Run) $(BestOnline); $(PlotBest)
+	$(Run) $(BestOnline); $(PlotBestOnline)
 bestBaird:
 	$(Run) $(BestBaird); $(plotBestBaird)
 bestBoyan:
