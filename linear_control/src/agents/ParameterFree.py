@@ -10,6 +10,9 @@ class ParameterFree(BaseAgent):
         params['alpha'] = None
         super().__init__(features, actions, params)
 
+        self.lmda = params.get('lambda', 0.0)
+        self.z = np.zeros(features)
+
     def policy(self, x, w):
         max_acts = argmax(w.dot(x))
         pi = np.zeros(self.actions)
@@ -34,27 +37,25 @@ class ParameterFree(BaseAgent):
 
         return None, None
 
+    def _rho(self, a, x):
+        mu = self.policy(x, self.getWeights())
+        pi = self.policy(x, self.theta_t)
+        return pi[a] / mu[a]
+
     def grads(self, x, a, xp, r, gamma):
         # Default grads = GTD2
 
-        mu = self.policy(x, self.getWeights())
-        pi = self.policy(x, self.theta_t)
-        rho = pi[a] / mu[a]
-
-        # mu = self.policy(x, self.getWeights())
-        # rho = 1.0/mu[a] if np.argmax(self.theta_t.dot(x)) == a else 0.0
-
+        rho = self._rho(a, x)
         q_a = self.theta_t[a].dot(x)
-
         qp_m = self.theta_t.dot(xp).max()
 
         g = r + gamma * qp_m
         delta = g - q_a
 
-        delta_hat = self.y_t[a].dot(x)
+        self.z = self.z * gamma * self.lmda * rho + x
 
-        dw = - rho * x.dot(self.y_t[a])*(x-gamma*xp)
-        dh = - rho*delta*x + x.dot(self.y_t[a])*x
+        dh = - rho*delta*self.z + x.dot(self.y_t[a])*x
+        dw = - rho * self.z.dot(self.y_t[a])*(x-gamma*xp)
 
         return dw, dh
 
@@ -108,6 +109,14 @@ class PFGQ(ParameterFree):
         self.theta.W = unorm
         self.theta.beta = 1.0
         self.av_theta.reset(self.theta.bet())
+
+class PFGQ2(PFGQ):
+    def __init__(self, features, actions, params):
+        super().__init__(features, actions, params)
+
+    def _rho(self, a, x):
+        mu = self.policy(x, self.getWeights())
+        return 1.0/mu[a] if np.argmax(self.theta_t.dot(x)) == a else 0.0
 
 class PFGQUntrunc(PFGQ):
     def __init__(self, features, actions, params):

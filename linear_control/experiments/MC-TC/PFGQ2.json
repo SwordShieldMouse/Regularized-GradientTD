@@ -1,5 +1,5 @@
 {
-    "agent": "PFGQ",
+    "agent": "PFGQ2",
     "problem": "MountainCar",
     "max_steps": 50000,
     "metaParameters": {

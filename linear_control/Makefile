@@ -17,3 +17,5 @@ mountaincar:
 	$(Run) $(MC); $(PlotMountainCar) 
 plot:
 	$(PlotMountainCar)
+open:
+	gnome-open ./figures/MountainCar/*.png

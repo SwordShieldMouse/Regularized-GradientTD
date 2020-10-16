@@ -33,6 +33,9 @@ def getAgent(name):
     if name == 'PFGQ':
         return PFGQ
 
+    if name == 'PFGQ2':
+        return PFGQ2
+
     if name == 'PFGQUntrunc':
         return PFGQUntrunc
 
