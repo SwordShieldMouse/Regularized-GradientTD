@@ -1,9 +1,9 @@
 colors = {
     'PFGQ': 'red',
     'PFGQ2': 'pink',
-    'PFGQUntrunc': 'orange',
     'PFGQScaledGrad': 'pink',
-    'QRC': 'blue',
+    'GQ': 'blue',
+    'QRC': 'orange',
     'QRC2': 'blue',
     'QC': 'green',
     'QC2': 'green',
