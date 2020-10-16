@@ -1,3 +1,4 @@
+from agents.GQ import GQ
 from agents.QLearning import QLearning
 from agents.QRC import QRC
 from agents.QRC2 import QRC2
@@ -9,6 +10,9 @@ from src.agents.QC2 import QC2
 from src.agents.ParameterFree import *
 
 def getAgent(name):
+    if name == "GQ":
+        return GQ
+
     if name == 'SARSA':
         return SARSA
 
