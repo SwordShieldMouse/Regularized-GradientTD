@@ -30,7 +30,7 @@ class GTD2(BaseAgent):
 
     def update(self, x, a, xp, r, gamma, rho):
         dtheta, dy = self.grads(x, a, xp, r, gamma, rho)
-        self._apply_update(dtheta, dy)
+        self._apply(dtheta, dy)
 
     def initWeights(self, u):
         self.theta = u

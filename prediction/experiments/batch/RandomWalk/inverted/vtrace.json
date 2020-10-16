@@ -1,0 +1,14 @@
+{
+    "agent": "Vtrace",
+    "problem": "RandomWalk",
+    "steps": 3000,
+    "metaParameters": {
+        "states": 5,
+        "target": 0.4,
+        "behavior": 0.5,
+        "representation": "inverted",
+        "batch_size": 8,
+
+        "alpha": 0.125
+    }
+}

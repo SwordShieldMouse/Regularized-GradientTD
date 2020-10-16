@@ -1,0 +1,12 @@
+{
+    "agent": "TDRC",
+    "problem": "Boyan",
+    "steps": 10000,
+    "metaParameters": {
+"batch_size": 8,
+ 
+        "ratio": 1.0,
+        "alpha": 0.0625,
+        "beta": 1.0
+    }
+}

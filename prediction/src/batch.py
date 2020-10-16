@@ -22,7 +22,7 @@ runs = int(sys.argv[1])
 exp = ExperimentModel.load(sys.argv[2])
 idx = int(sys.argv[3])
 
-EVERY = exp.subsample
+EVERY = 10
 
 collector = Collector()
 for run in range(runs):
@@ -66,12 +66,13 @@ for run in range(runs):
         EVERY = int(steps // 300)
 
     # TODO: why was this there?
-    #if run % 50 == 0:
-    generator = SampleGenerator(problem)
-    generator.generate(num=1e6)
+    if run % 50 == 0:
+        generator = SampleGenerator(problem)
+        generator.generate(num=1e6)
 
     # Run the experiment
     glue.start()
+    broke = False
     for step in range(steps):
         agent.batch_update(generator)
 
@@ -79,14 +80,22 @@ for run in range(runs):
             continue
 
         mspbe = MSPBE(agent.getWeights(), *AbC)
+
+
         collector.collect('rmspbe', np.sqrt(mspbe))
 
-        # if terminal state, then restart the interface
-        if t:
-            glue.start()
+        # if we've diverged, just go ahead and give up
+        # saves some computation and these runs are useless to me anyways
+        if np.isnan(mspbe):
+            collector.fillRest(np.nan, int(problem.getSteps() / EVERY))
+            broke = True
+            break
 
     # tell the collector to start a new run
     collector.reset()
+
+    if broke:
+        break
 
 rmspbe_data = collector.getStats('rmspbe')
 
