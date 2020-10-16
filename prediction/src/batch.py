@@ -103,4 +103,4 @@ rmspbe_data = collector.getStats('rmspbe')
 save_context = exp.buildSaveContext(idx, base="./")
 save_context.ensureExists()
 
-np.save(save_context.resolve('rmspbe_summary.npy'), rmspbe_data)
+np.save(save_context.resolve('rmspbe_summary.npy'), np.array(rmspbe_data, dtype='object'))

@@ -34,7 +34,7 @@ class SampleGenerator:
             if d:
                 s = env.start()
 
-        self._generated = np.array(experiences)
+        self._generated = np.array(experiences, dtype='object')
         return self._generated
 
     def sample(self, samples=100, generate=1e6):

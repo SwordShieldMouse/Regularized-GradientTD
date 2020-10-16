@@ -58,8 +58,8 @@ for run in range(runs):
 
     collector.reset()
 
-return_data = collector.getStats('return')
-step_data = collector.getStats('steps')
+return_data = np.array(collector.getStats('return'), dtype='object')
+step_data = np.array(collector.getStats('steps'), dtype='object')
 
 # import matplotlib.pyplot as plt
 # from src.utils.plotting import plot

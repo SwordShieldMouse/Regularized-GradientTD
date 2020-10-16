@@ -71,7 +71,7 @@ for run in range(runs):
     # tell the collector to start a new run
     collector.reset()
 
-rmspbe_data = collector.getStats('rmspbe')
+rmspbe_data = np.array(collector.getStats('rmspbe'), dtype='object')
 
 # save results to disk
 save_context = exp.buildSaveContext(idx, base="./")
