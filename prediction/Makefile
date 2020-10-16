@@ -1,7 +1,9 @@
 NUM_RUNS = 200
+BATCH_RUNS = 500
 
-best:
-	$(Run) $(BestOnline); $(RunBatch) $(bestBatch); $(PlotBestOnline); $(PlotBestBatch)
+all:
+	$(Run) $(BestOnline); $(PlotBestOnline); $(RunBatch) $(BestBatch); $(PlotBestBatch)
+	
 
 # =========================================
 # --- BEST SETTINGS FOR EACH EXPERIMENT ---
@@ -108,7 +110,7 @@ BestBatch = $(BestBatchBaird) $(BestBatchBoyan) $(BestBatchRandomWalk)
 # ================
 Py = python3.6
 Run = $(Py) ./scripts/local.py ./src/main.py $(NUM_RUNS) ./results
-RunBatch = $(Py) ./scripts/local.py ./src/batch.py $(NUM_RUNS) ./results
+RunBatch = $(Py) ./scripts/local.py ./src/batch.py $(BATCH_RUNS) ./results
 Plot = $(Py) ./analysis/learning_curve.py
 
 # ----- PLOTTING -----
