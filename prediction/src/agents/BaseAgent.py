@@ -6,10 +6,13 @@ class BaseAgent:
         self.actions = actions
         self.params = params
 
+        # used in batch_update
+        self.paramShape = (2, self.features)
+
     def batch_update(self, gen):
         num = self.params['batch_size']
         exps = gen.sample(samples=num)
-        shape = (num,) + (2, self.features)
+        shape = (num,) + self.paramShape
         grads = np.zeros(shape)
         for i in range(num):
             grads[i] = self.grads(*exps[i])

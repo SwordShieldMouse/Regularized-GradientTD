@@ -1,13 +1,10 @@
 import numpy as np
 
-from src.agents.BaseAgent import BaseAgent
+from src.agents.TD import TD
 
-class Vtrace(BaseAgent):
+class Vtrace(TD):
     def __init__(self, features, actions, params):
         super().__init__(features, actions, params)
-
-        self.alpha = params['alpha']
-        self.w = np.zeros(features)
 
     def grads(self, x, a, xp, r, gamma, rho):
         v = self.w.dot(x)
@@ -16,13 +13,13 @@ class Vtrace(BaseAgent):
         delta = r + gamma * vp - v
 
         rho_hat = np.min((rho, 1))
-        return rho_hat * delta * x, None
+        return rho_hat * delta * x
 
     def update(self, x, a, xp, r, gamma, rho):
-        dw, dh = self.grads(x, a, xp, r, gamma, rho)
-        self._apply(dw, dh)
+        dw = self.grads(x, a, xp, r, gamma, rho)
+        self._apply(dw)
 
-    def _apply(self, dw, dh):
+    def _apply(self, dw):
         self.w = self.w + self.alpha * dw
 
     def initWeights(self, u):

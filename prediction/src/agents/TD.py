@@ -9,18 +9,24 @@ class TD(BaseAgent):
         self.alpha = params['alpha']
         self.w = np.zeros(features)
 
+        # for batch_update() to work efficiently, want to
+        # stack the param vectors and thus need their dimension.
+        # TD only needs 1 param vector, whereas generally the
+        # gradient methods need 2
+        self.paramShape = (1, self.features)
+
     def grads(self, x, a, xp, r, gamma, rho):
         v = self.w.dot(x)
         vp = self.w.dot(xp)
 
         delta = r + gamma * vp - v
-        return rho * delta * x, None
+        return rho * delta * x
 
     def update(self, x, a, xp, r, gamma, rho):
-        dw, dh = self.grads(x, a, xp, r, gamma, rho)
-        self._apply(dw, dh)
+        dw = self.grads(x, a, xp, r, gamma, rho)
+        self._apply(dw)
 
-    def _apply(self, dw, dh):
+    def _apply(self, dw):
         self.w = self.w + self.alpha * dw
 
     def initWeights(self, u):
