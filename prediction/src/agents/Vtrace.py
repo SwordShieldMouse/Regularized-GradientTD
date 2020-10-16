@@ -9,14 +9,21 @@ class Vtrace(BaseAgent):
         self.alpha = params['alpha']
         self.w = np.zeros(features)
 
-    def update(self, x, a, xp, r, gamma, rho):
+    def grads(self, x, a, xp, r, gamma, rho):
         v = self.w.dot(x)
         vp = self.w.dot(xp)
 
         delta = r + gamma * vp - v
 
         rho_hat = np.min((rho, 1))
-        self.w = self.w + self.alpha * rho_hat * delta * x
+        return rho_hat * delta * x, None
+
+    def update(self, x, a, xp, r, gamma, rho):
+        dw, dh = self.grads(x, a, xp, r, gamma, rho)
+        self._apply(dw, dh)
+
+    def _apply(self, dw, dh):
+        self.w = self.w + self.alpha * dw
 
     def initWeights(self, u):
         self.w = u

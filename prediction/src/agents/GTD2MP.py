@@ -1,8 +1,8 @@
 import numpy as np
 
-from src.agents.BaseAgent import BaseAgent
+from src.agents.GTD2 import GTD2
 
-class GTD2MP(BaseAgent):
+class GTD2MP(GTD2):
     def __init__(self, features, actions, params):
         super().__init__(features, actions, params)
 
@@ -12,42 +12,23 @@ class GTD2MP(BaseAgent):
         self.theta = np.zeros(features)
         self.y = np.zeros(features)
 
-        self.thetam = np.zeros(features)
-        self.ym = np.zeros(features)
-
         self.av_theta = np.zeros(features)
-        self.alpha_1_tm1 = 0.0
+        self.alpha_1_t = 0.0
         self.t = 0.0
 
     def update(self, x, a, xp, r, gamma, rho):
         self.t += 1.0
 
-        v = self.theta.dot(x)
-        vp = self.theta.dot(xp)
+        dtheta, dy = self.grads(x ,a, xp, r, gamma, rho)
+        self._apply(dtheta, dy)
 
-        delta = r + gamma * vp - v
-        delta_hat = self.y.dot(x)
+        # extra-gradient step
+        dtheta, dy = self.grads(x ,a, xp, r, gamma, rho)
+        self._apply(dtheta, dy)
 
-        dw = rho * (delta_hat * x - gamma * delta_hat * xp)
-        dh = (rho * delta - delta_hat) * x
-
-        self.thetam = self.theta + self.alpha * dw
-        self.ym = self.y + self.eta * self.alpha * dh
-
-        v = self.thetam.dot(x)
-        vp = self.thetam.dot(xp)
-
-        delta = r + gamma * vp - v
-        delta_hat = self.ym.dot(x)
-
-        dw = rho * (delta_hat * x - gamma * delta_hat * xp)
-        dh = (rho * delta - delta_hat) * x
-
-        self.theta = self.thetam + self.alpha * dw
-        self.y= self.ym + self.eta * self.alpha * dh
-
-        self.av_theta = (self.alpha * self.theta + self.alpha_1_tm1 * self.av_theta ) / (self.alpha+self.alpha_1_tm1)
-        self.alpha_1_tm1 += self.alpha
+        self.alpha_1_t+= self.alpha
+        ss = self.alpha / self.alpha_1_t
+        self.av_theta = ss * self.theta + (1.0-ss) * self.av_theta
 
     def getWeights(self):
         return self.av_theta

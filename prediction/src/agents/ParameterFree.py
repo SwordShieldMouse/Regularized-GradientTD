@@ -12,13 +12,15 @@ class ParameterFree(BaseAgent):
 
     def update(self, x, a, xp, r, gamma, rho):
 
-        g_theta, g_y  = self.grads(x,xp, r, gamma, rho)
-        self.theta.update(g_theta); self.y.update(g_y)
+        g_theta, g_y  = self.grads(x, a, xp, r, gamma, rho)
+        self._apply(g_theta, g_y)
 
+    def _apply(self, g_theta, g_y):
+        self.theta.update(g_theta); self.y.update(g_y)
         self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
         self.av_theta.update(self.theta_t); self.av_y.update(self.y_t)
 
-    def grads(self, x, xp, r, gamma, rho):
+    def grads(self, x, a, xp, r, gamma, rho):
         # ================================
         # --- EFFICIENT IMPLEMENTATION ---
         # ================================
@@ -97,7 +99,7 @@ class PFTDC(PFGTD):
     def __init__(self, features: int, actions, params: dict):
         super().__init__(features, actions, params)
 
-    def grads(self, x, xp, r, gamma, rho):
+    def grads(self, x, a, xp, r, gamma, rho):
         # Default grads = GTD2
         delta = r + gamma * np.dot(theta_t,xp) - np.dot(theta_t,x)
         g_theta = - rho * delta * x + rho*gamma*np.dot(y_t,theta_t)*xp
