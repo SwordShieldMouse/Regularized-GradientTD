@@ -1,5 +1,14 @@
 env/
 .vscode
 *.pyc
+<<<<<<< HEAD
 figures/
 *.png
+=======
+*/figures/
+*/results/
+*.npy
+*.png
+*.svg
+*.pdf
+>>>>>>> c5b597e474ffe583fe46ed6d268657da7755a70f

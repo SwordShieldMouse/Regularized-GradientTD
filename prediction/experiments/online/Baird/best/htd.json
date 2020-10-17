@@ -1,0 +1,10 @@
+{
+    "agent": "HTD",
+    "problem": "Baird",
+    "subsample": 10,
+    "steps": 5000,
+    "metaParameters": {
+        "ratio": 1.0,
+        "alpha": 0.00390625
+    }
+}
