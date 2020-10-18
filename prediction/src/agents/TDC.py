@@ -16,7 +16,7 @@ class BatchTDC(TDRC):
 
     def update(self, x, a, xp, r, gamma, rho):
         self.t+=1.0
-        super().update(x,a,r,xp,rho)
+        super().update(x, a, xp, r, gamma, rho)
         self.av_w += 1.0 / self.t * (self.w - self.av_w)
 
     def initWeights(self, u):
