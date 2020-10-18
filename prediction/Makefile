@@ -1,132 +1,109 @@
 NUM_RUNS = 200
 BATCH_RUNS = 500
 
-all:
-	$(Run) $(BestOnline); $(PlotBestOnline); $(RunBatch) $(BestBatch); $(PlotBestBatch)
-	
+.PHONY : data plots sweepData sweepPlots results
 
-# =========================================
-# --- BEST SETTINGS FOR EACH EXPERIMENT ---
-# =========================================
+# ========================================================
+# ----------------------- COMMANDS -----------------------
+# ========================================================
+# Use these to generate the data/plots
+# e.g. run `make <cmd>` at the command line, from the
+# prediction subdirectory
+# --------------------------------------------------------
 
-# --- [[ ONLINE ]] ---
-bestOnline:
-	$(Run) $(BestOnline); $(PlotBestOnline)
-bestBaird:
-	$(Run) $(BestBaird); $(plotBestBaird)
-bestBoyan:
-	$(Run) $(BestBoyan); $(PlotBestBoyan)
-bestRW:
-	$(Run) $(BestRandomWalk); $(PlotBestRW)
+# alias for `make results` because i'm lazy
+all: results
 
-# --- PLOT RESULTS ---
-plotBestOnline:
-	$(PlotBestOnline)
-plotBestBaird:
-	$(PlotBestBaird)
-plotBestBoyan:
-	$(PlotBestBoyan)
-plotBestRW:
-	$(PlotBestRW)
+# `make results` :: run all the experiments (best param settings)
+# and then generate all the plots
+results: data plots
+# `make data` :: make the data using the best parameter settings
+data: online batch
+# `make plots` :: make the plots for the experiments
+# using the best parameter settings
+plots: onlinePlots batchPlots
 
-# --- [[ BATCH ]] ---
-bestBatch:
-	$(RunBatch) $(BestBatch); $(PlotBestBatch)
-bestBatchBaird:
-	$(RunBatch) $(BestBatchBaird); $(plotBestBatchBaird)
-bestBatchBoyan:
-	$(RunBatch) $(BestBatchBoyan); $(PlotBestBatchBoyan)
-bestBatchRW:
-	$(RunBatch) $(BestBatchRandomWalk); $(PlotBestBatchRW)
+# `make sweepResults` :: run the parameter sweeps for all experiments
+# and generate the plots
+sweepResults: sweepData sweepPlots
+# `make sweepData` :: run the parameter sweeps
+sweepData: onlineSweep batchSweep
+# `make sweepPlots` :: make the plots for the data
+# generated from the complete parameter sweep
+sweepPlots: onlineSweepPlots batchSweepPlots
 
-# --- PLOT RESULTS ---
-plotBestBatch:
-	$(PlotBestBatch)
-plotBestBatchBaird:
-	$(PlotBestBatchBaird)
-plotBestBatchBoyan:
-	$(PlotBestBatchBoyan)
-plotBestBatchRW:
-	$(PlotBestBatchRW)
+# ===========================================
+# ---------------- UTILITIES ----------------
+# ===========================================
+# all the stuff below here is
+# utility code defining the above commands
+#
+# You can also call the .PHONY targets
+# defined here if you only want to generate
+# a subset of the results
+# (e.g. `make online`, `make batch` etc.)
+# -------------------------------------------
 
-# -------------- VIEW RESULTS -------------------
-# I am too lazy to type filepaths in all the time
-# -----------------------------------------------
-openBairdFigs:
-	gnome-open ./figures/Baird/*
-openBoyanFigs:
-	gnome-open ./figures/Boyan/*
-openRWFigs:
-	gnome-open ./figures/RandomWalk/*
-
-# ============================================
-# --- PARAMETER SWEEPS FOR EACH EXPERIMENT ---
-# ============================================
-sweepBaird:
-	$(Run) $(Baird)
-sweepBoyan:
-	$(Run) $(Boyan)
-sweepRW:
-	$(Run) $(RandomWalk)
-sweepOnline:
-	$(Run) $(SweepOnline)
-
-OnlinePath = ./experiments/online
-BatchPath = ./experiments/batch
-
-# ===================
-# --- EXPERIMENTS ---
-# ===================
-# --- [[ ONLINE ]] ---
-Baird = $(wildcard $(OnlinePath)/Baird/*.json)
-Boyan = $(wildcard $(OnlinePath)/Boyan/*.json)
-RandomWalk = $(wildcard $(OnlinePath)/RandomWalk/*.json)
-SweepOnline = $(Baird) $(Boyan) $(RandomWalk)
-
-BestBaird = $(wildcard $(OnlinePath)/Baird/best/*.json)
-BestBoyan = $(wildcard $(OnlinePath)/Boyan/best/*.json)
-RandomWalkDependent = $(wildcard $(OnlinePath)/RandomWalk/dependent/*.json)
-RandomWalkInverted = $(wildcard $(OnlinePath)/RandomWalk/inverted/*.json)
-RandomWalkTabular = $(wildcard $(OnlinePath)/RandomWalk/tabular/*.json)
-BestRandomWalk = $(RandomWalkTabular) $(RandomWalkDependent) $(RandomWalkInverted)
-BestOnline = $(BestBaird) $(BestBoyan) $(BestRandomWalk)
-
-# --- [[ BATCH ]] ---
-BatchBaird = $(wildcard $(BatchPath)/Baird/*.json)
-BatchBoyan = $(wildcard $(BatchPath)/Boyan/*.json)
-BatchRandomWalk = $(wildcard $(BatchPath)/RandomWalk/*.json)
-SweepBatch = $(BatchBaird) $(BatchBoyan) $(BatchRandomWalk)
-
-BestBatchBaird = $(wildcard $(BatchPath)/Baird/best/*.json)
-BestBatchBoyan = $(wildcard $(BatchPath)/Boyan/best/*.json)
-BatchRandomWalkDependent = $(wildcard $(BatchPath)/RandomWalk/dependent/*.json)
-BatchRandomWalkInverted = $(wildcard $(BatchPath)/RandomWalk/inverted/*.json)
-BatchRandomWalkTabular = $(wildcard $(BatchPath)/RandomWalk/tabular/*.json)
-BestBatchRandomWalk = $(BatchRandomWalkTabular) $(BatchRandomWalkDependent) $(BatchRandomWalkInverted)
-BestBatch = $(BestBatchBaird) $(BestBatchBoyan) $(BestBatchRandomWalk)
-
-# ================
-# --- COMMANDS ---
-# ================
+# Commands that we'll run to generate data
 Py = python3.6
 Run = $(Py) ./scripts/local.py ./src/main.py $(NUM_RUNS) ./results
 RunBatch = $(Py) ./scripts/local.py ./src/batch.py $(BATCH_RUNS) ./results
-Plot = $(Py) ./analysis/learning_curve.py
 
-# ----- PLOTTING -----
-# --- [[ ONLINE ]] ---
-PlotBestBaird = $(Py) $(OnlinePath)/Baird/best/learning_curve.py
-PlotBestBoyan = $(Py) $(OnlinePath)/Boyan/best/learning_curve.py
-PlotBestTabularRW = $(Py) $(OnlinePath)/RandomWalk/tabular/learning_curve.py
-PlotBestInvertedRW = $(Py) $(OnlinePath)/RandomWalk/inverted/learning_curve.py
-PlotBestDependentRW = $(Py) $(OnlinePath)/RandomWalk/dependent/learning_curve.py
-PlotBestRW = $(PlotBestTabularRW); $(PlotBestInvertedRW); $(PlotBestDependentRW)
-PlotBestOnline = $(PlotBestBaird); $(PlotBestBoyan); $(PlotBestRW)
-# --- [[ BATCH ]] ---
-PlotBestBatchBaird = $(Py) $(BatchPath)/Baird/best/learning_curve.py
-PlotBestBatchBoyan = $(Py) $(BatchPath)/Boyan/best/learning_curve.py
-PlotBestBatchTabularRW = $(Py) $(BatchPath)/RandomWalk/tabular/learning_curve.py
-PlotBestBatchInvertedRW = $(Py) $(BatchPath)/RandomWalk/inverted/learning_curve.py
-PlotBestBatchDependentRW = $(Py) $(BatchPath)/RandomWalk/dependent/learning_curve.py
-PlotBestBatchRW = $(PlotBestBatchTabularRW); $(PlotBestBatchInvertedRW); $(PlotBestBatchDependentRW)
-PlotBestBatch = $(PlotBestBatchBaird); $(PlotBestBatchBoyan); $(PlotBestBatchRW)
+# -----------------------------------------
+# --- BEST SETTINGS FOR EACH EXPERIMENT ---
+# -----------------------------------------
+Online = $(wildcard ./experiments/online/*/*/*.json)
+Batch = $(wildcard ./experiments/batch/*/*/*.json)
+
+.PHONY : online batch
+online:
+	$(Run) $(Online)
+batch:
+	$(RunBatch) $(Batch)
+
+
+# ------------------------
+# --- PARAMETER SWEEPS ---
+# ------------------------
+OnlineSweep = $(wildcard ./experiments/online/*/*.json)
+BatchSweep = $(wildcard ./experiments/batch/*/*.json)
+
+.PHONY : onlineSweep batchSweep
+onlineSweep:
+	$(Run) $(OnlineSweep)
+batchSweep:
+	$(RunBatch) $(BatchSweep)
+
+# ----------------
+# --- PLOTTING ---
+# ----------------
+
+# -----------------------------
+#     BEST PARAMETERS PLOTS	  
+# -----------------------------
+OnlinePlots = $(wildcard ./experiments/online/*/*/learning_curve.py)
+PlotOnline = $(foreach path, $(OnlinePlots), $(Py) $(path);)
+
+BatchPlots = $(wildcard ./experiments/batch/*/*/learning_curve.py)
+PlotBatch = $(foreach path, $(BatchPlots), $(Py) $(path);)
+
+.PHONY : onlinePlots batchPlots
+onlinePlots:
+	$(PlotOnline)
+batchPlots:
+	$(PlotBatch)
+
+# -----------------------------
+#     PARAMETER SWEEP PLOTS
+# -----------------------------
+OnlineSweepPlots = $(wildcard ./experiments/online/*/learning_curve.py)
+PlotOnlineSweep = $(foreach path, $(OnlineSweepPlots), $(Py) $(path);)
+
+BatchSweepPlots = $(wildcard ./experiments/batch/*/learning_curve.py)
+PlotBatchSweep = $(foreach path, $(BatchSweepPlots), $(Py) $(path);)
+
+.PHONY : onlineSweepPlots batchSweepPlots
+onlineSweepPlots:
+	$(PlotOnlineSweep)
+batchSweepPlots:
+	$(PlotBatchSweep)

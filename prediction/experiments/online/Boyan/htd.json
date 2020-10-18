@@ -1,5 +1,5 @@
 {
-    "agent": "BatchTDC",
+    "agent": "HTD",
     "problem": "Boyan",
     "steps": 10000,
     "metaParameters": {
