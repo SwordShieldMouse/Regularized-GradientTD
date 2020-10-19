@@ -65,7 +65,6 @@ for run in range(runs):
     if samples > 300:
         EVERY = int(steps // 300)
 
-    # TODO: why was this there?
     if run % 50 == 0:
         generator = SampleGenerator(problem)
         generator.generate(num=1e6)

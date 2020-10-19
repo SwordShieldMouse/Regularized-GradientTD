@@ -32,6 +32,8 @@ def generatePlot(ax, exp_paths, bounds):
         results = loadResults(exp, 'rmspbe_summary.npy')
 
         best = getBest(results)
+        print('best parameters:', exp_path)
+        print(best.params)
 
         b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False)
         bounds.append(b)
