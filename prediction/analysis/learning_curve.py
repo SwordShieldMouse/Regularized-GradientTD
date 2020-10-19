@@ -13,14 +13,14 @@ from PyExpUtils.utils.arrays import first
 
 def getBest(results):
     best = first(results)
+    bestVal = np.mean(best.load()[0])
 
     for r in results:
         a = r.load()[0]
-        b = best.load()[0]
         am = np.mean(a)
-        bm = np.mean(b)
-        if am > bm:
+        if am < bestBal:
             best = r
+            bestVal = am
 
     return best
 
