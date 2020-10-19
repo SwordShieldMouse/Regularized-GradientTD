@@ -1,6 +1,8 @@
 from src.problems.BaseProblem import BaseProblem
 from src.environments.MountainCar import MountainCar as MCEnv
+from src.environments.MountainCar import BACK, STAY, FORWARD
 from PyFixedReps.TileCoder import TileCoder
+from src.utils.policies import Policy
 
 class ScaledTileCoder(TileCoder):
     def encode(self, s):
@@ -26,3 +28,19 @@ class MountainCar(BaseProblem):
         self.features = self.rep.features()
         self.gamma = 0.99
         self.max_steps = exp.max_steps
+
+
+class OfflineMountainCar(MountainCar):
+    def __init__(self, exp, idx):
+        super().__init__(exp, idx)
+
+        def pi(s):
+            a = np.zeros(self.actions)
+            if s[1]<0:
+                a[BACK] = 1.0
+            else:
+                a[FORWARD] = 1.0
+            return a
+
+        self.behavior = Policy(pi)
+        self.target = Policy(lambda s: self.getAgent().policy(s))

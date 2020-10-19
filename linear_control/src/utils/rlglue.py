@@ -37,3 +37,16 @@ class OneStepWrapper(BaseAgent):
         self.agent.update(self.x, self.a, self.x, r, gamma)
 
         # reset agent here if necessary (e.g. to clear traces)
+
+class PolicyWrapper(BaseAgent):
+    def __init__(self, policy):
+        self.policy = policy
+
+    def step(self, r, sp):
+        return self.policy.selectAction(sp)
+
+    def start(self, s):
+        return self.policy.selectAction(s)
+
+    def end(self, r):
+        return None
