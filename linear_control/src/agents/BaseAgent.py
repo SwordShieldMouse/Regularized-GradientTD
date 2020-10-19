@@ -27,11 +27,25 @@ class BaseAgent:
 
         self.steps = 0
 
-        # create initial weights
-        self.w = np.zeros((actions, features))
+        # most agents have 2 sets of weights
+        self.paramShape = (2,actions,features)
 
-    def policy(self, x):
-        max_acts = argmax(self.w.dot(x))
+    def batch_update(self, gen):
+        num = self.params['batch_size']
+        exps = gen.sample(samples=num)
+        shape = (num,) + self.paramShape
+        grads = np.zeros(shape)
+        for i in range(num):
+            grads[i] = self.grads(*exps[i])
+
+        grad = np.mean(grads, axis=0)
+        self._apply(*grad)
+
+    def policy(self, x, w=None):
+        if w is None:
+            w = self.getWeights()
+
+        max_acts = argmax(w.dot(x))
         pi = np.zeros(self.actions)
         uniform = self.epsilon / self.actions
         pi += uniform
@@ -43,7 +57,7 @@ class BaseAgent:
         return pi
 
     def selectAction(self, x):
-        return sample(self.policy(x))
+        return sample(self.policy(x, self.getWeights()))
 
     def applyUpdate(self, x, a, xp, r, gamma):
         return None, None
@@ -62,3 +76,6 @@ class BaseAgent:
             sample, idxes = self.buffer.sample(1)
             _, delta = self.applyUpdate(*sample[0])
             self.buffer.update_priorities(idxes, [delta])
+
+    def getWeights(self):
+        return self.w

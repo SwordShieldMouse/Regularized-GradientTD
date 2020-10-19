@@ -11,29 +11,11 @@ class ParameterFree(BaseAgent):
         super().__init__(features, actions, params)
 
         self.lmda = params.get('lambda', 0.0)
-        self.z = np.zeros(features)
-
-    def policy(self, x, w):
-        max_acts = argmax(w.dot(x))
-        pi = np.zeros(self.actions)
-        uniform = self.epsilon / self.actions
-        pi += uniform
-
-        # if there are no max acts, then we've diverged and everything is NaNs
-        if len(max_acts) > 0:
-            pi[max_acts] += (1.0 / len(max_acts)) - self.epsilon
-
-        return pi
-
-    def selectAction(self, x):
-        return sample(self.policy(x, self.getWeights()))
+        self.z = np.zeros((actions, features))
 
     def applyUpdate(self, x, a, xp, r, gamma):
-        g_theta, g_y  = self.grads(x,a,xp,r,gamma)
-        self._update(g_theta, g_y, a)
-
-        self.theta_t, self.y_t = self.bet()
-        self.av_theta.update(self.theta_t); self.av_y.update(self.y_t)
+        g_theta, g_y  = self.grads(x,a,xp,r,gamma,self._rho(a,x))
+        self._apply(g_theta, g_y)
 
         return None, None
 
@@ -42,28 +24,37 @@ class ParameterFree(BaseAgent):
         pi = self.policy(x, self.theta_t)
         return pi[a] / mu[a]
 
-    def grads(self, x, a, xp, r, gamma):
+    def grads(self, x, a, xp, r, gamma, rho):
         # Default grads = GTD2
 
-        rho = self._rho(a, x)
         q_a = self.theta_t[a].dot(x)
         qp_m = self.theta_t.dot(xp).max()
 
         g = r + gamma * qp_m
         delta = g - q_a
 
-        self.z = self.z * gamma * self.lmda * rho + x
+        self.z *= gamma * self.lmda * rho
+        self.z[a] += x
 
-        dh = - rho*delta*self.z + x.dot(self.y_t[a])*x
-        dw = - rho * self.z.dot(self.y_t[a])*(x-gamma*xp)
+        dy_a = - rho*delta*self.z[a] + x.dot(self.y_t[a])*x
+        dtheta_a = - rho * self.z[a].dot(self.y_t[a])*(x-gamma*xp)
 
-        return dw, dh
+        gtheta= np.zeros((self.actions, self.features))
+        gy = np.zeros((self.actions, self.features))
+        gtheta[a,:]= gtheta_a
+        gy[a, :] = gy_a
+
+        return gtheta.flatten(), dh.flatten()
+
+    def _apply(self, g_theta, g_y):
+        self.theta.update(gtheta)
+        self.y.update(gy)
+
+        self.theta_t, self.y_t = self.bet()
+        self.av_theta.update(self.theta_t); self.av_y.update(self.y_t)
 
     def getWeights(self):
         return self.av_theta.get()
-
-    def _update(self, gtheta, gy):
-        raise(NotImplementedError("_update not implemented"))
 
     def bet(self):
         raise(NotImplementedError('bet not implemented'))
@@ -93,15 +84,6 @@ class PFGQ(ParameterFree):
         y_t = self.y.bet().reshape(self.actions,self.features)
         return theta_t, y_t
 
-    def _update(self, g_theta, g_y, a):
-        gtheta = np.zeros((self.actions, self.features))
-        gy = np.zeros((self.actions, self.features))
-
-        gtheta[a,:]=g_theta
-        gy[a, :] = g_y
-        self.theta.update(gtheta.flatten())
-        self.y.update(gy.flatten())
-
     def initWeights(self, u):
         u = np.array(u, dtype='float64')
         unorm = norm(u)
@@ -117,6 +99,33 @@ class PFGQ2(PFGQ):
     def _rho(self, a, x):
         mu = self.policy(x, self.getWeights())
         return 1.0/mu[a] if np.argmax(self.theta_t.dot(x)) == a else 0.0
+
+class UncorrectedPFGQ(PFGQ):
+    def __init__(self, features, actions, params):
+        super().__init__(features, actions, params)
+
+    def grads(self, x, a, xp, r, gamma, rho):
+        # Default grads = GTD2
+
+        pi = self.policy(x)
+        eqp = self.theta_t.dot(xp).dot(pi)
+        q_a = self.theta_t[a].dot(x)
+
+        g = r + gamma * eqp
+        delta = g - q_a
+
+        self.z *= gamma*self.lmda*pi
+        self.z[a] += x
+
+        dy_a = - delta*self.z[a] + x.dot(self.y_t[a])*x
+        dtheta_a = - self.z[a].dot(self.y_t[a])*(x-gamma*xp)
+
+        gtheta= np.zeros((self.actions, self.features))
+        gy = np.zeros((self.actions, self.features))
+        gtheta[a,:]= gtheta_a
+        gy[a, :] = gy_a
+
+        return gtheta.flatten(), dh.flatten()
 
 class PFGQUntrunc(PFGQ):
     def __init__(self, features, actions, params):
@@ -136,10 +145,7 @@ class PFGQScaledGrad(PFGQ):
         super().__init__(features, actions, params)
 
     def applyUpdate(self, x, a, xp, r, gamma):
-        g_theta, g_y  = self.grads(x,a,xp,r,gamma)
+        g_theta, g_y  = self.grads(x,a,xp,r,gamma, self._rho(a,x))
         g_theta /= np.linalg.norm(x)
         g_y /= np.linalg.norm(x)
-        self._update(g_theta, g_y, a)
-
-        self.theta_t, self.y_t = self.bet()
-        self.av_theta.update(self.theta_t); self.av_y.update(self.y_t)
+        self._apply(g_theta, g_y)

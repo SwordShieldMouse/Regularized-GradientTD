@@ -14,6 +14,7 @@ class SARSA:
 
         # create initial weights
         self.w = np.zeros((actions, features))
+        self.paramShape = (1,actions,features)
 
     def selectAction(self, x):
         p = np.random.rand()

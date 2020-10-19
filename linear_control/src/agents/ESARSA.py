@@ -4,8 +4,12 @@ from src.utils.arrays import argmax
 from src.agents.BaseAgent import BaseAgent
 
 class ESARSA(BaseAgent):
-    def applyUpdate(self, x, a, xp, r, gamma):
-        raise Exception('on-policy methods no longer work. merp merp')
+    def __init__(features, actions, params):
+        super().__init__(feature, actions, params)
+        self.w = np.zeros(actions, features)
+        self.paramShape = (1,actions, features)
+
+    def grads(self, x, a, xp, r, gamma, rho):
         ap = self.selectAction(xp)
         q_a = self.w[a].dot(x)
 
@@ -16,6 +20,12 @@ class ESARSA(BaseAgent):
         delta = g - q_a
 
         dw = delta * x
+        return dw
 
+    def _apply(self, dw):
         self.w[a] += self.alpha * dw
-        return ap, delta
+
+    def applyUpdate(self, x, a, xp, r, gamma):
+        dw = self.grads(x, a, xp, r, gamma, 1.0)
+        self._apply(dw)
+        return None, None

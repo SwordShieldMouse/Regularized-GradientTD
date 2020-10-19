@@ -7,9 +7,11 @@ class QRC(BaseAgent):
     def __init__(self, features, actions, params):
         super().__init__(features, actions, params)
         self.beta = params.get('beta', 1)
+
+        self.w = np.zeros((actions, features))
         self.h = np.zeros((actions, features))
 
-    def applyUpdate(self, x, a, xp, r, gamma):
+    def grads(self, x, a, xp, r, gamma, rho):
         ap = self.selectAction(xp)
         q_a = self.w[a].dot(x)
 
@@ -22,7 +24,13 @@ class QRC(BaseAgent):
 
         dw = delta * x - gamma * delta_hat * xp
         dh = (delta - delta_hat) * x - self.beta * self.h[a]
+        return dw, dh
 
+    def _apply(self, dw, dh):
         self.h[a] += self.alpha * dh
         self.w[a] += self.alpha * dw
-        return ap, delta
+
+    def applyUpdate(self, x, a, xp, r, gamma):
+        dw, dh = self.grads(x, a, xp, r, gamma, 1.0)
+        self._apply(dw, dh)
+        return None, None
