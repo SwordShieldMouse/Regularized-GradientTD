@@ -18,7 +18,7 @@ def getBest(results):
     for r in results:
         a = r.load()[0]
         am = np.mean(a)
-        if am < bestBal:
+        if am < bestVal:
             best = r
             bestVal = am
 
