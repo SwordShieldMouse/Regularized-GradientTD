@@ -39,7 +39,7 @@ class BaseAgent:
             grads[i] = self.grads(*exps[i])
 
         grad = np.mean(grads, axis=0)
-        self._apply(*grad)
+        self._apply(*grad, range(self.actions))
 
     def policy(self, x, w=None):
         if w is None:

@@ -1,7 +1,6 @@
 from agents.GQ import GQ
 from agents.QLearning import QLearning
 from agents.QRC import QRC
-from src.agents.SARSA import SARSA
 from src.agents.ESARSA import ESARSA
 from src.agents.QC import QC
 from src.agents.EQC import EQC
@@ -10,9 +9,6 @@ from src.agents.ParameterFree import *
 def getAgent(name):
     if name == "GQ":
         return GQ
-
-    if name == 'SARSA':
-        return SARSA
 
     if name == 'ESARSA':
         return ESARSA

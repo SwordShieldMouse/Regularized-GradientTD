@@ -26,11 +26,11 @@ class QRC(BaseAgent):
         dh = (delta - delta_hat) * x - self.beta * self.h[a]
         return dw, dh
 
-    def _apply(self, dw, dh):
+    def _apply(self, dw, dh, a):
         self.h[a] += self.alpha * dh
         self.w[a] += self.alpha * dw
 
     def applyUpdate(self, x, a, xp, r, gamma):
         dw, dh = self.grads(x, a, xp, r, gamma, 1.0)
-        self._apply(dw, dh)
+        self._apply(dw, dh, a)
         return None, None

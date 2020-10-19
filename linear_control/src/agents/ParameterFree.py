@@ -15,7 +15,7 @@ class ParameterFree(BaseAgent):
 
     def applyUpdate(self, x, a, xp, r, gamma):
         g_theta, g_y  = self.grads(x,a,xp,r,gamma,self._rho(a,x))
-        self._apply(g_theta, g_y)
+        self._apply(g_theta, g_y, a)
 
         return None, None
 
@@ -46,7 +46,7 @@ class ParameterFree(BaseAgent):
 
         return gtheta.flatten(), dh.flatten()
 
-    def _apply(self, g_theta, g_y):
+    def _apply(self, g_theta, g_y, a):
         self.theta.update(gtheta)
         self.y.update(gy)
 
@@ -148,4 +148,4 @@ class PFGQScaledGrad(PFGQ):
         g_theta, g_y  = self.grads(x,a,xp,r,gamma, self._rho(a,x))
         g_theta /= np.linalg.norm(x)
         g_y /= np.linalg.norm(x)
-        self._apply(g_theta, g_y)
+        self._apply(g_theta, g_y, a)

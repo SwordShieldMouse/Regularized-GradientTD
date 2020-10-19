@@ -22,10 +22,10 @@ class ESARSA(BaseAgent):
         dw = delta * x
         return dw
 
-    def _apply(self, dw):
+    def _apply(self, dw, a):
         self.w[a] += self.alpha * dw
 
     def applyUpdate(self, x, a, xp, r, gamma):
         dw = self.grads(x, a, xp, r, gamma, 1.0)
-        self._apply(dw)
+        self._apply(dw, a)
         return None, None

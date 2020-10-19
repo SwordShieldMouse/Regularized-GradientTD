@@ -29,7 +29,7 @@ class GQ(BaseAgent):
         self.z[a] += x
 
         dw, dh = self.grads(x, a, xp, r, gamma, rho)
-        self._apply(dw, dh)
+        self._apply(dw, dh, a)
 
         # extra-gradient step
         rho = self._rho(a,x)
@@ -37,11 +37,11 @@ class GQ(BaseAgent):
         self.z[a] += x
 
         dw, dh = self.grads(x, a, xp, r, gamma, rho)
-        self._apply(dw, dh)
+        self._apply(dw, dh, a)
 
         self.av_theta.update(self.theta); self.av_y.update(self.y)
 
-    def _apply(self, dw, dh):
+    def _apply(self, dw, dh, a):
         self.theta[a] += self.alpha * dw
         self.y[a] += self.alpha * dh
 
