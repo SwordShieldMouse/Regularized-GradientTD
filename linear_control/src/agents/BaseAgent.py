@@ -30,16 +30,12 @@ class BaseAgent:
         # most agents have 2 sets of weights
         self.paramShape = (2,actions,features)
 
-    def batch_update(self, gen):
-        num = self.params['batch_size']
+    def batch_update(self, gen, num):
         exps = gen.sample(samples=num)
         shape = (num,) + self.paramShape
-        grads = np.zeros(shape)
         for i in range(num):
-            grads[i] = self.grads(*exps[i])
-
-        grad = np.mean(grads, axis=0)
-        self._apply(*grad, range(self.actions))
+            grad = self.grads(*exps[i])
+            self._apply(*grad, exps[i][1])
 
     def policy(self, x, w=None):
         if w is None:

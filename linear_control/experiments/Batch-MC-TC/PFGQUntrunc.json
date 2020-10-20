@@ -1,0 +1,16 @@
+{
+    "agent": "PFGQUntrunc",
+    "problem": "OfflineMountainCar",
+    "max_steps": 50000,
+    "evalEpisodes": 200,
+    "evalSteps": [100, 1000, 10000, 25000, 50000],
+    "metaParameters": {
+        "batch_size": 8,
+
+        "wealth": [1.0],
+        "hint": [1.0],
+        "beta": [0.0],
+        "averager": ["Uniform", "Sqrt", "Linear"],
+        "epsilon": [0.1]
+    }
+}

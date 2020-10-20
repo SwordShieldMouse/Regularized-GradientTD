@@ -7,9 +7,8 @@ from RlGlue import RlGlue
 from src.experiment import ExperimentModel
 from src.problems.registry import getProblem
 from src.utils.Collector import Collector
-from src.utils.rlglue import PolicyWrapper
+from src.utils.rlglue import PolicyWrapper, OneStepWrapper
 from src.utils.SampleGenerator import SampleGenerator
-from src.agents.BaseAgent import PolicyWrapper
 
 if len(sys.argv) < 3:
     print('run again with:')
@@ -31,11 +30,13 @@ for run in range(runs):
     max_steps = problem.max_steps
     evalEpisodes = problem.evalEpisodes
     evalSteps = problem.evalSteps
+    allSteps = evalSteps[-1]
 
     agent = problem.getAgent()
     env = problem.getEnvironment()
+    rep = problem.getRepresentation()
 
-    wrapper = OneStepWrapper(agent, problem.getGamma(), problem.getRepresentation())
+    wrapper = PolicyWrapper(problem.target)
 
     glue = RlGlue(wrapper, env)
 
@@ -45,19 +46,22 @@ for run in range(runs):
 
     # Run the experiment
     glue.start()
-    broke = False
-    for step in range(steps):
-        agent.batch_update(generator)
+    prev = 0
+    for step in evalSteps:
+        num = step-prev
+        agent.batch_update(generator, num)
+        prev = step
 
-        if step in evalSteps:
-            av_rewards = 0.0
-            av_steps = 0.0
-            for n in evalEpisodes:
-                glue.runEpisode(max_steps)
-                av_rewards += 1.0/(n+1) * (glue.total_reward - av_rewards)
-                av_steps += 1.0/(n+1) * (glue.num_steps - av_steps)
-            collector.collect("return", av_rewards)
-            collector.collect("steps", av_steps)
+        print(f"Batch Update: {step/allSteps}")
+
+        av_rewards = 0.0
+        av_steps = 0.0
+        for n in range(evalEpisodes):
+            glue.runEpisode(max_steps)
+            av_rewards += 1.0/(n+1) * (glue.total_reward - av_rewards)
+            av_steps += 1.0/(n+1) * (glue.num_steps - av_steps)
+        collector.collect("return", av_rewards)
+        collector.collect("steps", av_steps)
     collector.reset()
 
 return_data = np.array(collector.getStats('return'), dtype='object')

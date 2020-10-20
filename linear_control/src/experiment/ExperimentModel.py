@@ -10,6 +10,8 @@ class ExperimentModel(ExperimentDescription):
 
         self.max_steps = d.get('max_steps', 0)
         self.episodes = d.get('episodes')
+        self.evalEpisodes = d.get('evalEpisodes')
+        self.evalSteps = d.get('evalSteps')
 
 def load(path=None):
     path = path if path is not None else sys.argv[1]

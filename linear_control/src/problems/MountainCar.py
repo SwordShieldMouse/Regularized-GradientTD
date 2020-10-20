@@ -1,3 +1,5 @@
+import numpy as np
+
 from src.problems.BaseProblem import BaseProblem
 from src.environments.MountainCar import MountainCar as MCEnv
 from src.environments.MountainCar import BACK, STAY, FORWARD
@@ -33,6 +35,8 @@ class MountainCar(BaseProblem):
 class OfflineMountainCar(MountainCar):
     def __init__(self, exp, idx):
         super().__init__(exp, idx)
+        self.evalSteps = exp.evalSteps
+        self.evalEpisodes = exp.evalEpisodes
 
         def pi(s):
             a = np.zeros(self.actions)
@@ -43,4 +47,4 @@ class OfflineMountainCar(MountainCar):
             return a
 
         self.behavior = Policy(pi)
-        self.target = Policy(lambda s: self.getAgent().policy(s))
+        self.target = Policy(lambda s: self.getAgent().policy(self.rep.encode(s)))

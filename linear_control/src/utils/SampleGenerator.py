@@ -6,7 +6,7 @@ class SampleGenerator:
         self.problem = problem
         self._generated = np.array([])
 
-    def generate(self, target, num=1e6):
+    def generate(self, num=1e6):
         experiences = []
 
         env = self.problem.getEnvironment()
