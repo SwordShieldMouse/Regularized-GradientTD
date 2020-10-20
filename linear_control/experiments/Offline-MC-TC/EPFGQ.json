@@ -1,0 +1,15 @@
+{
+    "agent": "EPFGQ",
+    "problem": "OfflineMountainCar",
+    "max_steps": 10000,
+    "evalSteps": 10000,
+    "epochs": 5,
+    "metaParameters": {
+        "wealth": [1.0],
+        "hint": [1.0],
+        "beta": [0.0],
+        "averaging": ["Uniform", "Sqrt", "Linear"],
+        "lambda": [0.0, 0.8, 0.9, 0.99],
+        "epsilon": [0.1]
+    }
+}
