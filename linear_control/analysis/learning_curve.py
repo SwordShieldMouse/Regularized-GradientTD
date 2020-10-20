@@ -12,14 +12,14 @@ from PyExpUtils.utils.arrays import first
 
 def getBest(results):
     best = first(results)
+    bestVal = np.mean(best.load()[0])
 
     for r in results:
         a = r.load()[0]
-        b = best.load()[0]
         am = np.mean(a)
-        bm = np.mean(b)
-        if am > bm:
+        if am > bestVal:
             best = r
+            bestVal = am
 
     return best
 
@@ -35,18 +35,7 @@ def generatePlot(ax, exp_paths, bounds):
 
         alg = exp.agent
 
-        # if 'QC' in alg:
-        #     continue
-
-        dashed = False
-        stderr = True
-        label = alg
-        if '2' in alg:
-            dashed = True
-            stderr = False
-            label = ''
-
-        b = plotBest(best, ax, label=label, color=colors[alg], dashed=dashed, stderr=stderr)
+        b = plotBest(best, ax, label=alg, color=colors[alg])
         bounds.append(b)
 
 
@@ -58,10 +47,6 @@ if __name__ == "__main__":
     exp_paths = sys.argv[1:]
 
     generatePlot(axes, exp_paths, bounds)
-    # axes.set_ylim([-2000, 100])
-
-    #plt.show()
-    #exit()
 
     save_path = 'figures'
     os.makedirs(save_path, exist_ok=True)
