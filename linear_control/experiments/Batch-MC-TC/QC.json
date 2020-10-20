@@ -1,12 +1,10 @@
 {
     "agent": "QC",
     "problem": "OfflineMountainCar",
-    "max_steps": 50000,
-    "evalEpisodes": 200,
-    "evalSteps": [100, 1000, 10000, 25000, 50000],
+    "max_steps": 10000,
+    "evalSteps": 10000,
+    "epochs": 5,
     "metaParameters": {
-        "batch_size": 8,
-
         "alpha": [1, 0.5, 0.25, 0.125],
         "epsilon": [0.1]
     }
