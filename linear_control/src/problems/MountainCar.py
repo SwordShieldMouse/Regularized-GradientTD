@@ -31,20 +31,22 @@ class MountainCar(BaseProblem):
         self.gamma = 0.99
         self.max_steps = exp.max_steps
 
+def bangbang(s):
+    if np.random.rand() < 0.1:
+        return np.ones(3)/3
+    a = np.zeros(3)
+    if s[1]<0:
+        a[BACK] = 1.0
+    else:
+        a[FORWARD] = 1.0
+    return a
 
 class OfflineMountainCar(MountainCar):
     def __init__(self, exp, idx):
         super().__init__(exp, idx)
         self.evalSteps = exp.evalSteps
         self.evalEpisodes = exp.evalEpisodes
+        self.epochs = exp.epochs
 
-        def pi(s):
-            a = np.zeros(self.actions)
-            if s[1]<0:
-                a[BACK] = 1.0
-            else:
-                a[FORWARD] = 1.0
-            return a
-
-        self.behavior = Policy(pi)
-        self.target = Policy(lambda s: self.getAgent().policy(self.rep.encode(s)))
+        self.behavior = Policy(bangbang)
+        self.target = None

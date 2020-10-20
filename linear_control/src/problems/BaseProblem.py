@@ -8,6 +8,7 @@ class BaseProblem:
 
         perm = exp.getPermutation(idx)
         self.params = perm['metaParameters']
+        self.run = exp.getRun(idx)
 
         self.agent = None
         self.env = None

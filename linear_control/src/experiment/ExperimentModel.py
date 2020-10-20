@@ -12,6 +12,7 @@ class ExperimentModel(ExperimentDescription):
         self.episodes = d.get('episodes')
         self.evalEpisodes = d.get('evalEpisodes')
         self.evalSteps = d.get('evalSteps')
+        self.epochs = d.get('epochs')
 
 def load(path=None):
     path = path if path is not None else sys.argv[1]
