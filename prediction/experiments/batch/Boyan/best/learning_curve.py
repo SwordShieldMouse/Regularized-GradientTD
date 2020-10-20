@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from analysis.learning_curve import generatePlot
 
 TITLE="Boyan's Chain"
-SAVE_PATH=os.path.join(os.getcwd(),"figures/Boyan")
+SAVE_PATH=os.path.join(os.getcwd(),"figures/Boyan/best")
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','gtd2','tdc','tdrc', 'td','htd','vtrace']))

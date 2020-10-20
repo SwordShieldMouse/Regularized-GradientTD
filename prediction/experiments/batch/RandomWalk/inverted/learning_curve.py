@@ -7,7 +7,7 @@ from analysis.learning_curve import generatePlot
 
 TITLE="RandomWalk (Inverted Features)"
 FEATS="inverted"
-SAVE_PATH=os.path.join(os.getcwd(),"figures/RandomWalk")
+SAVE_PATH=os.path.join(os.getcwd(),"figures/RandomWalk/best")
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','gtd2','tdc','tdrc', 'td','htd','vtrace']))
