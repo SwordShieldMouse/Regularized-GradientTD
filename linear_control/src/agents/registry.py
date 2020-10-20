@@ -25,8 +25,8 @@ def getAgent(name):
     if name == 'PFGQ':
         return PFGQ
 
-    if name == 'UncorrectedPFGQ':
-        return UncorrectedPFGQ
+    if name == 'EPFGQ':
+        return EPFGQ
 
     if name == 'PFGQ2':
         return PFGQ2

@@ -1,5 +1,6 @@
 colors = {
     'PFGQ': 'red',
+    'EPFGQ': 'maroon',
     'PFGQ2': 'pink',
     'PFGQScaledGrad': 'pink',
     'GQ': 'blue',

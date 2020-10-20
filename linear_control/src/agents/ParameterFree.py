@@ -36,19 +36,19 @@ class ParameterFree(BaseAgent):
         self.z *= gamma * self.lmda * rho
         self.z[a] += x
 
-        dy_a = - rho*delta*self.z[a] + x.dot(self.y_t[a])*x
-        dtheta_a = - rho * self.z[a].dot(self.y_t[a])*(x-gamma*xp)
+        gy_a = - rho*delta*self.z[a] + x.dot(self.y_t[a])*x
+        gtheta_a = - rho * self.z[a].dot(self.y_t[a])*(x-gamma*xp)
 
         gtheta= np.zeros((self.actions, self.features))
         gy = np.zeros((self.actions, self.features))
         gtheta[a,:]= gtheta_a
         gy[a, :] = gy_a
 
-        return gtheta.flatten(), dh.flatten()
+        return gtheta.flatten(), gy.flatten()
 
     def _apply(self, g_theta, g_y, a):
-        self.theta.update(gtheta)
-        self.y.update(gy)
+        self.theta.update(g_theta)
+        self.y.update(g_y)
 
         self.theta_t, self.y_t = self.bet()
         self.av_theta.update(self.theta_t); self.av_y.update(self.y_t)
@@ -100,32 +100,33 @@ class PFGQ2(PFGQ):
         mu = self.policy(x, self.getWeights())
         return 1.0/mu[a] if np.argmax(self.theta_t.dot(x)) == a else 0.0
 
-class UncorrectedPFGQ(PFGQ):
+class EPFGQ(PFGQ):
     def __init__(self, features, actions, params):
         super().__init__(features, actions, params)
 
     def grads(self, x, a, xp, r, gamma, rho):
         # Default grads = GTD2
 
-        pi = self.policy(x)
-        eqp = self.theta_t.dot(xp).dot(pi)
+        pi_t = self.policy(x)
+        eqp = self.theta_t.dot(xp).dot(pi_t)
         q_a = self.theta_t[a].dot(x)
 
         g = r + gamma * eqp
         delta = g - q_a
 
-        self.z *= gamma*self.lmda*pi
+        #TODO: Unsure about this
+        self.z *= gamma*self.lmda*pi_t[a]
         self.z[a] += x
 
-        dy_a = - delta*self.z[a] + x.dot(self.y_t[a])*x
-        dtheta_a = - self.z[a].dot(self.y_t[a])*(x-gamma*xp)
+        gy_a = - delta*self.z[a] + x.dot(self.y_t[a])*x
+        gtheta_a = - self.z[a].dot(self.y_t[a])*(x-gamma*xp)
 
         gtheta= np.zeros((self.actions, self.features))
         gy = np.zeros((self.actions, self.features))
         gtheta[a,:]= gtheta_a
         gy[a, :] = gy_a
 
-        return gtheta.flatten(), dh.flatten()
+        return gtheta.flatten(), gy.flatten()
 
 class PFGQUntrunc(PFGQ):
     def __init__(self, features, actions, params):
