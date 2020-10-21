@@ -19,8 +19,9 @@ class PFEnsemble(PFCombination):
     def __init__(self, features, actions, params):
         super().__init__(features, actions, params)
 
-        lambdas = params.get('lambdas', [])
-        averages = params.get('averages', [])
+        lmda, av = params.get('lambda', 0.0), params.get('averaging', 'Uniform')
+        lambdas = params.get('lambdas', [lmda,])
+        averages = params.get('averages', [av,])
         settings = [(lmda, av) for lmda in lambdas for av in averages]
 
         subparams = params.copy()
