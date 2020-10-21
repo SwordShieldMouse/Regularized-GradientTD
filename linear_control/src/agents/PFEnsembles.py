@@ -1,6 +1,6 @@
-import itertools
 import numpy as np
 
+from src.agents.BaseAgent import BaseAgent
 from src.agents.ParameterFree import ParameterFree, PFGQ, PFGQ2
 
 class PFCombination(BaseAgent):
@@ -21,11 +21,10 @@ class PFEnsemble(PFCombination):
 
         lambdas = params.get('lambdas', [])
         averages = params.get('averages', [])
-        settings = itertools.product(lambdas, averages)
+        settings = [(lmda, av) for lmda in lambdas for av in averages]
 
-        W0 = params["wealth"] / length(settings)
         subparams = params.copy()
-        subparams["wealth"] = W0 / length(settings)
+        subparams["wealth"] = subparams["wealth"] / len(settings)
 
         self.subagents = []
         for (lmda, av) in settings:
@@ -37,8 +36,8 @@ class BootstrapPFGQ(PFCombination):
     def __init__(self, features, actions, params):
         super().__init__(features, actions, params)
         self.N = params["N"]
-        self.subagents = [PFGQ(features,actions,params) for _ in range(N)]
-        self.actingAgent = np.random.randint(N)
+        self.subagents = [PFGQ(features,actions,params) for _ in range(self.N)]
+        self.actingAgent = np.random.randint(self.N)
 
     def applyUpdate(self, x, a, xp, r, gamma):
         super().applyUpdate(x, a, xp, r, gamma)
@@ -53,5 +52,5 @@ class BootstrapPFGQ(PFCombination):
     def selectAction(self, x):
        return self.subagents[self.actingAgent].selectAction(x)
 
-   def getWeights(self):
-       return self.subaents[self.actingAgent].getWeights()
+    def getWeights(self):
+       return self.subagents[self.actingAgent].getWeights()
