@@ -7,13 +7,16 @@ from PyFixedReps.TileCoder import TileCoder
 from src.utils.policies import Policy
 
 class ScaledTileCoder(TileCoder):
-    def encode(self, s):
+    def __init__(self, params):
+        super().__init__(params)
+
+    def encode(self, s, a):
         p = s[0]
         v = s[1]
 
         p = (p + 1.2) / 1.7
         v = (v + 0.07) / 0.14
-        return super().encode((p, v)) / float(self.num_tiling)
+        return super().encode((p, v), a) / float(self.num_tiling)
 
 class MountainCar(BaseProblem):
     def __init__(self, exp, idx):
@@ -21,10 +24,11 @@ class MountainCar(BaseProblem):
         self.env = MCEnv()
         self.actions = 3
 
-        self.rep = ScaledTileCoder({
+        self.rep = TileCoder({
             'dims': 2,
             'tiles': 4,
-            'tilings': 16,
+            'tilings': 4,
+            'actions': 3,
         })
 
         self.features = self.rep.features()

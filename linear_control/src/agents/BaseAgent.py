@@ -30,6 +30,9 @@ class BaseAgent:
         # most agents have 2 sets of weights
         self.paramShape = (2,actions,features)
 
+    def setRepresentation(self, rep):
+        self.rep = rep
+
     def batch_update(self, gen, num):
         exps = gen.sample(samples=num)
         shape = (num,) + self.paramShape
@@ -37,11 +40,21 @@ class BaseAgent:
             grad = self.grads(*exps[i])
             self._apply(*grad, exps[i][1])
 
-    def policy(self, x, w=None):
+    def encode(self, s):
+        print(s)
+        return np.array([self.rep.encode(s,a) for a in range(self.actions)])
+
+    def Q(self, s, a, w):
+        return sum(w[self.rep.get_indices(s,a)])
+
+    def Qs(self, s, w):
+        return [self.Q(s,a,w) for a in range(self.actions)]
+       
+    def policy(self, s, w=None):
         if w is None:
             w = self.getWeights()
 
-        max_acts = argmax(w.dot(x))
+        max_acts = argmax(self.Qs(s,w))
         pi = np.zeros(self.actions)
         uniform = self.epsilon / self.actions
         pi += uniform
@@ -52,18 +65,18 @@ class BaseAgent:
 
         return pi
 
-    def selectAction(self, x):
-        return sample(self.policy(x, self.getWeights()))
+    def selectAction(self, s):
+        return sample(self.policy(s, self.getWeights()))
 
     def applyUpdate(self, x, a, xp, r, gamma):
         return None, None
 
-    def update(self, x, a, xp, r, gamma):
+    def update(self, s, a, sp, r, gamma):
         self.steps += 1
-        self.buffer.add((x, a, xp, r, gamma))
+        self.buffer.add((s, a, sp, r, gamma))
 
         if self.replay_steps == 0:
-            self.applyUpdate(x, a, xp, r, gamma)
+            self.applyUpdate(s, a, sp, r, gamma)
 
         if self.steps < self.warmup:
             return

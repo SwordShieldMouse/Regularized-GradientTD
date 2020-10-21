@@ -30,8 +30,11 @@ for run in range(runs):
 
     agent = problem.getAgent()
     env = problem.getEnvironment()
+    rep = problem.getRepresentation()
 
-    wrapper = OneStepWrapper(agent, problem.getGamma(), problem.rep)
+    agent.setRepresentation(rep)
+
+    wrapper = OneStepWrapper(agent, problem.getGamma(), rep)
 
     glue = RlGlue(wrapper, env)
 

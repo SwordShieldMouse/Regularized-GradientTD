@@ -13,6 +13,37 @@ class OneStepWrapper(BaseAgent):
 
     def start(self, s):
         self.s = s
+        self.a = self.agent.selectAction(self.s)
+
+        return self.a
+
+    def step(self, r, sp):
+        self.agent.update(self.s, self.a, sp, r, self.gamma)
+
+        self.s = sp
+        self.a = self.agent.selectAction(sp)
+
+        return self.a
+
+    def end(self, r):
+        gamma = 0
+
+        self.agent.update(self.s, self.a, self.s, r, gamma)
+
+        # reset agent here if necessary (e.g. to clear traces)
+
+class EncodedOneStepWrapper(BaseAgent):
+    def __init__(self, agent, gamma, rep):
+        self.agent = agent
+        self.gamma = gamma
+        self.rep = rep
+
+        self.s = None
+        self.a = None
+        self.x = None
+
+    def start(self, s):
+        self.s = s
         self.x = self.rep.encode(s)
         self.a = self.agent.selectAction(self.x)
 
