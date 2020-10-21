@@ -16,12 +16,17 @@ def getBest(results):
     bestVal = np.mean(best.load()[0])
 
     for r in results:
+        if not np.isfinite(bestVal):
+           best = r
+           bestVal = np.mean(r.load()[0])
+           continue
         a = r.load()[0]
         am = np.mean(a)
         if am < bestVal:
             best = r
             bestVal = am
 
+    print(f"{bestVal} <= {best.params}")
     return best
 
 def generatePlot(ax, exp_paths, bounds):
