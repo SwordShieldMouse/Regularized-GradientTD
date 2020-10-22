@@ -27,6 +27,22 @@ class WeightedAverage:
     def _get(self):
         raise(NotImplementedError('WeightedAverage: get not implemented'))
 
+class LastIterate(WeightedAverage):
+    def __init__(self, x0):
+        super().__init__(x0)
+
+    def update(self, x):
+        self.x = x
+
+    def reset(self, x):
+        self.update(x)
+
+    def _update(self):
+        pass
+
+    def _get(self):
+        pass
+
 class Uniform(WeightedAverage):
     def __init__(self, x0):
         super().__init__(x0)
