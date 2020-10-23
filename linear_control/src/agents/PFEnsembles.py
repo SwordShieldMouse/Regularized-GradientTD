@@ -33,6 +33,18 @@ class PFEnsemble(PFCombination):
             subparams['averaging'] = av
             self.subagents.append(PFGQ(features, actions, params))
 
+class PFRobust(PFCombination):
+    def __init__(self, features, actions, params):
+        super().__init__(features, actions, params)
+        self.N = params["N"]
+        self.subagents = [PFGQ(features,actions,params) for _ in range(self.N)]
+
+class PFRobust2(PFCombination):
+    def __init__(self, features, actions, params):
+        super().__init__(features, actions, params)
+        self.N = params["N"]
+        self.subagents = [PFGQ2(features,actions,params) for _ in range(self.N)]
+
 class BootstrapPFGQ(PFCombination):
     def __init__(self, features, actions, params):
         super().__init__(features, actions, params)
@@ -55,3 +67,10 @@ class BootstrapPFGQ(PFCombination):
 
     def getWeights(self):
        return self.subagents[self.actingAgent].getWeights()
+
+class BootstrapPFGQ2(BootstrapPFGQ):
+    def __init__(self, features, actions, params):
+        super().__init__(features, actions, params)
+        self.N = params["N"]
+        self.subagents = [PFGQ2(features,actions,params) for _ in range(self.N)]
+        self.actingAgent = np.random.randint(self.N)

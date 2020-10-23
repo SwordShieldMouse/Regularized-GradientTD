@@ -9,7 +9,7 @@ TITLE="MountainCar"
 SAVE_PATH=os.path.join(os.getcwd(),"figures/MountainCar")
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['PFGQ','QC','QRC', 'QLearning']))
+EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'), ['PFGQ','PFGQ2', 'GQ', 'QC','QRC', 'QLearning']))
 
 if __name__ == "__main__":
     f, axes = plt.subplots(1)

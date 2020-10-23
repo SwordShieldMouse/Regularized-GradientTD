@@ -1,8 +1,11 @@
 colors = {
     'PFGQ': 'red',
-    'EPFGQ': 'maroon',
+    'BootstrapPFGQ': 'maroon',
+    'PFEnsembleTraces': 'pink',
     'PFGQ2': 'pink',
-    'PFGQScaledGrad': 'pink',
+    'PFEnsemble': 'green',
+    'PFEnsembleAverages': 'blue',
+    'PFRobust': 'cyan',
     'GQ': 'blue',
     'QRC': 'orange',
     'QRC2': 'blue',

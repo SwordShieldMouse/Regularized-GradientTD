@@ -5,7 +5,7 @@ from src.agents.ESARSA import ESARSA
 from src.agents.QC import QC
 from src.agents.EQC import EQC
 from src.agents.ParameterFree import *
-from src.agents.PFEnsembles import PFEnsemble, BootstrapPFGQ
+from src.agents.PFEnsembles import PFEnsemble, PFRobust, PFRobust2, BootstrapPFGQ, BootstrapPFGQ2
 
 def getAgent(name):
     if name == "GQ":
@@ -14,7 +14,23 @@ def getAgent(name):
     if name == "BootstrapPFGQ":
         return BootstrapPFGQ
 
+    if name == "BootstrapPFGQ2":
+        return BootstrapPFGQ2
+
+
     if name == "PFEnsemble":
+        return PFEnsemble
+
+    if name == "PFRobust":
+        return PFRobust
+
+    if name == "PFRobust2":
+        return PFRobust2
+
+    if name == "PFEnsembleTraces":
+        return PFEnsemble
+
+    if name == "PFEnsembleAverages":
         return PFEnsemble
 
     if name == 'ESARSA':
