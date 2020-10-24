@@ -16,13 +16,16 @@ SAVE_PATH=os.path.join(os.getcwd(),"figures/RandomWalk/")
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','gtd2','tdc','tdrc', 'td','htd','vtrace']))
 
-def generatePlot(ax, exp_paths, bounds, feats):
+def generatePlot(ax, exp_paths, bounds, feats, fltr=None):
     for exp_path in exp_paths:
         exp = ExperimentModel.load(exp_path)
         alg = exp.agent
 
         results = loadResults(exp, 'rmspbe_summary.npy')
         sub_results = filter(lambda r: r.params["representation"]==feats, results)
+
+        if fltr is not None:
+            sub_results = filter(fltr, sub_results)
 
         best = getBest(sub_results)
         print(f'best parameters ({feats}):', exp_path)
@@ -38,6 +41,21 @@ if __name__ == "__main__":
         bounds = []
 
         generatePlot(axes, EXP_PATHS, bounds, feats)
+
+        os.makedirs(SAVE_PATH, exist_ok=True)
+
+        width = 8
+        height = (24/5)
+        f.set_size_inches((width, height), forward=False)
+        axes.set_title(f"RandomWalk ({feats})")
+        plt.savefig(f'{SAVE_PATH}/batch-{feats}-learning-curve-allParams.png', dpi=100)
+
+        f, axes = plt.subplots(1)
+
+        bounds = []
+
+        fltr = lambda r: r.params.get('eta', 1) == 1
+        generatePlot(axes, EXP_PATHS, bounds, feats, fltr)
 
         os.makedirs(SAVE_PATH, exist_ok=True)
 

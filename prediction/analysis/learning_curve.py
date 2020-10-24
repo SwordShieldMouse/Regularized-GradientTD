@@ -29,12 +29,15 @@ def getBest(results):
     print(f"{bestVal} <= {best.params}")
     return best
 
-def generatePlot(ax, exp_paths, bounds):
+def generatePlot(ax, exp_paths, bounds, fltr = None):
     for exp_path in exp_paths:
         exp = ExperimentModel.load(exp_path)
         alg = exp.agent
 
         results = loadResults(exp, 'rmspbe_summary.npy')
+
+        if fltr is not None:
+            results = filter(fltr, results)
 
         best = getBest(results)
         print('best parameters:', exp_path)
