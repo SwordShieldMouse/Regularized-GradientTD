@@ -5,6 +5,9 @@ def getProblem(name):
     if name == 'MountainCar':
         return MountainCarTC
 
+    if name == 'MountainCarRBF':
+        return MountainCarRBF
+    
     if name == 'OfflineMountainCar':
         return OfflineMountainCar
 
