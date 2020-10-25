@@ -1,10 +1,14 @@
-from src.problems.MountainCar import MountainCar, OfflineMountainCar
+from src.problems.MountainCar import MountainCarTC, OfflineMountainCar
+from src.problems.CartPole import CartPole
 
 def getProblem(name):
     if name == 'MountainCar':
-        return MountainCar
+        return MountainCarTC
 
     if name == 'OfflineMountainCar':
         return OfflineMountainCar
+
+    if name == 'CartPole':
+        return CartPole
 
     raise NotImplementedError()

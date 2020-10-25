@@ -18,8 +18,9 @@ class Param:
         self.v = self.beta * self.W
 
         # random initial direction and normalize
-        self.u = 2 * np.random.rand(features) - 1.0
-        self.u /= norm(self.u)
+        u = np.random.rand(features)
+        normu = norm(u)
+        self.u = u if normu <=1 else u/normu
 
         self.A = 0.0
         self.G = 0.0
@@ -60,6 +61,12 @@ class Param:
 
         unorm = norm(u)
         self.u = u if unorm<=1 else u / unorm
+
+    def initWeights(self, u):
+        unorm = norm(u)
+        self.u = u if unorm <= 1 else u/unorm
+        self.W = unorm
+        self.beta = 0.0
 
 class ParamUntrunc(Param):
     '''

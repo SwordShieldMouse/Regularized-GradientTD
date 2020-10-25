@@ -29,9 +29,3 @@ class QLearning(BaseAgent):
         dw = self.grads(x, a, xp, r, gamma, 1.0)
         self._apply(dw, a)
         return None, None
-
-    def batch_update(self, gen, num):
-        exps = gen.sample(samples=num)
-        for i in range(num):
-            grad = self.grads(*exps[i])
-            self._apply(grad, exps[i][1])

@@ -1,3 +1,5 @@
+import numpy as np
+
 from environments.Gym import Gym
 from PyFixedReps.BaseRepresentation import BaseRepresentation
 
@@ -20,16 +22,16 @@ class CartPole(BaseProblem):
         super().__init__(exp, idx)
         self.actions = 2
 
-        self.features = 4
         self.gamma = 0.99
 
         self.rep = ScaledTileCoder({
-            'dims': self.features,
+            'dims': 4,
             'tiles': 4,
-            'tilings': 16,
+            'tilings': 4,
         })
 
-        self.max_episode_steps = 500
+        self.features = self.rep.features()
+        self.max_episode_steps = self.max_steps
 
         # trick gym into thinking the max number of steps is a bit longer
         # that way we get to control the termination at max steps

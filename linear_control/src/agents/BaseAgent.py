@@ -32,10 +32,9 @@ class BaseAgent:
 
     def batch_update(self, gen, num):
         exps = gen.sample(samples=num)
-        shape = (num,) + self.paramShape
         for i in range(num):
-            grad = self.grads(*exps[i])
-            self._apply(*grad, exps[i][1])
+            x, a, xp, r, gamma = exps[i]
+            self.update(x, a, xp, r, gamma)
 
     def policy(self, x, w=None):
         if w is None:
@@ -58,15 +57,32 @@ class BaseAgent:
     def applyUpdate(self, x, a, xp, r, gamma):
         return None, None
 
+    # def update(self, x, a, xp, r, gamma):
+    #     self.steps += 1
+    #     self.buffer.add((x, a, xp, r, gamma))
+
+    #     if self.replay_steps == 0:
+    #         self.applyUpdate(x, a, xp, r, gamma)
+
+    #     if self.steps < self.warmup:
+    #         return
+
+    #     for _ in range(self.replay_steps):
+    #         sample, idxes = self.buffer.sample(1)
+    #         _, delta = self.applyUpdate(*sample[0])
+    #          self.buffer.update_priorities(idxes, [delta])
+
     def update(self, x, a, xp, r, gamma):
         self.steps += 1
         self.buffer.add((x, a, xp, r, gamma))
 
-        if self.replay_steps == 0:
-            self.applyUpdate(x, a, xp, r, gamma)
+        self.applyUpdate(x, a, xp, r, gamma)
 
+    def replay(self):
         if self.steps < self.warmup:
             return
+
+        #self.steps = 0
 
         for _ in range(self.replay_steps):
             sample, idxes = self.buffer.sample(1)

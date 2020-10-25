@@ -5,18 +5,17 @@ from src.agents.ESARSA import ESARSA
 from src.agents.QC import QC
 from src.agents.EQC import EQC
 from src.agents.ParameterFree import *
-from src.agents.PFEnsembles import PFEnsemble, PFRobust, PFRobust2, BootstrapPFGQ, BootstrapPFGQ2
+from src.agents.PFEnsembles import PFEnsemble, PFRobust, PFRobust2
 
 def getAgent(name):
     if name == "GQ":
         return GQ
 
-    if name == "BootstrapPFGQ":
-        return BootstrapPFGQ
+    if name == 'BatchPFGQ':
+        return BatchPFGQ
 
-    if name == "BootstrapPFGQ2":
-        return BootstrapPFGQ2
-
+    if name == 'BatchPFGQReset':
+        return BatchPFGQReset
 
     if name == "PFEnsemble":
         return PFEnsemble
@@ -26,12 +25,6 @@ def getAgent(name):
 
     if name == "PFRobust2":
         return PFRobust2
-
-    if name == "PFEnsembleTraces":
-        return PFEnsemble
-
-    if name == "PFEnsembleAverages":
-        return PFEnsemble
 
     if name == 'ESARSA':
         return ESARSA

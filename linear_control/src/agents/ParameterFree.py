@@ -1,4 +1,6 @@
 import numpy as np
+from numpy.linalg import norm
+
 from PyExpUtils.utils.random import sample
 from src.utils.arrays import argmax
 from src.agents.BaseAgent import BaseAgent
@@ -84,13 +86,75 @@ class PFGQ(ParameterFree):
         y_t = self.y.bet().reshape(self.actions,self.features)
         return theta_t, y_t
 
-    def initWeights(self, u):
-        u = np.array(u, dtype='float64')
-        unorm = norm(u)
-        self.theta.u = u/unorm
-        self.theta.W = unorm
-        self.theta.beta = 1.0
-        self.av_theta.reset(self.theta.bet())
+    def initWeights(self, theta, y):
+        theta = np.array(theta, dtype='float64').flatten()
+        y = np.array(y, dtype='float64').flatten()
+
+        self.theta.initWeights(theta)
+        self.y.initWeights(y)
+
+        self.theta_t, self.y_t = self.bet()
+        self.av_theta.reset(self.theta_t)
+        self.av_y.reset(self.y_t)
+
+class BatchPFGQ(PFGQ):
+    """
+    Parameter-free GTD with hints; single learner for all actions
+    """
+    def __init__(self, features: int, actions: int, params: dict):
+        super().__init__(features, actions, params)
+        self.buff = []
+        self.buffsz = params.get('buffer_size', 0)
+        self.sequential = params.get('sequential', False)
+        self.endOfEpisode = params.get('endOfEpisode', False)
+        assert not (self.endOfEpisode and self.buffsz > 0)
+
+    def applyUpdate(self, x, a, xp, r, gamma):
+        self.buff.append((x,a, xp, r, gamma))
+        if (self.endOfEpisode and gamma==0) or len(self.buff) == self.buffsz :
+            indices = range(len(self.buff)) if self.sequential else np.random.permutation(len(self.buff))
+            for idx in indices:
+                xi, ai, xpi, ri, gammai = self.buff[idx]
+                g_theta, g_y  = self.grads(xi, ai, xpi, ri, gammai,self._rho(ai,xi))
+                self._apply(g_theta, g_y, ai)
+            self.buff = []
+
+        return None, None
+
+class BatchPFGQReset(BaseAgent):
+    """
+    Parameter-free GTD with hints; single learner for all actions
+    """
+    def __init__(self, features: int, actions: int, params: dict):
+        params['alpha'] = None
+        super().__init__(features, actions, params)
+
+        self.buff = []
+        self.buffsz = params.get('buffer_size', 1)
+
+        self.agent = PFGQ(features, actions, params)
+        self.theta = self.agent.getWeights()
+        self.av_theta = Averages.LastIterate(self.theta)
+
+    def getWeights(self):
+        return self.av_theta.get()
+
+    def applyUpdate(self, x, a, xp, r, gamma):
+        self.buff.append((x,a, xp, r, gamma))
+        if len(self.buff) == self.buffsz:
+            indices = np.random.permutation(self.buffsz)
+            for idx in indices:
+                self.agent.applyUpdate(*self.buff[idx])
+
+            # Maybe want to average?
+            self.theta = self.agent.getWeights()
+            self.av_theta.update(self.theta)
+            theta_t, y_t = self.agent.av_theta.get(), self.agent.av_y.get()
+            self.agent = PFGQ(self.features, self.actions, self.params)
+            self.agent.initWeights(theta_t, y_t)
+            self.buff = []
+
+        return None, None
 
 class PFGQ2(PFGQ):
     def __init__(self, features, actions, params):

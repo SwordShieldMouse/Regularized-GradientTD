@@ -8,7 +8,7 @@ from src.experiment import ExperimentModel
 from src.problems.registry import getProblem
 from src.utils.Collector import Collector
 from src.utils.rlglue import PolicyWrapper, OneStepWrapper
-from src.utils.SampleGenerator import SampleGenerator
+from src.utils.SampleGenerator import SequentialSampleGenerator
 from src.utils.policies import Policy
 
 if len(sys.argv) < 3:
@@ -29,7 +29,6 @@ for run in range(runs):
     problem = Problem(exp, idx)
 
     max_steps = problem.max_steps
-    evalEpisodes = problem.evalEpisodes
     evalSteps = problem.evalSteps
     epochs = problem.epochs
 
@@ -38,19 +37,26 @@ for run in range(runs):
     rep = problem.getRepresentation()
 
     if run % 50 == 0:
-        generator = SampleGenerator(problem)
-        generator.target = Policy(lambda s: agent.policy(rep.encode(s)))
-        generator.generate(num=1e4)
+        if not os.path.isfile("batchData.npy"):
+            print("generating data...", end=' ');
+            sys.stdout.flush()
+
+            generator = SequentialSampleGenerator(problem)
+            generator.generate(num=1e6)
+            np.save('batchData.npy', generator._generated)
+        else:
+            print("Loading data...", end=' '); sys.stdout.flush()
+            generator = SequentialSampleGenerator(problem)
+            generator._generated = np.load('batchData.npy', allow_pickle=True)
+
+        print("done!")
+
 
 
     # Run the experiment
     prev = 0
+    Rperepoch = []
     for epoch in range(epochs):
-
-        generator = SampleGenerator(problem)
-        generator.target = Policy(lambda s: agent.policy(rep.encode(s)))
-        generator.generate(num=1e4)
-
         agent.batch_update(generator, evalSteps)
 
         print(f"Epoch {epoch+1}/{epochs}")
@@ -61,40 +67,34 @@ for run in range(runs):
         last_steps = 0
         last_rewards = 0
         running=True
+        Rperep = []
         while running:
             last_steps = glue.num_steps
             glue.total_reward = 0
-            running = glue.runEpisode(50000)
+            running = glue.runEpisode(max_steps)
 
             # do this to avoid underestimating the last episode
             collect = glue.total_reward
             if not running:
                 collect = last_rewards
-
-            rewards = [collect] * (glue.num_steps - last_steps)
-            collector.concat('return', rewards)
-            collector.collect('steps', glue.num_steps - last_steps)
+            print(f'collect: {collect}, running: {running}')
+            Rperep.append(collect)
 
             last_rewards = glue.total_reward
-            print(run, last_rewards)
-        # av_rewards = 0.0
-        # av_steps = 0.0
-        # wrapper = PolicyWrapper(Policy(lambda s: problem.getAgent().policy(rep.encode(s))))
-        # glue = RlGlue(wrapper, env)
-        # for n in range(evalEpisodes):
-        #     glue.runEpisode(max_steps)
-        #     av_rewards += 1.0/(n+1) * (glue.total_reward - av_rewards)
-        #     av_steps += 1.0/(n+1) * (glue.num_steps - av_steps)
-        # collector.concat("return", [av_rewards]*num)
-        # collector.concat("steps", [av_steps]*num)
+
+        print(Rperep)
+        avg = np.mean(Rperep)
+        print(f'run {run}, epoch {epoch}: {avg}')
+        Rperepoch.append(avg)
+
+    collector.collect('return', Rperepoch)
+
     collector.reset()
 
 return_data = np.array(collector.getStats('return'), dtype='object')
-step_data = np.array(collector.getStats('steps'), dtype='object')
 
 # save results to disk
 save_context = exp.buildSaveContext(idx, base="./")
 save_context.ensureExists()
 
 np.save(save_context.resolve('return_summary.npy'), return_data)
-np.save(save_context.resolve('step_summary.npy'), step_data)
