@@ -39,6 +39,10 @@ class RandomWalk(BaseProblem):
 
         # build agent
         self.agent = self.Agent(self.rep.features(), 2, self.params)
+        self.steps = exp.steps
+
+    def getSteps(self):
+        return self.steps
 
     def getGamma(self):
         return 1.0

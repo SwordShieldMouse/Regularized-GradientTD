@@ -24,4 +24,19 @@ if __name__ == "__main__":
     height = (24/5)
     f.set_size_inches((width, height), forward=False)
     axes.set_title(TITLE)
+    plt.savefig(f'{SAVE_PATH}/learning-curve-allParams.png', dpi=100)
+
+    f, axes = plt.subplots(1)
+
+    bounds = []
+
+    fltr = lambda r: r.params.get('eta', 1) == 1
+    generatePlot(axes, EXP_PATHS, bounds, fltr)
+
+    os.makedirs(SAVE_PATH, exist_ok=True)
+
+    width = 8
+    height = (24/5)
+    f.set_size_inches((width, height), forward=False)
+    axes.set_title(TITLE)
     plt.savefig(f'{SAVE_PATH}/learning-curve.png', dpi=100)

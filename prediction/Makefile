@@ -11,6 +11,11 @@ BATCH_RUNS = 500
 # prediction subdirectory
 # --------------------------------------------------------
 
+# `make list`: print out a list of make targets available
+.PHONY: list
+list:
+	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
+
 # alias for `make results` because i'm lazy
 all: results
 
