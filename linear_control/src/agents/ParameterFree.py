@@ -21,6 +21,9 @@ class ParameterFree(BaseAgent):
 
         return None, None
 
+    def getFixedWeights(self):
+        return self.theta_t
+
     def _rho(self, a, x):
         mu = self.policy(x, self.getWeights())
         pi = self.policy(x, self.theta_t)
@@ -30,7 +33,7 @@ class ParameterFree(BaseAgent):
         # Default grads = GTD2
 
         q_a = self.theta_t[a].dot(x)
-        qp_m = self.theta_t.dot(xp).max()
+        qp_m=self.getFixedWeights().dot(xp).max()
 
         g = r + gamma * qp_m
         delta = g - q_a
@@ -108,6 +111,9 @@ class BatchPFGQ(PFGQ):
         self.sequential = params.get('sequential', False)
         self.endOfEpisode = params.get('endOfEpisode', False)
         assert not (self.endOfEpisode and self.buffsz > 0)
+
+    def getFixedWeights(self):
+        return self.getWeights()
 
     def applyUpdate(self, x, a, xp, r, gamma):
         self.buff.append((x,a, xp, r, gamma))
