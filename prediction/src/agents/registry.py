@@ -28,12 +28,12 @@ def getAgent(name):
 
     elif name == 'PFGTD':
         return PFGTD
+    elif name == 'PFGTDHalfCW':
+        return PFGTDHalfCW
     elif name == 'MultiDiscountPFGTD':
         return MultiDiscountPFGTD
     elif name == 'DiscountedPFGTD':
         return DiscountedPFGTD
-    elif name == 'PFGTDLambda':
-        return PFGTDLambda
     elif name == 'PFTDC':
         return PFTDC
     elif name == 'CWPFGTD':
