@@ -15,7 +15,7 @@ class CritterbotDataRep(BaseRepresentation):
     def encode(self, s):
         f=np.zeros(self._features)
         f[self.tiles[s]] = 1.0
-        return f / self.numActive
+        return f
 
     def features(self):
         return self._features
@@ -34,7 +34,7 @@ class Critterbot(BaseProblem):
         # build agent
         self.agent = self.Agent(self.rep.features(), 0, self.params)
         self.steps = exp.steps
-        self.gamma = self.params.get('gamma', 0.9875)
+        self.gamma = self.params["gamma"]
 
     def getGamma(self):
         return self.gamma
