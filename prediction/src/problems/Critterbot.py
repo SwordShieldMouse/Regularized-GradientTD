@@ -15,7 +15,7 @@ class CritterbotDataRep(BaseRepresentation):
     def encode(self, s):
         f=np.zeros(self._features)
         f[self.tiles[s]] = 1.0
-        return f / self.numActive
+        return f
 
     def features(self):
         return self._features

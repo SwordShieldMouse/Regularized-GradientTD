@@ -1,5 +1,5 @@
 {
-    "agent": "PFGTD",
+    "agent": "PFGTDUntrunc",
     "problem": "Critterbot",
     "steps": 119000,
     "metaParameters": {
