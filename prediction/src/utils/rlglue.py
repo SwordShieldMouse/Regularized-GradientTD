@@ -39,3 +39,36 @@ class OffPolicyWrapper(BaseAgent):
 
         self.agent.update(self.obs_t, self.a_t, np.zeros_like(self.obs_t), r, 0, p)
         # self.agent.reset()
+
+
+class NextingWrapper(BaseAgent):
+    def __init__(self, agent, gamma, observationChannel = identity):
+        self.agent = agent
+        self.gamma = gamma
+        self.observationChannel = observationChannel
+        self.s_t = None
+        self.a_t = None
+        self.obs_t = None
+
+    def start(self, s):
+        self.s_t = s
+        self.obs_t = self.observationChannel(s)
+        return self.a_t
+
+    def step(self, r, s):
+        gamma = self.gamma
+        obs_tp1 = self.observationChannel(s)
+
+        self.agent.update(self.obs_t, self.a_t, obs_tp1, r, gamma, 1.0)
+
+        self.s_t = s
+        self.obs_t = obs_tp1
+
+        return self.a_t
+
+    def end(self, r):
+        self.agent.update(self.obs_t, self.a_t, np.zeros_like(self.obs_t), r, 0, 1.0)
+        # self.agent.reset()
+
+    def V(self, s):
+        return np.dot(self.agent.getWeights(), self.observationChannel(s))

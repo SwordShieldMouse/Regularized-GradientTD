@@ -4,7 +4,28 @@ from numpy.linalg import norm
 from src.utils import Averages
 
 from src.agents.BaseAgent import BaseAgent
-from src.agents.OLO import Param, SCParam, CWParam, ParamUntrunc
+from src.agents.OLO import Param, DiscountedParam, SCParam, CWParam, ParamUntrunc
+
+class MultiDiscountPFGTD(BaseAgent):
+    def __init__(self, features, actions, params):
+        super().__init__(features, actions, params)
+        discounts = params['discounts']
+        N = len(discounts)
+
+        params["wealth"] = params['wealth'] / N
+
+        self.agents = []
+        for gamma in discounts:
+            p = params.copy()
+            p["discount"] = gamma
+            self.agents.append(DiscountedPFGTD(features,actions,params))
+
+    def update(self, x, a, xp, r, gamma, rho):
+        for agent in self.agents:
+            agent.update(x,a,xp,r,gamma,rho)
+
+    def getWeights(self):
+        return np.sum([agent.getWeights() for agent in self.agents])
 
 class ParameterFree(BaseAgent):
     def __init__(self, features: int, actions, params: dict):
@@ -50,11 +71,9 @@ class ParameterFree(BaseAgent):
 
     def initWeights(self, u):
         u = np.array(u, dtype='float64')
-        unorm = norm(u)
-        self.theta.u = u/unorm
-        self.theta.W = unorm
-        self.theta.beta = 1.0
-        self.av_theta.reset(self.theta.bet())
+        self.theta.initWeights(u)
+        self.theta_t = self.theta.bet()
+        self.av_theta.reset(self.theta_t)
 
 class PFGTD(ParameterFree):
     """
@@ -72,13 +91,43 @@ class PFGTD(ParameterFree):
         avg_t = getattr(Averages, params.get('averaging','Uniform'))
         self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
 
-    def initWeights(self, u):
-        u = np.array(u, dtype='float64')
-        unorm = norm(u)
-        self.theta.u = u/unorm
-        self.theta.W = unorm
-        self.theta.beta = 1.0
-        self.av_theta.reset(self.theta.bet())
+class DiscountedPFGTD(PFGTD):
+    """
+    Parameter-free GTD with hints
+    """
+    def __init__(self, features: int, actions, params: dict):
+        super().__init__(features, actions, params)
+
+        # opt params
+        self.theta = DiscountedParam(features, params["wealth"], params["hint"], params["beta"], params["discount"])
+        self.y = DiscountedParam(features, params["wealth"], params["hint"], params["beta"], params["discount"])
+
+        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
+
+        avg_t = getattr(Averages, params.get('averaging','Uniform'))
+        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
+
+
+class PFGTDLambda(PFGTD):
+
+    def __init__(self, features, actions, params):
+        super().__init__(features,actions,params)
+
+        self.z = np.zeros(features)
+        self.lmda = params.get("lambda", 0.0)
+
+    def grads(self, x, a, xp, r, gamma, rho):
+        self.z = gamma * self.lmda * rho * self.z + x
+
+        v = self.theta_t.dot(x)
+        vp=self.theta_t.dot(xp)
+        g = r + gamma * vp
+        delta = r + gamma*vp - v
+
+        gtheta = - rho * self.z.dot(self.y_t)*(x-gamma*xp)
+        gy = - rho*delta*self.z + x.dot(self.y_t)*x
+
+        return gtheta, gy
 
 class PFGTDUntrunc(PFGTD):
     """
@@ -132,8 +181,13 @@ class CWPFGTD(ParameterFree):
         self.theta = CWParam(features, params["wealth"], params["hint"], params["beta"])
         self.y = CWParam(features, params["wealth"], params["hint"], params["beta"])
 
+        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
+
+        avg_t = getattr(Averages, params.get('averaging','Uniform'))
+        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
+
     def initWeights(self, u):
         u = np.array(u, dtype='float64')
-        self.theta.W = u
-        self.theta.beta = 1.0
-        self.av_theta.reset(self.theta.bet())
+        self.theta.initWeights(u)
+        self.theta_t = self.theta.bet()
+        self.av_theta.reset(self.theta_t)

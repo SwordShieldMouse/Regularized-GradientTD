@@ -61,6 +61,12 @@ class Param:
         unorm = norm(u)
         self.u = u if unorm<=1 else u / unorm
 
+    def initWeights(self, u):
+        unorm = norm(u)
+        self.u = u if unorm <=1 else u/unorm
+        self.W = 1.0 if unorm <= 1.0 else unorm
+        self.beta = 1.0
+
 '''
 Parameter-free OLO algorithms used to construct
 parameter-free policy evaluation algs
@@ -209,3 +215,72 @@ class CWParam:
 
         # update wealth
         self.W -= np.multiply(gtrunc,self.x)
+
+    def initWeights(self, u):
+        assert u.shape == self.W.shape
+        self.W = u
+        self.beta = 1.0
+
+class DiscountedParam:
+    '''
+    Parameter-free OLO algorithm with gradient-bound hints
+    '''
+    def __init__(self, features: int, W0: float, g: float, beta: float, gamma: float):
+        self.beta = beta
+        self.W = W0
+        self.h = g
+
+        # initial bet
+        self.v = self.beta * self.W
+
+        # random initial direction and normalize
+        u = 2 * np.random.rand(features) - 1.0
+        normu = norm(u)
+        self.u = u if norm(u) <= 1 else u/normu
+
+        self.A = 0.0
+        self.G = 0.0
+        self.gamma = gamma
+
+        self.eps = 1e-5
+
+        # NOTE: unused for now
+        self.lower_bound = np.finfo(np.float64).min / 1e150
+        self.upper_bound = np.finfo(np.float64).max / 1e150
+
+    def bet(self):
+        self.v = self.beta * self.W
+        return self.v * self.u
+
+    def update(self, g):
+        # NOTE: have completely removed the constraint set for now
+
+        # Incorporate grad bound
+        gradnorm = norm(g)
+        gtrunc = g if gradnorm < self.h else self.h*g / (gradnorm + self.eps)
+        self.h = max(self.h, gradnorm)
+
+        # update betting fraction
+        s = np.dot(gtrunc, self.u)
+        m = s / (1.0 - self.beta * s)
+        self.A = self.A + m**2
+        self.beta = max(
+            min(self.beta - 2.0*m / ((2.0-np.log(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
+            -0.5 / (self.h + self.eps)
+        )
+
+        # update wealth
+        self.W -= s*self.v
+
+        # update directional weights
+        self.G = (1.0-self.gamma) * self.G + self.gamma * norm(gtrunc)**2
+        u = self.u - np.sqrt(2)/(2*np.sqrt(self.G) + self.eps) * gtrunc
+
+        unorm = norm(u)
+        self.u = u if unorm<=1 else u / unorm
+
+    def initWeights(self, u):
+        unorm = norm(u)
+        self.u = u if unorm <=1 else u/unorm
+        self.W = 1.0 if unorm <= 1.0 else unorm
+        self.beta = 1.0

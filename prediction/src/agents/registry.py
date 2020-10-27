@@ -5,7 +5,7 @@ from src.agents.GTD2 import GTD2, BatchGTD2
 from src.agents.TDRC import TDRC
 from src.agents.Vtrace import Vtrace
 
-from src.agents.ParameterFree import PFGTD, PFTDC, CWPFGTD, PFGTDUntrunc
+from src.agents.ParameterFree import *
 from src.agents.GTD2MP import GTD2MP
 
 def getAgent(name):
@@ -28,6 +28,12 @@ def getAgent(name):
 
     elif name == 'PFGTD':
         return PFGTD
+    elif name == 'MultiDiscountPFGTD':
+        return MultiDiscountPFGTD
+    elif name == 'DiscountedPFGTD':
+        return DiscountedPFGTD
+    elif name == 'PFGTDLambda':
+        return PFGTDLambda
     elif name == 'PFTDC':
         return PFTDC
     elif name == 'CWPFGTD':

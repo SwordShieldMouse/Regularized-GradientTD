@@ -15,12 +15,17 @@ class TD(BaseAgent):
         # gradient methods need 2
         self.paramShape = (1, self.features)
 
+        self.z = np.zeros(features)
+        self.lmda = params.get('lambda', 0.0)
+
     def grads(self, x, a, xp, r, gamma, rho):
+        self.z = rho*(self.z * gamma * self.lmda + x)
+
         v = self.w.dot(x)
         vp = self.w.dot(xp)
 
         delta = r + gamma * vp - v
-        return rho * delta * x
+        return rho * delta * self.z
 
     def update(self, x, a, xp, r, gamma, rho):
         dw = self.grads(x, a, xp, r, gamma, rho)
