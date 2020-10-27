@@ -88,12 +88,16 @@ for run in range(runs):
     # tell the collector to start a new run
     collector.reset()
 
+mse_data = np.array(collector.getStats('mse'), dtype='object')
 nmse_data = np.array(collector.getStats('nmse'), dtype='object')
+smape_data = np.array(collector.getStats('smape'), dtype='object')
 prediction_data = np.array(collector.getStats('prediction'), dtype='object')
 
 # save results to disk
 save_context = exp.buildSaveContext(idx, base="./")
 save_context.ensureExists()
 
+np.save(save_context.resolve('mse_summary.npy'), mse_data)
 np.save(save_context.resolve('nmse_summary.npy'), nmse_data)
+np.save(save_context.resolve('smape_summary.npy'), smape_data)
 np.save(save_context.resolve('prediction_summary.npy'), prediction_data)
