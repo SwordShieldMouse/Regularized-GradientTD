@@ -13,6 +13,14 @@ def loadReturns(sensorIdx=None):
     path = "./src/data/Critterbot/returns.npy"
     return np.load(path) if sensorIdx is None else np.load(path)[:,sensorIdx]
 
+def computeReturns(problem):
+    gamma = problem.getGamma()
+    data = problem.getEnvironment()._data.copy()
+    returns = np.zeros_like(data)
+    for i in range(data.shape[0]-2,-1,-1):
+        returns[i] = data[i]+gamma*returns[i+1]
+    return returns
+
 def getNMSEs(exp_path):
     exp = ExperimentModel.load(exp_path)
     results = loadResults(exp, "nmse_summary.npy")

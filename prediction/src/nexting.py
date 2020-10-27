@@ -12,9 +12,9 @@ from src.problems.registry import getProblem
 from src.utils.errors import partiallyApplyMSPBE, MSPBE
 from src.utils.Collector import Collector
 from src.utils import Averages
-from src.utils.Critterbot import loadReturns
+from src.utils.Critterbot import loadReturns, computeReturns
 
-EVERY = 5000
+EVERY = 100
 
 if len(sys.argv) < 3:
     print('run again with:')
@@ -39,7 +39,7 @@ for run in range(runs):
     agent = problem.getAgent()
 
     sensorIdx = env.sensorIdx
-    G = loadReturns(sensorIdx)
+    G = computeReturns(problem)
     var = np.var(G, ddof=1)
 
     if var == 0:
@@ -82,16 +82,25 @@ for run in range(runs):
             collector.collect("mse", m)
             collector.collect("nmse", err)
             collector.collect("smape", smp)
-            collector.collect("prediction", v)
+
+            if runs == 1:
+                collector.collect("prediction", v)
+                collector.collect("Gt", G[step])
             print(f"Step {step} | mse: {m:0.5f} | nmse: {err:0.5f} | smape: {smp:0.5f}")
 
     # tell the collector to start a new run
     collector.reset()
 
-mse_data = np.array(collector.getStats('mse'), dtype='object')
-nmse_data = np.array(collector.getStats('nmse'), dtype='object')
-smape_data = np.array(collector.getStats('smape'), dtype='object')
-prediction_data = np.array(collector.getStats('prediction'), dtype='object')
+if runs == 1:
+    mse_data = np.array(collector.getRunData('mse'), dtype='object')
+    nmse_data = np.array(collector.getRunData('nmse'), dtype='object')
+    smape_data = np.array(collector.getRunData('smape'), dtype='object')
+    prediction_data = np.array(collector.getRunData('prediction'), dtype='object')
+    return_data = np.array(collector.getRunData('Gt'), dtype='object')
+else:
+    mse_data = np.array(collector.getStats('mse'), dtype='object')
+    nmse_data = np.array(collector.getStats('nmse'), dtype='object')
+    smape_data = np.array(collector.getStats('smape'), dtype='object')
 
 # save results to disk
 save_context = exp.buildSaveContext(idx, base="./")
@@ -100,4 +109,7 @@ save_context.ensureExists()
 np.save(save_context.resolve('mse_summary.npy'), mse_data)
 np.save(save_context.resolve('nmse_summary.npy'), nmse_data)
 np.save(save_context.resolve('smape_summary.npy'), smape_data)
-np.save(save_context.resolve('prediction_summary.npy'), prediction_data)
+
+if runs == 1:
+    np.save(save_context.resolve('prediction_summary.npy'), prediction_data)
+    np.save(save_context.resolve('returns_summary.npy'), return_data)

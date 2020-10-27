@@ -37,6 +37,9 @@ class Collector:
 
         self.run_data[name] = arr
 
+    def getRunData(self, name, run=-1):
+        return self.all_data[name][run]
+
     def getStats(self, name: str):
         arr = self.all_data[name]
 
