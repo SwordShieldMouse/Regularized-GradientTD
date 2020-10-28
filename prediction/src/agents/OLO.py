@@ -18,8 +18,9 @@ class Param:
         self.v = self.beta * self.W
 
         # random initial direction and normalize
-        self.u = 2 * np.random.rand(features) - 1.0
-        self.u /= norm(self.u)
+        u = 2 * np.random.rand(features) - 1.0
+        normu = norm(u)
+        self.u = u if normu<=1 else u/normu
 
         self.A = 0.0
         self.G = 0.0
@@ -73,15 +74,16 @@ class HalfCWParam:
     '''
     def __init__(self, features: int, W0: float, g: float, beta: float):
         self.beta = beta
-        self.W = W0
+        self.W = W0 / features
         self.h = g
 
         # initial bet
         self.v = self.beta * self.W
 
         # random initial direction and normalize
-        self.u = 2 * np.random.rand(features) - 1.0
-        self.u /= norm(self.u)
+        u = 2 * np.random.rand(features) - 1.0
+        normu = norm(u)
+        self.u = u if normu<=1 else u/normu
 
         self.A = 0.0
         self.G = np.zeros(features)
@@ -181,8 +183,9 @@ class SCParam:
         self.v = self.beta * self.W
 
         # random initial direction and normalize
-        self.u = 2 * np.random.rand(features) - 1.0
-        self.u /= norm(self.u)
+        u = 2 * np.random.rand(features) - 1.0
+        normu = norm(u)
+        self.u = u if normu<=1 else u/normu
 
         self.A = 0.0
         self.G = 0.0
@@ -346,3 +349,48 @@ class DiscountedParam:
         self.u = u if unorm <=1 else u/unorm
         self.W = 1.0 if unorm <= 1.0 else unorm
         self.beta = 1.0
+
+class COCOBParam:
+    '''
+    Coordinate-wise parameter-free OLO algorithm with
+    gradient-bound hints
+    '''
+    def __init__(self, features: int, W0: float, g: float, beta:float):
+        self.w = np.ones(features)
+        self.w1 = self.w.copy()
+        self.h = g * np.ones(features)
+
+        self.reward = np.zeros(features)
+        self.theta = np.zeros(features)
+        self.G = np.ones(features)*g
+
+        self.eps = 1e-8
+
+        # NOTE: unused for now
+        self.lower_bound = np.finfo(np.float64).min / 1e150
+        self.upper_bound = np.finfo(np.float64).max / 1e150
+
+    def bet(self):
+        return self.w
+
+    def sigma(self, x):
+        return 1.0 / (1.0 + np.exp(-x))
+
+    def update(self, g):
+        # NOTE: have completely removed the constraint set for now
+        g *=-1
+
+        # Incorporate grad bound
+        gradnorm = np.abs(g)
+
+        gtrunc = g.copy()
+        truncIdx = np.argwhere(gradnorm > self.h)
+        gtrunc[truncIdx] = np.multiply(self.h[truncIdx], g[truncIdx]) / (gradnorm[truncIdx] + self.eps)
+        self.h = np.maximum(self.h, gradnorm)
+
+        # update betting fraction
+        self.G += np.abs(gtrunc)
+        self.reward += (self.w - self.w1) * gtrunc
+        self.theta += gtrunc
+        self.beta = np.divide(2*self.sigma(2*self.theta / (self.G + self.h))-1, self.h)
+        self.w = self.w1 + self.beta * (self.h + self.reward)

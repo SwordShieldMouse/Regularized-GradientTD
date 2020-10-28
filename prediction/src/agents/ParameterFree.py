@@ -4,7 +4,7 @@ from numpy.linalg import norm
 from src.utils import Averages
 
 from src.agents.BaseAgent import BaseAgent
-from src.agents.OLO import Param, DiscountedParam, SCParam, CWParam, ParamUntrunc, HalfCWParam
+from src.agents.OLO import *
 
 class ParameterFree(BaseAgent):
     def __init__(self, features: int, actions, params: dict):
@@ -152,8 +152,8 @@ class CWPFGTD(ParameterFree):
         super().__init__(features, actions, params)
 
         # opt params
-        self.theta = CWParam(features, params["wealth"], params["hint"], params["beta"])
-        self.y = CWParam(features, params["wealth"], params["hint"], params["beta"])
+        self.theta = CWParam(features, params['wealth'], params["hint"], params["beta"])
+        self.y = CWParam(features, params['wealth'], params["hint"], params["beta"])
 
         self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
 
@@ -165,6 +165,23 @@ class CWPFGTD(ParameterFree):
         self.theta.initWeights(u)
         self.theta_t = self.theta.bet()
         self.av_theta.reset(self.theta_t)
+
+class COCOBPFGTD(ParameterFree):
+    """
+    Coordinate-wise Parameter-free GTD with hints
+    """
+    def __init__(self, features: int, actions: int, params: dict):
+        super().__init__(features, actions, params)
+
+        # opt params
+        self.theta = COCOBParam(features, params['wealth'], params["hint"], params["beta"])
+        self.y = COCOBParam(features, params['wealth'], params["hint"], params["beta"])
+
+        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
+
+        avg_t = getattr(Averages, params.get('averaging','Uniform'))
+        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
+
 
 class DiscountedPFGTD(PFGTD):
     """
@@ -203,3 +220,20 @@ class MultiDiscountPFGTD(BaseAgent):
 
     def getWeights(self):
         return np.sum([agent.getWeights() for agent in self.agents])
+
+
+class PFCombined(ParameterFree):
+    def __init__(self, features, actions, params):
+        super().__init__(features, actions, params)
+
+        self.cw = COCOBPFGTD(features, actions, params)
+
+        params['wealth'] /= 2
+        self.scalar = PFGTD(features, actions, params)
+
+    def update(self, x, a, xp, r, gamma, rho):
+        self.scalar.update(x, a, xp, r, gamma, rho)
+        self.cw.update(x, a, xp, r, gamma, rho)
+
+    def getWeights(self):
+        return self.scalar.getWeights() + self.cw.getWeights()
