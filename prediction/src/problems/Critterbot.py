@@ -34,7 +34,7 @@ class Critterbot(BaseProblem):
         # build agent
         self.agent = self.Agent(self.rep.features(), 0, self.params)
         self.steps = exp.steps
-        self.gamma = self.params['gamma']
+        self.gamma = self.params["gamma"]
 
     def getGamma(self):
         return self.gamma
