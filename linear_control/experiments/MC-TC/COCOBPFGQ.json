@@ -1,12 +1,11 @@
 {
-    "agent": "PFEnsembleAverages",
+    "agent": "COCOBPFGQ",
     "problem": "MountainCar",
-    "max_steps": 50000,
+    "max_steps": 25000,
     "metaParameters": {
         "wealth": [1.0],
         "hint": [1.0],
         "beta": [0.0],
-        "averages": [["Uniform", "Linear", "Sqrt"]],
         "epsilon": [0.1]
     }
 }

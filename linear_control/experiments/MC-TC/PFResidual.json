@@ -1,0 +1,11 @@
+{
+    "agent": "PFResidual",
+    "problem": "MountainCar",
+    "max_steps": 25000,
+    "metaParameters": {
+        "wealth": [1.0],
+        "hint": [1.0],
+        "beta": [0.0],
+        "epsilon": [0.1]
+    }
+}
