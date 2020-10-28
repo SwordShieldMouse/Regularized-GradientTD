@@ -241,7 +241,7 @@ class CWParam:
     '''
     def __init__(self, features: int, W0: float, g: float, beta:float):
         self.beta = beta * np.ones(features)
-        self.W = np.ones(features) * W0 / features
+        self.W = np.ones(features) * W0
         self.h = g * np.ones(features)
 
         # initial bet
@@ -358,17 +358,13 @@ class COCOBParam:
     def __init__(self, features: int, W0: float, g: float, beta:float):
         self.w = np.zeros(features)
         self.w1 = self.w.copy()
-        self.h = g * np.ones(features)
+        self.h = W0 * np.ones(features)
 
         self.reward = np.zeros(features)
         self.theta = np.zeros(features)
         self.G = self.h.copy()
 
         self.eps = 1e-8
-
-        # NOTE: unused for now
-        self.lower_bound = np.finfo(np.float64).min / 1e150
-        self.upper_bound = np.finfo(np.float64).max / 1e150
 
     def bet(self):
         return self.w

@@ -1,9 +1,11 @@
 colors = {
     # Parameter-free Baselines
     'PFGTD': 'red',
-    'COCOBPFGTD':'maroon',
+    'COCOBPFGTD':'salmon',
     'PFTDC': 'pink',
-    'PFCombined': 'pink',
+
+    'PFCombined': 'royalblue',
+    'PFResidual': 'blue',
 
     # New Baselines
     'GTD2MP': 'black',
@@ -11,10 +13,10 @@ colors = {
     'BatchTDC': 'cyan',
 
     # Baselines from TDRC
-    'TD': 'cyan',
     'TDC': 'green',
+    'GTD2': 'yellowgreen',
     'TDRC': 'orange',
-    'GTD2': 'grey',
-    'Vtrace': 'blue',
+    'TD': 'thistle',
+    'Vtrace': 'plum',
     'HTD': 'purple',
 }

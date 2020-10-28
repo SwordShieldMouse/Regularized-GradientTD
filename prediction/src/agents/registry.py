@@ -44,6 +44,8 @@ def getAgent(name):
         return CWPFGTD
     elif name == 'PFCombined':
         return PFCombined
+    elif name == 'PFResidual':
+        return PFResidual
     elif name == 'PFGTDUntrunc':
         return PFGTDUntrunc
     elif name == 'GTD2MP':

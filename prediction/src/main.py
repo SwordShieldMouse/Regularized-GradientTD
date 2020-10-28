@@ -21,6 +21,8 @@ runs = int(sys.argv[1])
 exp = ExperimentModel.load(sys.argv[2])
 idx = int(sys.argv[3])
 
+EVERY = 100
+
 collector = Collector()
 for run in range(runs):
     # set random seeds accordingly
@@ -63,6 +65,8 @@ for run in range(runs):
 
         mspbe = MSPBE(agent.getWeights(), *AbC)
         collector.collect('rmspbe', np.sqrt(mspbe))
+        if step % EVERY == 0:
+            print(np.sqrt(mspbe))
 
         # if terminal state, then restart the interface
         if t:

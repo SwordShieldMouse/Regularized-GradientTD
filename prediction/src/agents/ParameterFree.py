@@ -1,10 +1,12 @@
 import numpy as np
 from numpy.linalg import norm
+import sys
 
 from src.utils import Averages
 
 from src.agents.BaseAgent import BaseAgent
 from src.agents.OLO import *
+from src.agents import OLO
 
 class ParameterFree(BaseAgent):
     def __init__(self, features: int, actions, params: dict):
@@ -71,21 +73,22 @@ class ParameterFree(BaseAgent):
         self.theta_t = self.theta.bet()
         self.av_theta.reset(self.theta_t)
 
+    def _initBets(self):
+        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
+        self.av_theta, self.av_y = Averages.Uniform(self.theta_t), Averages.Uniform(self.y_t)
+
 class PFGTD(ParameterFree):
     """
     Parameter-free GTD with hints
     """
     def __init__(self, features: int, actions, params: dict):
         super().__init__(features, actions, params)
-       
+
         # opt params
         self.theta = Param(features, params["wealth"], params["hint"], params["beta"])
         self.y = Param(features, params["wealth"], params["hint"], params["beta"])
 
-        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
-
-        avg_t = getattr(Averages, params.get('averaging','Uniform'))
-        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
+        self._initBets()
 
 class PFGTDHalfCW(ParameterFree):
     """
@@ -98,10 +101,7 @@ class PFGTDHalfCW(ParameterFree):
         self.theta = HalfCWParam(features, params["wealth"], params["hint"], params["beta"])
         self.y = HalfCWParam(features, params["wealth"], params["hint"], params["beta"])
 
-        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
-
-        avg_t = getattr(Averages, params.get('averaging','Uniform'))
-        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
+        self._initBets()
 
 class PFGTDUntrunc(PFGTD):
     """
@@ -112,8 +112,7 @@ class PFGTDUntrunc(PFGTD):
         self.theta = ParamUntrunc(features, params["wealth"], params["hint"], params["beta"])
         self.y = ParamUntrunc(features, params["wealth"], params["hint"], params["beta"])
 
-        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
-        self.av_theta.reset(self.theta_t); self.av_y.reset(self.y_t)
+        self._initBets()
 
 class PFTDC(PFGTD):
     """
@@ -151,20 +150,13 @@ class CWPFGTD(ParameterFree):
     def __init__(self, features: int, actions: int, params: dict):
         super().__init__(features, actions, params)
 
+        W0 = params['wealth'] / features
+
         # opt params
-        self.theta = CWParam(features, params['wealth'], params["hint"], params["beta"])
-        self.y = CWParam(features, params['wealth'], params["hint"], params["beta"])
+        self.theta = CWParam(features, W0, params["hint"], params["beta"])
+        self.y = CWParam(features, W0, params["hint"], params["beta"])
 
-        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
-
-        avg_t = getattr(Averages, params.get('averaging','Uniform'))
-        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
-
-    def initWeights(self, u):
-        u = np.array(u, dtype='float64')
-        self.theta.initWeights(u)
-        self.theta_t = self.theta.bet()
-        self.av_theta.reset(self.theta_t)
+        self._initBets()
 
 class COCOBPFGTD(ParameterFree):
     """
@@ -173,14 +165,13 @@ class COCOBPFGTD(ParameterFree):
     def __init__(self, features: int, actions: int, params: dict):
         super().__init__(features, actions, params)
 
+        W0 = params['wealth']/features
+
         # opt params
         self.theta = COCOBParam(features, params['wealth'], params["hint"], params["beta"])
         self.y = COCOBParam(features, params['wealth'], params["hint"], params["beta"])
 
-        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
-
-        avg_t = getattr(Averages, params.get('averaging','Uniform'))
-        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
+        self._initParams()
 
 
 class DiscountedPFGTD(PFGTD):
@@ -194,49 +185,84 @@ class DiscountedPFGTD(PFGTD):
         self.theta = DiscountedParam(features, params["wealth"], params["hint"], params["beta"], params["discount"])
         self.y = DiscountedParam(features, params["wealth"], params["hint"], params["beta"], params["discount"])
 
-        self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
-
-        avg_t = getattr(Averages, params.get('averaging','Uniform'))
-        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
-
-
-class MultiDiscountPFGTD(BaseAgent):
-    def __init__(self, features, actions, params):
-        super().__init__(features, actions, params)
-        discounts = params['discounts']
-        N = len(discounts)
-
-        params["wealth"] = params['wealth'] / N
-
-        self.agents = []
-        for gamma in discounts:
-            p = params.copy()
-            p["discount"] = gamma
-            self.agents.append(DiscountedPFGTD(features,actions,params))
-
-    def update(self, x, a, xp, r, gamma, rho):
-        for agent in self.agents:
-            agent.update(x,a,xp,r,gamma,rho)
-
-    def getWeights(self):
-        return np.sum([agent.getWeights() for agent in self.agents])
+        self._initBets()
 
 
 class PFCombined(ParameterFree):
     def __init__(self, features, actions, params):
         super().__init__(features, actions, params)
 
-        params['wealth'] /= 2
-        self.cw = COCOBPFGTD(features, actions, params)
-        self.scalar = PFGTD(features, actions, params)
+        p = self._params(params)
+
+        algA = getattr(sys.modules[__name__], params['algA'])
+        self.A = algA(features, actions, p)
+
+        algB = getattr(sys.modules[__name__], params['algB'])
+        self.B = algB(features, actions, p)
+
+    def bet(self):
+        theta_t = self.A.theta.bet()+self.B.theta.bet()
+        y_t = self.A.y.bet() + self.B.y.bet()
+        return theta_t, y_t
 
     def update(self, x, a, xp, r, gamma, rho):
-        self.scalar.update(x, a, xp, r, gamma, rho)
-        self.cw.update(x, a, xp, r, gamma, rho)
+        self.theta_t, self.y_t = self.bet()
+
+        gtheta, gy = self.grads(x, a, xp, r, gamma, rho)
+        self.A._apply(gtheta, gy)
+        self.B._apply(gtheta, gy)
 
     def getWeights(self):
-        return (self.scalar.getWeights() + self.cw.getWeights()) / 2
+        return self.A.getWeights() + self.B.getWeights()
 
     def initWeights(self, u):
-        self.scalar.initWeights(u/2)
-        self.cw.initWeights(u/2)
+        self.A.initWeights(u/2)
+        self.B.initWeights(u/2)
+
+    def _params(self, params):
+        # For now let's just assume that both players get the same
+        # wealth
+        p = params.copy()
+        p['wealth'] = params['wealth'] / 2
+        return p
+
+class PFResidual(PFCombined):
+    def __init__(self, features, actions, params):
+        super().__init__(features, actions, params)
+
+        p = self._params(params)
+
+        algA = getattr(sys.modules[__name__], params["algA"])
+        self.A = algA(features, actions, params)
+
+        algB = getattr(sys.modules[__name__], params["algB"])
+        self.B = algB(features+1, actions, params)
+
+    def _combine(self, x, yz):
+        return x + yz[:-1] - yz[-1]*x
+
+    def bet(self):
+        theta_t = self._combine(self.A.theta.bet(), self.B.theta.bet())
+        y_t = self._combine(self.A.y.bet(), self.B.y.bet())
+        return theta_t, y_t
+
+    def update(self, x, a, xp, r, gamma, rho):
+        xt_theta = self.A.theta.bet()
+        xt_y = self.A.y.bet()
+
+        self.theta_t, self.y_t = self.bet()
+        gtheta, gy = self.grads(x, a, xp, r, gamma, rho)
+
+        self.A._apply(gtheta, gy)
+
+        gg = -np.dot(gtheta, xt_theta)
+        gtheta = np.append(gtheta, gg)
+        gy = np.append(gy, -np.dot(gy, xt_y))
+        self.B._apply(gtheta, gy)
+
+    def getWeights(self):
+        return self._combine(self.A.getWeights(), self.B.getWeights())
+
+    def initWeights(self, u):
+        self.A.initWeights(u)
+        self.B.initWeights(np.zeros(u.shape[0]+1))
