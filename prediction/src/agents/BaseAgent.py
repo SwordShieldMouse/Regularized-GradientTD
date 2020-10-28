@@ -12,13 +12,9 @@ class BaseAgent:
     def batch_update(self, gen):
         num = self.params['batch_size']
         exps = gen.sample(samples=num)
-        shape = (num,) + self.paramShape
         grads = np.zeros(shape)
         for i in range(num):
-            grads[i] = self.grads(*exps[i])
-
-        grad = np.mean(grads, axis=0)
-        self._apply(*grad)
+            self.update(*exps[i])
 
     def grads(self, x, a, xp, r, gamma, rho):
         raise(NotImplementedError("Agent.grads not implemented"))

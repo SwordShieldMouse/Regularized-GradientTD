@@ -356,13 +356,13 @@ class COCOBParam:
     gradient-bound hints
     '''
     def __init__(self, features: int, W0: float, g: float, beta:float):
-        self.w = np.ones(features)
+        self.w = np.zeros(features)
         self.w1 = self.w.copy()
         self.h = g * np.ones(features)
 
         self.reward = np.zeros(features)
         self.theta = np.zeros(features)
-        self.G = np.ones(features)*g
+        self.G = self.h.copy()
 
         self.eps = 1e-8
 
@@ -394,3 +394,7 @@ class COCOBParam:
         self.theta += gtrunc
         self.beta = np.divide(2*self.sigma(2*self.theta / (self.G + self.h))-1, self.h)
         self.w = self.w1 + self.beta * (self.h + self.reward)
+
+    def initWeights(self, u):
+        self.w = u
+        self.w1 = self.w.copy()

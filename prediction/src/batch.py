@@ -75,9 +75,6 @@ for run in range(runs):
     for step in range(steps):
         agent.batch_update(generator)
 
-        if step % EVERY != 0:
-            continue
-
         mspbe = MSPBE(agent.getWeights(), *AbC)
 
 
@@ -86,7 +83,7 @@ for run in range(runs):
         # if we've diverged, just go ahead and give up
         # saves some computation and these runs are useless to me anyways
         if np.isnan(mspbe):
-            collector.fillRest(np.nan, int(problem.getSteps() / EVERY))
+            collector.fillRest(np.nan, int(problem.getSteps()))
             broke = True
             break
 

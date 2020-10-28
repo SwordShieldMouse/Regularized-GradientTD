@@ -28,6 +28,8 @@ def getAgent(name):
 
     elif name == 'PFGTD':
         return PFGTD
+    elif name == 'PFGTDMP':
+        return PFGTDMP
     elif name == 'PFGTDHalfCW':
         return PFGTDHalfCW
     elif name == 'MultiDiscountPFGTD':
@@ -46,4 +48,4 @@ def getAgent(name):
         return PFGTDUntrunc
     elif name == 'GTD2MP':
         return GTD2MP
-    raise Exception('Unexpected agent given')
+    raise Exception(f'Unexpected agent {name} given')

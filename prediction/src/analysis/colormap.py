@@ -1,9 +1,9 @@
 colors = {
     # Parameter-free Baselines
     'PFGTD': 'red',
-    'PFGTDUntrunc':'red',
+    'COCOBPFGTD':'maroon',
     'PFTDC': 'pink',
-    'CWPFGTD': 'pink',
+    'PFCombined': 'pink',
 
     # New Baselines
     'GTD2MP': 'black',

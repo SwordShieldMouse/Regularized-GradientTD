@@ -1,0 +1,10 @@
+{
+    "agent": "COCOBPFGTD",
+    "problem": "Baird",
+    "steps": 5000,
+    "metaParameters": {
+        "wealth": [1.0],
+        "hint": [1.0],
+        "beta": [0.0]
+    }
+}

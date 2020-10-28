@@ -1,0 +1,15 @@
+{
+    "agent": "COCOBPFGTD",
+    "problem": "RandomWalk",
+    "steps": 3000,
+    "metaParameters": {
+        "states": 5,
+        "target": 0.4,
+        "behavior": 0.5,
+        "representation": ["tabular", "inverted", "dependent"],
+ 
+        "wealth": [1.0],
+        "hint": [1.0],
+        "beta": [0.0]
+    }
+}

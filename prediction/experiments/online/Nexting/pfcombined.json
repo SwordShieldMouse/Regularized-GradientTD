@@ -1,0 +1,15 @@
+{
+    "agent": "PFCombined",
+    "problem": "Critterbot",
+    "steps": 119000,
+    "metaParameters": {
+        "wealth": [1.0],
+        "hint": [1.0],
+        "beta": [0.0],
+        "lambda": 0.95,
+        "averaging": "Uniform",
+
+        "gamma": [0.9875],
+        "sensorIdx": 31
+    }
+}

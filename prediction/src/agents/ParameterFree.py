@@ -226,9 +226,8 @@ class PFCombined(ParameterFree):
     def __init__(self, features, actions, params):
         super().__init__(features, actions, params)
 
-        self.cw = COCOBPFGTD(features, actions, params)
-
         params['wealth'] /= 2
+        self.cw = COCOBPFGTD(features, actions, params)
         self.scalar = PFGTD(features, actions, params)
 
     def update(self, x, a, xp, r, gamma, rho):
@@ -236,4 +235,8 @@ class PFCombined(ParameterFree):
         self.cw.update(x, a, xp, r, gamma, rho)
 
     def getWeights(self):
-        return self.scalar.getWeights() + self.cw.getWeights()
+        return (self.scalar.getWeights() + self.cw.getWeights()) / 2
+
+    def initWeights(self, u):
+        self.scalar.initWeights(u/2)
+        self.cw.initWeights(u/2)
