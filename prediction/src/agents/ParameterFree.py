@@ -168,10 +168,10 @@ class COCOBPFGTD(ParameterFree):
         W0 = params['wealth']/features
 
         # opt params
-        self.theta = COCOBParam(features, params['wealth'], params["hint"], params["beta"])
-        self.y = COCOBParam(features, params['wealth'], params["hint"], params["beta"])
+        self.theta = COCOBParam(features, W0, params["hint"], params["beta"])
+        self.y = COCOBParam(features, W0, params["hint"], params["beta"])
 
-        self._initParams()
+        self._initBets()
 
 
 class DiscountedPFGTD(PFGTD):
