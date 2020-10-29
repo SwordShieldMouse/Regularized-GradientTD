@@ -14,8 +14,9 @@ import src.experiment.ExperimentModel as Experiment
 # TODO: change name of results file
 def generateMissing(paths):
     for i, p in enumerate(paths):
-        summary_path = p + '/mspbe_summary.npy'
-        if not os.path.exists(summary_path):
+        mspbe_path = p + '/mspbe_summary.npy'
+        nmse_path = p + '/nmse_summary.npy'
+        if not os.path.exists(mspbe_path) or not os.path.exists(nmse_path):
             yield i
 
 if __name__ == "__main__":
