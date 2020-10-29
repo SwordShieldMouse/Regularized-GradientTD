@@ -1,5 +1,5 @@
 {
-    "agent": "PFCombined",
+    "agent": "PFResidual",
     "problem": "Critterbot",
     "steps": 119000,
     "metaParameters": {

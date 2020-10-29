@@ -1,5 +1,5 @@
 {
-    "agent": "PFCombined",
+    "agent": "COCOBPFGTD",
     "problem": "RandomWalk",
     "steps": 3000,
     "metaParameters": {
@@ -8,8 +8,6 @@
         "behavior": 0.5,
         "representation": ["tabular", "inverted", "dependent"],
  
-        "algA": "PFGTD",
-        "algB": ["CWPFGTD","COCOBPFGTD"],
         "wealth": [1.0],
         "hint": [1.0],
         "beta": [0.0]

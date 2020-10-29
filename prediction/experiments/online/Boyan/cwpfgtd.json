@@ -1,7 +1,7 @@
 {
-    "agent": "PFGTD",
-    "problem": "Baird",
-    "steps": 5000,
+    "agent": "CWPFGTD",
+    "problem": "Boyan",
+    "steps": 10000,
     "metaParameters": {
         "wealth": [1.0],
         "hint": [1.0],

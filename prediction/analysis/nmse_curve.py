@@ -8,15 +8,10 @@ sys.path.append(os.getcwd())
 from PyExpUtils.results.results import loadResults
 
 from src.analysis.learning_curve import plotBest
-#from src.analysis.colormap import colors
+from src.analysis.colormap import colors
 from src.experiment import ExperimentModel
 from PyExpUtils.utils.arrays import first
 from src.utils.Critterbot import getNMSEs, loadReturns, getSensorNum
-
-colors = {
-    "PFGTD": 'red',
-    "PFGTDLambda": 'maroon'
-    }
 
 
 def getBest(results):
@@ -67,6 +62,6 @@ if __name__ == "__main__":
     width = 8
     height = (24/5)
     f.set_size_inches((width, height), forward=False)
-    #axes.set_ylim([0,2])
+    axes.set_ylim([0,2])
     axes.legend()
     plt.savefig(f'{save_path}/nmse-curve.png', dpi=100)

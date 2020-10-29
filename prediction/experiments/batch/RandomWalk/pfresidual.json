@@ -1,5 +1,5 @@
 {
-    "agent": "PFCombined",
+    "agent": "PFResidual",
     "problem": "RandomWalk",
     "steps": 3000,
     "metaParameters": {

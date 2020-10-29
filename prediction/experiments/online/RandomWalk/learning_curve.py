@@ -14,7 +14,7 @@ from analysis.learning_curve import getBest
 SAVE_PATH=os.path.join(os.getcwd(),"figures/RandomWalk/")
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','gtd2','tdc','tdrc', 'td','htd','vtrace']))
+EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','cocobpfgtd','pfcombined','gtd2','tdc','tdrc', 'td','htd','vtrace']))
 
 def generatePlot(ax, exp_paths, bounds, feats, fltr = None):
     for exp_path in exp_paths:

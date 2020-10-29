@@ -3,8 +3,6 @@
     "problem": "Boyan",
     "steps": 10000,
     "metaParameters": {
-        "batch_size": 8,
- 
         "wealth": [1.0],
         "hint": [1.0],
         "beta": [0.0]

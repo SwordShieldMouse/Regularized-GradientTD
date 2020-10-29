@@ -14,9 +14,9 @@ from analysis.learning_curve import getBest
 SAVE_PATH=os.path.join(os.getcwd(),"figures/RandomWalk/")
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','gtd2','tdc','tdrc', 'td','htd','vtrace']))
+EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','cocobpfgtd','pfcombined','gtd2','tdc','tdrc', 'td','htd','vtrace']))
 
-def generatePlot(ax, exp_paths, bounds, feats, fltr=None):
+def generatePlot(ax, exp_paths, bounds, feats, fltr = None):
     for exp_path in exp_paths:
         exp = ExperimentModel.load(exp_path)
         alg = exp.agent
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         height = (24/5)
         f.set_size_inches((width, height), forward=False)
         axes.set_title(f"RandomWalk ({feats})")
-        plt.savefig(f'{SAVE_PATH}/batch-{feats}-learning-curve-allParams.png', dpi=100)
+        plt.savefig(f'{SAVE_PATH}/{feats}-learning-curve-allParams.png', dpi=100)
 
         f, axes = plt.subplots(1)
 
@@ -63,4 +63,4 @@ if __name__ == "__main__":
         height = (24/5)
         f.set_size_inches((width, height), forward=False)
         axes.set_title(f"RandomWalk ({feats})")
-        plt.savefig(f'{SAVE_PATH}/batch-{feats}-learning-curve.png', dpi=100)
+        plt.savefig(f'{SAVE_PATH}/{feats}-learning-curve.png', dpi=100)

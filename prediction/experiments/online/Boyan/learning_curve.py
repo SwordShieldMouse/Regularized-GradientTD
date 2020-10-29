@@ -9,7 +9,7 @@ TITLE="Boyan's Chain"
 SAVE_PATH=os.path.join(os.getcwd(),"figures/Boyan")
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','gtd2','tdc','tdrc', 'td','htd','vtrace']))
+EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','cocobpfgtd','pfcombined','gtd2','tdc','tdrc', 'td','htd','vtrace']))
 
 if __name__ == "__main__":
     f, axes = plt.subplots(1)

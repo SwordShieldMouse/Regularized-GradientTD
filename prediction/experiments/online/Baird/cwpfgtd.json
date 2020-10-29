@@ -1,5 +1,5 @@
 {
-    "agent": "PFGTD",
+    "agent": "CWPFGTD",
     "problem": "Baird",
     "steps": 5000,
     "metaParameters": {

@@ -9,7 +9,7 @@ TITLE="Baird's (Star) Counterexample"
 SAVE_PATH=os.path.join(os.getcwd(),"figures/Baird")
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','gtd2','tdc','tdrc']))
+EXP_PATHS = list(map(lambda alg: os.path.join(FILE_DIR, f'{alg}.json'),['pfgtd','pfcombined','cocobpfgtd','gtd2','tdc','tdrc']))
 
 if __name__ == "__main__":
     f, axes = plt.subplots(1)
