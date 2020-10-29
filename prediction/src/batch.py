@@ -18,11 +18,14 @@ if len(sys.argv) < 3:
     print('python3 src/main.py <runs> <path/to/description.json> <idx>')
     sys.exit(1)
 
+
 runs = int(sys.argv[1])
 exp = ExperimentModel.load(sys.argv[2])
 idx = int(sys.argv[3])
 
-EVERY = 10
+assert "/batch/" in sys.argv[2]
+
+BATCH_SIZE = 10
 
 collector = Collector()
 for run in range(runs):
@@ -58,12 +61,7 @@ for run in range(runs):
 
     glue = RlGlue(agent_wrapper, env)
    
-    # determine effective number of samples
-    # we need 300 at most
-    steps = exp.steps
-    samples = steps // EVERY
-    if samples > 300:
-        EVERY = int(steps // 300)
+    steps = exp.steps // BATCH_SIZE
 
     if run % 50 == 0:
         generator = SampleGenerator(problem)
@@ -73,10 +71,9 @@ for run in range(runs):
     glue.start()
     broke = False
     for step in range(steps):
-        agent.batch_update(generator)
+        agent.batch_update(generator, BATCH_SIZE)
 
         mspbe = MSPBE(agent.getWeights(), *AbC)
-
 
         collector.collect('rmspbe', np.sqrt(mspbe))
 

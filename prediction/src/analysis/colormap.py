@@ -2,6 +2,7 @@ colors = {
     # Parameter-free Baselines
     'PFGTD': 'red',
     'COCOBPFGTD':'salmon',
+    'CWPFGTD':'salmon',
     'PFTDC': 'pink',
 
     'PFCombined': 'royalblue',
