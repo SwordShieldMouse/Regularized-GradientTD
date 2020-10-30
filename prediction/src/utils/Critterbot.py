@@ -28,7 +28,6 @@ def getNMSEs(exp_path):
     r = first(results)
     data, std, _ = r.load()
 
-    # predictions for one sensor in each row
     allData = {}
     allStd = {}
     allData[r.params["sensorIdx"]] = data

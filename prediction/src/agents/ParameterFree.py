@@ -255,8 +255,7 @@ class PFResidual(PFCombined):
 
         self.A._apply(gtheta, gy)
 
-        gg = -np.dot(gtheta, xt_theta)
-        gtheta = np.append(gtheta, gg)
+        gtheta = np.append(gtheta, -np.dot(gtheta, xt_theta))
         gy = np.append(gy, -np.dot(gy, xt_y))
         self.B._apply(gtheta, gy)
 
