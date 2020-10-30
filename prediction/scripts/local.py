@@ -16,7 +16,7 @@ def generateMissing(paths):
     for i, p in enumerate(paths):
         mspbe_path = p + '/mspbe_summary.npy'
         nmse_path = p + '/nmse_summary.npy'
-        if not os.path.exists(mspbe_path) or not os.path.exists(nmse_path):
+        if not os.path.exists(mspbe_path) and not os.path.exists(nmse_path):
             yield i
 
 if __name__ == "__main__":
