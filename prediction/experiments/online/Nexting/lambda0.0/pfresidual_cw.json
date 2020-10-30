@@ -1,14 +1,13 @@
 {
-    "agent": "PFCombined",
+    "agent": "PFResidual",
     "problem": "Critterbot",
     "steps": 119000,
     "metaParameters": {
         "algA": "PFGTD",
-        "algB": ["CWPFGTD","COCOBPFGTD"],
+        "algB": ["CWPFGTD"],
         "wealth": [1.0],
         "hint": [1.0],
         "beta": [0.0],
-	"lambda": 0.9,
 
         "gamma": [0.9875],
         "sensorIdx": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,

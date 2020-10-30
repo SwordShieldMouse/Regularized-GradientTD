@@ -4,7 +4,7 @@
     "steps": 119000,
     "metaParameters": {
         "algA": "PFGTD",
-        "algB": ["CWPFGTD","COCOBPFGTD"],
+        "algB": ["COCOBPFGTD"],
         "wealth": [1.0],
         "hint": [1.0],
         "beta": [0.0],
