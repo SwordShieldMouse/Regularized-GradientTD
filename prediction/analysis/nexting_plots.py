@@ -13,9 +13,6 @@ from src.experiment import ExperimentModel
 from PyExpUtils.utils.arrays import first
 from src.utils.Critterbot import loadReturns, getSensorNum
 
-SUMMARY = 'nmse_summary.npy'
-YLIM=[0,500]
-
 def getResult(r):
     return r.load()
 
@@ -106,22 +103,28 @@ if __name__ == "__main__":
     exp_paths = sys.argv[1:]
     width = 8
     height = (24/5)
-    save_path = 'figures'
+    save_path = 'figures/Nexting'
 
     os.makedirs(save_path, exist_ok=True)
 
-    f, axes = generateMedianPlot(exp_paths)
-    f.set_size_inches((width, height), forward=False)
-    plt.savefig(f'{save_path}/medians-nexting.png', dpi=100)
+    for datatype in ["nmse","smape"]:
+        print(f"plotting {datatype}...")
+        SUMMARY = f"{datatype}_summary.npy"
 
-    f, axes = generateMeanPlot(exp_paths)
-    f.set_size_inches((width, height), forward=False)
-    plt.savefig(f'{save_path}/means-nexting.png', dpi=100)
+        f, axes = generateMedianPlot(exp_paths, ylim=[0,3] if datatype=='nmse' else [0,1])
+        f.set_size_inches((width, height), forward=False)
+        plt.savefig(f'{save_path}/{datatype}-medians-nexting.png', dpi=100)
 
-    f, axes = generateMedianAndAllSensorsPlots(exp_paths)
-    f.set_size_inches((width*len(exp_paths), height), forward=False)
-    plt.savefig(f'{save_path}/allSensors-median-nexting.png', dpi=100)
+        f, axes = generateMeanPlot(exp_paths, ylim=[0,100] if datatype=='nmse' else [0,1])
+        f.set_size_inches((width, height), forward=False)
+        plt.savefig(f'{save_path}/{datatype}-means-nexting.png', dpi=100)
 
-    f, axes = generateMeanAndAllSensorsPlots(exp_paths)
-    f.set_size_inches((width*len(exp_paths), height), forward=False)
-    plt.savefig(f'{save_path}/allSensors-median-nexting.png', dpi=100)
+        f, axes = generateMedianAndAllSensorsPlots(exp_paths, ylim=[0,3] if datatype=='nmse' else [0,1])
+        f.set_size_inches((width*len(exp_paths), height), forward=False)
+        plt.savefig(f'{save_path}/{datatype}-allSensors-median-nexting.png', dpi=100)
+
+        f, axes = generateMeanAndAllSensorsPlots(exp_paths, ylim=[0,100] if datatype=='nmse' else [0,1])
+        f.set_size_inches((width*len(exp_paths), height), forward=False)
+        plt.savefig(f'{save_path}/{datatype}-allSensors-mean-nexting.png', dpi=100)
+
+    print("done!")
