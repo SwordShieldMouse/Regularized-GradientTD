@@ -14,7 +14,7 @@ from PyExpUtils.utils.arrays import first
 from src.utils.Critterbot import loadReturns, getSensorNum
 
 def getResult(r):
-    return r.load()
+    return np.array(r.load(), dtype='float')
 
 def getResults(exp):
     if exp.agent in ['PFCombined','PFResidual']:
@@ -47,7 +47,11 @@ def getBest(results):
 def extract(results):
     means=[]
     for r in results:
-        means.append(getResult(r))
+        if r.params['sensorIdx'] == 43 and SUMMARY=='smape_summary.npy':
+            # This sensor can't be measured w/ smape (always zero)
+            continue
+        res = getResult(r)
+        means.append(res)
     return np.array(means)
 
 def generatePlot(ax, exp_path, aggregate, getColor=lambda agent: colors[agent], plotAllSensors=False):
@@ -104,27 +108,41 @@ if __name__ == "__main__":
     exp_paths = sys.argv[1:]
     width = 8
     height = (24/5)
-    save_path = 'figures/Nexting'
+    lmda = list(filter(lambda t: t.startswith('lambda'),exp_paths[0].split("/")))[0]
+    save_path = f'figures/Nexting/{lmda}'
 
     os.makedirs(save_path, exist_ok=True)
 
-    for datatype in ["nmse","smape"]:
+    median_ylims = {
+        "mse": None,
+        "nmse": [0,3],
+        "smape":[0,1]
+    }
+
+    mean_ylims = {
+        "mse": None,
+        "nmse": [0,100],
+        "smape":[0,1]
+    }
+
+
+    for datatype in ["mse","nmse","smape"]:
         print(f"plotting {datatype}...")
         SUMMARY = f"{datatype}_summary.npy"
 
-        f, axes = generateMedianPlot(exp_paths, ylim=[0,3] if datatype=='nmse' else [0,1])
+        f, axes = generateMedianPlot(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width, height), forward=False)
         plt.savefig(f'{save_path}/{datatype}-medians-nexting.png', dpi=100)
 
-        f, axes = generateMeanPlot(exp_paths, ylim=[0,100] if datatype=='nmse' else [0,1])
+        f, axes = generateMeanPlot(exp_paths, ylim=mean_ylims[datatype])
         f.set_size_inches((width, height), forward=False)
         plt.savefig(f'{save_path}/{datatype}-means-nexting.png', dpi=100)
 
-        f, axes = generateMedianAndAllSensorsPlots(exp_paths, ylim=[0,3] if datatype=='nmse' else [0,1])
+        f, axes = generateMedianAndAllSensorsPlots(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width*len(exp_paths), height), forward=False)
         plt.savefig(f'{save_path}/{datatype}-allSensors-median-nexting.png', dpi=100)
 
-        f, axes = generateMeanAndAllSensorsPlots(exp_paths, ylim=[0,100] if datatype=='nmse' else [0,1])
+        f, axes = generateMeanAndAllSensorsPlots(exp_paths, ylim=mean_ylims[datatype])
         f.set_size_inches((width*len(exp_paths), height), forward=False)
         plt.savefig(f'{save_path}/{datatype}-allSensors-mean-nexting.png', dpi=100)
 
