@@ -19,7 +19,7 @@ class WeightedAverage:
         self.update(x)
 
     def get(self):
-        return self.x
+        return self.x.copy()
 
     def _update(self):
         raise(NotImplementedError("WeightedAverage: update not implemented"))
