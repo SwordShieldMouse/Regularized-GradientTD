@@ -70,6 +70,7 @@ def generateAggregatePlot(exp_paths, aggregate, ylim):
     for exp_path in exp_paths:
         generatePlot(axes, exp_path, aggregate=aggregate, plotAllSensors=False)
     axes.set_ylim(ylim)
+    axes.set_title(None)
     return f, axes
 
 def generateAllSensorPlots(exp_paths, aggregate, ylim):

@@ -14,6 +14,7 @@ class ParameterFree(BaseAgent):
 
         self.z = np.zeros(features)
         self.lmda = params.get("lambda", 0.0)
+        self.avg_t = params.get("averaging", "Uniform")
 
     def update(self, x, a, xp, r, gamma, rho):
 
@@ -74,8 +75,9 @@ class ParameterFree(BaseAgent):
         self.av_theta.reset(self.theta_t)
 
     def _initBets(self):
+        avg_t = getattr(Averages, self.avg_t)
         self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
-        self.av_theta, self.av_y = Averages.Uniform(self.theta_t), Averages.Uniform(self.y_t)
+        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
 
 class PFGTD(ParameterFree):
     """
