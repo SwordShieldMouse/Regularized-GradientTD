@@ -2,8 +2,16 @@ import os
 import sys
 sys.path.append(os.getcwd())
 
+from functools import reduce
+
 import matplotlib.pyplot as plt
-from analysis.learning_curve import generatePlot
+from analysis.learning_curve import generatePlot, getBest
+
+from src.analysis.learning_curve import plotBest
+from src.analysis.colormap import colors
+from src.experiment import ExperimentModel
+from PyExpUtils.results.results import loadResults
+from PyExpUtils.utils.arrays import first
 
 def plotMDP(paths, savepath, title):
     prefix = "batch-" if '/batch/' in paths[0] else ""
@@ -25,9 +33,9 @@ def plotMDP(paths, savepath, title):
     bounds = []
 
     fltr = lambda r: r.params.get('eta', 1) == 1
-    generatePlot(axes, EXP_PATHS, bounds, fltr)
+    generatePlot(axes, paths, bounds, fltr)
 
-    os.makedirs(SAVE_PATH, exist_ok=True)
+    os.makedirs(savepath, exist_ok=True)
 
     width = 8
     height = (24/5)
@@ -88,7 +96,7 @@ def plotEach(exp_paths, savepath, problem):
 
 if __name__ == "__main__":
     exp_paths = sys.argv[1:]
-    if experiment_is(exp_paths,"Baird"):
+    if experiment_is("Baird", exp_paths):
         problem="Baird"
         plotMDP(exp_paths, getSavePath(problem), problem)
 
