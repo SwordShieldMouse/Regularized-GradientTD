@@ -1,5 +1,23 @@
-NUM_RUNS = 200
-BATCH_RUNS = 200
+# ==================
+# --- QUICKSTART ---
+# ==================
+#
+# Main Commands
+# -------------
+# - `make list`: print the available make targets
+#
+# - `make` or `make all`: run all the experiments and make all the plots
+# - `make data`: run all the experiments
+# - `make plots`: make all the plots
+#
+# Sub-commands
+# ------------
+# - `make online`: run MDP experiments with online evaluation
+# - `make batch`: run MDP the experiments with batch evaluation
+# - `make nexting`: run the multi-timescale nexting experiment
+#
+# - `make mdpPlots`: plot the mdp experiments (both batch and online)
+# - `make nextingPlots`: plot the nexting experiment
 
 .PHONY : data plots results
 
@@ -11,23 +29,19 @@ BATCH_RUNS = 200
 # prediction subdirectory
 # --------------------------------------------------------
 
-# alias for `make results` because i'm lazy
-all: results
-
-# `make results` :: run all the experiments (best param settings)
+# `make` or `make all` :: run all the experiments (best param settings)
 # and then generate all the plots
-results: data plots
+all: data plots
 
 # `make data` :: make the data using the best parameter settings
-data: online batch
+data: online batch nexting
 
 # `make plots` :: make the plots for the experiments
 # using the best parameter settings
-plots: onlinePlots batchPlots
+plots: mdpPlots nextingPlots
 
 # `make list`: print out a list of make targets available
 # lol shut up it works fine
-.PHONY: list
 list:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
 
@@ -44,19 +58,24 @@ list:
 # (e.g. `make online`, `make batch` etc.)
 # -------------------------------------------
 
+NUM_RUNS = 200
+
 # Commands that we'll run to generate data
 Py = python3.6
 Run = $(Py) ./scripts/local.py ./src/main.py $(NUM_RUNS) ./results
 RunBatch = $(Py) ./scripts/local.py ./src/batch.py $(NUM_RUNS) ./results
+RunNexting = $(Py) ./scripts/local.py ./src/nexting.py 1 ./results
 
 # -------------------
 # --- EXPERIMENTS ---
 # -------------------
-.PHONY : online batch
+.PHONY : online batch nexting
 online:
-	$(Run) $(wildcard ./experiments/online/*/*.json)
+	$(Run) $(foreach exp, Baird Boyan RandomWalk, $(wildcard ./experiments/online/$(path)/*.json))
 batch:
-	$(RunBatch) $(wildcard ./experiments/batch/*/*.json)
+	$(RunBatch) $(foreach exp, Baird Boyan RandomWalk, $(wildcard ./experiments/batch/$(path)/*.json)
+nexting:
+	$(RunNexting) $(wildcard ./experiments/online/Nexting/*/*.json) $(wildcard ./experiments/*/*/*.json)
 
 # ----------------
 # --- PLOTTING ---
@@ -65,11 +84,8 @@ batch:
 # -----------------------------
 #     BEST PARAMETERS PLOTS	  
 # -----------------------------
-OnlinePlots = $(wildcard ./experiments/online/*/learning_curve.py)
-BatchPlots = $(wildcard ./experiments/batch/*/learning_curve.py)
-
-.PHONY : onlinePlots batchPlots
-onlinePlots:
-	$(foreach path, $(OnlinePlots), $(Py) $(path);)
-batchPlots:
-	$(foreach path, $(BatchPlots), $(Py) $(path);)
+.PHONY : mdpPlots nextingPlots
+mdpPlots:
+	$(foreach setting, batch online, $(foreach exp, Baird Boyan RandomWalk, $(Py) ./analysis/mdp_plots.py $(wildcard ./experiments/$(setting)/$(exp)/*.json);))
+nextingPlots:
+	$(foreach path, $(wildcard ./experiments/online/Nexting/lambda*), $(Py) ./analysis/nexting_plots.py $(wildcard $(path)/*.json);)
