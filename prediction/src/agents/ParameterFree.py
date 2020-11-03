@@ -240,6 +240,10 @@ class PFResidual(PFCombined):
         algB = getattr(sys.modules[__name__], params["algB"])
         self.B = algB(features+1, actions, params)
 
+        avg_t = getattr(Averages, self.avg_t)
+        self.theta_t, self.y_t = self.bet()
+        self.av_theta = avg_t(self.theta_t)
+
     def _combine(self, x, yz):
         return x + yz[:-1] - yz[-1]*x
 
@@ -261,8 +265,10 @@ class PFResidual(PFCombined):
         gy = np.append(gy, -np.dot(gy, xt_y))
         self.B._apply(gtheta, gy)
 
+        self.av_theta.update(self.bet()[0])
+
     def getWeights(self):
-        return self._combine(self.A.getWeights(), self.B.getWeights())
+        return self.av_theta.get()
 
     def initWeights(self, u):
         self.A.initWeights(u)
