@@ -3,6 +3,7 @@ import sys
 sys.path.append(os.getcwd())
 
 from functools import reduce
+import numpy as np
 
 import matplotlib.pyplot as plt
 from analysis.learning_curve import generatePlot, getBest
@@ -18,7 +19,43 @@ def plotMDP(paths, savepath, title):
     f, axes = plt.subplots(1)
     bounds = []
 
-    generatePlot(axes, paths, bounds)
+    def _getBest(results):
+        best = first(results)
+        bestVal = np.mean(best.load()[0])
+
+        for r in results:
+            if not np.isfinite(bestVal):
+                best = r
+                bestVal = np.mean(r.load()[0])
+                continue
+            a = r.load()[0]
+            am = np.mean(a)
+            if am < bestVal:
+                best = r
+                bestVal = am
+
+        print(f"{bestVal} <= {best.params}")
+        return best
+
+    def _generatePlot(ax, exp_paths, bounds, fltr = None):
+        for exp_path in exp_paths:
+            exp = ExperimentModel.load(exp_path)
+            alg = exp.agent
+
+            results = loadResults(exp, 'rmspbe_summary.npy')
+
+            if fltr is not None:
+                results = filter(fltr, results)
+
+            best = _getBest(results)
+            print('best parameters:', exp_path)
+            print(best.params)
+
+            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False)
+            bounds.append(b)
+
+
+    _generatePlot(axes, paths, bounds)
 
     os.makedirs(savepath, exist_ok=True)
 
@@ -33,7 +70,7 @@ def plotMDP(paths, savepath, title):
     bounds = []
 
     fltr = lambda r: r.params.get('eta', 1) == 1
-    generatePlot(axes, paths, bounds, fltr)
+    _generatePlot(axes, paths, bounds, fltr)
 
     os.makedirs(savepath, exist_ok=True)
 
