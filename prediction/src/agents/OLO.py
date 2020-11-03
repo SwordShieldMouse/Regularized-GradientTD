@@ -18,7 +18,7 @@ class Param:
         self.v = self.beta * self.W
 
         # random initial direction and normalize
-        u = 2 * np.random.rand(features) - 1.0
+        u = np.ones(features)
         normu = norm(u)
         self.u = u if normu<=1 else u/normu
 
@@ -81,7 +81,7 @@ class HalfCWParam:
         self.v = self.beta * self.W
 
         # random initial direction and normalize
-        u = 2 * np.random.rand(features) - 1.0
+        u = np.ones(features)
         normu = norm(u)
         self.u = u if normu<=1 else u/normu
 
@@ -183,7 +183,7 @@ class SCParam:
         self.v = self.beta * self.W
 
         # random initial direction and normalize
-        u = 2 * np.random.rand(features) - 1.0
+        u = np.ones(features)
         normu = norm(u)
         self.u = u if normu<=1 else u/normu
 
@@ -299,7 +299,7 @@ class DiscountedParam:
         self.v = self.beta * self.W
 
         # random initial direction and normalize
-        u = 2 * np.random.rand(features) - 1.0
+        u = np.ones(features)
         normu = norm(u)
         self.u = u if norm(u) <= 1 else u/normu
 
