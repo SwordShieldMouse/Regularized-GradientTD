@@ -1,10 +1,10 @@
 {
     "agent": "PFCombined",
-    "problem": "Boyan",
-    "steps": 10000,
+    "problem": "Baird",
+    "steps": 5000,
     "metaParameters": {
         "algA": "PFGTD",
-        "algB": ["CWPFGTD","COCOBPFGTD"],
+        "algB": ["CWPFGTD"],
         "wealth": [1.0],
         "hint": [1.0],
         "beta": [0.0]
