@@ -5,7 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 sys.path.append(os.getcwd())
 
-from PyExpUtils.results.results import loadResults
+from PyExpUtils.results.results import loadResults, whereParametersEqual
+from PyExpUtils.utils.permute  import getParameterPermutation, getNumberOfPermutations
 
 from src.analysis.learning_curve import plotBest
 from src.analysis.colormap import colors
@@ -51,14 +52,18 @@ def extract(results):
             # This sensor can't be measured w/ smape (always zero)
             continue
         res = getResult(r)
+        if SUMMARY == 'mse_summary.npy':
+            # RMSE
+            res = np.sqrt(res)
         means.append(res)
     return np.array(means)
 
-def generatePlot(ax, exp_path, aggregate, getColor=lambda agent: colors[agent], plotAllSensors=False):
+def generatePlot_old(ax, exp_path, aggregate, getColor=lambda agent: colors[agent], plotAllSensors=False):
     exp = ExperimentModel.load(exp_path)
 
     # Each result = settings for one agent
     for alg, result in getResults(exp).items():
+
         means = extract(result)
         # av = np.median(means, axis=0)
         # ax.plot(av, color=colors[exp.agent], label=alg)
@@ -68,6 +73,17 @@ def generatePlot(ax, exp_path, aggregate, getColor=lambda agent: colors[agent], 
                 ax.plot(line, color=colors[exp.agent], alpha=0.4)
         ax.plot(aggregate(means), color=getColor(exp.agent), linewidth=2.0)
         ax.set_title(alg)
+
+def generatePlot(ax, exp_path, aggregate, getColor=lambda agent: colors[agent], plotAllSensors=False):
+    exp = ExperimentModel.load(exp_path)
+    data = getBestSensorData(exp_path, aggregate)
+
+    if plotAllSensors:
+        for line in data:
+            ax.plot(line, color=colors[exp.agent], alpha=0.4)
+    ax.plot(aggregate(data), color=getColor(exp.agent), linewidth=2.0)
+    ax.set_title(exp.agent)
+
 
 def generateAggregatePlot(exp_paths, aggregate, ylim):
     f, axes = plt.subplots(1)
@@ -84,6 +100,44 @@ def generateAllSensorPlots(exp_paths, aggregate, ylim):
         generatePlot(ax, exp_paths[i], aggregate=aggregate, getColor=lambda agent: 'black', plotAllSensors = True)
         ax.set_ylim(ylim)
     return f, axes
+
+def getBestOverall(exp_path, aggregate):
+    # Get the best parameter settings according to the AUC
+    # of all sensors, aggregated by some func aggregate:R^T->R
+    exp = ExperimentModel.load(exp_path)
+    params = exp._d['metaParameters'].copy()
+    del params['sensorIdx']
+
+    N = getNumberOfPermutations(params)
+    best = np.inf
+    bestIdx = 0
+    for paramIdx in range(N):
+        d = getParameterPermutation(params, paramIdx)
+        results = whereParametersEqual(loadResults(exp, SUMMARY),d)
+        means = []
+        # Get AUC for each sensor
+        for r in results:
+            means.append(np.mean(r.load()[0]))
+        # Aggregate the AUCs and check if have best aggregate value
+        mean = np.median(means)
+        if mean <= best:
+            best = mean
+            bestIdx = paramIdx
+    # Get the best param settings again
+    bestParams = getParameterPermutation(params, bestIdx)
+    print(exp_path, bestParams)
+    return bestParams
+
+def getBestSensorData(exp_path, aggregate):
+    exp = ExperimentModel.load(exp_path)
+    indices = exp._d["metaParameters"]['sensorIdx']
+    bestSettings = getBestOverall(exp_path, aggregate)
+
+    data = []
+    for idx in indices:
+        bestSettings['sensorIdx'] = idx
+        data.append(first(whereParametersEqual(loadResults(exp, SUMMARY), bestSettings)).load())
+    return np.array(data)
 
 # ==========================================================
 # entry points
@@ -114,19 +168,21 @@ if __name__ == "__main__":
     os.makedirs(save_path, exist_ok=True)
 
     median_ylims = {
-        "mse": None,
+        "mse": [0,1e4],
         "nmse": [0,3],
         "smape":[0,1]
     }
 
     mean_ylims = {
-        "mse": None,
+        "mse": [0,2.0e5],
         "nmse": [0,100],
         "smape":[0,1]
     }
 
 
-    for datatype in ["mse","nmse","smape"]:
+    #datatypes = ["mse","nmse","smape"]
+    datatypes = ['smape']
+    for datatype in datatypes:
         print(f"plotting {datatype}...")
         SUMMARY = f"{datatype}_summary.npy"
 
@@ -134,16 +190,16 @@ if __name__ == "__main__":
         f.set_size_inches((width, height), forward=False)
         plt.savefig(f'{save_path}/{datatype}-medians-nexting.png', dpi=100)
 
-        f, axes = generateMeanPlot(exp_paths, ylim=mean_ylims[datatype])
-        f.set_size_inches((width, height), forward=False)
-        plt.savefig(f'{save_path}/{datatype}-means-nexting.png', dpi=100)
+        # f, axes = generateMeanPlot(exp_paths, ylim=mean_ylims[datatype])
+        # f.set_size_inches((width, height), forward=False)
+        # plt.savefig(f'{save_path}/{datatype}-means-nexting.png', dpi=100)
 
         f, axes = generateMedianAndAllSensorsPlots(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width*len(exp_paths), height), forward=False)
         plt.savefig(f'{save_path}/{datatype}-allSensors-median-nexting.png', dpi=100)
 
-        f, axes = generateMeanAndAllSensorsPlots(exp_paths, ylim=mean_ylims[datatype])
-        f.set_size_inches((width*len(exp_paths), height), forward=False)
-        plt.savefig(f'{save_path}/{datatype}-allSensors-mean-nexting.png', dpi=100)
+        # f, axes = generateMeanAndAllSensorsPlots(exp_paths, ylim=mean_ylims[datatype])
+        # f.set_size_inches((width*len(exp_paths), height), forward=False)
+        # plt.savefig(f'{save_path}/{datatype}-allSensors-mean-nexting.png', dpi=100)
 
     print("done!")
