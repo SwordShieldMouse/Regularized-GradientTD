@@ -14,7 +14,7 @@ from src.experiment import ExperimentModel
 from PyExpUtils.results.results import loadResults
 from PyExpUtils.utils.arrays import first
 
-def plotMDP(paths, savepath, title):
+def plotMDP(paths, savepath, title, xlim=None, ylim=None):
     prefix = "batch-" if '/batch/' in paths[0] else ""
     f, axes = plt.subplots(1)
     bounds = []
@@ -63,6 +63,7 @@ def plotMDP(paths, savepath, title):
     height = (24/5)
     f.set_size_inches((width, height), forward=False)
     axes.set_title(title)
+    set_limits(axes,xlim,ylim)
     plt.savefig(f'{savepath}/{prefix}learning-curve-allParams.png', dpi=100)
 
     f, axes = plt.subplots(1)
@@ -78,7 +79,14 @@ def plotMDP(paths, savepath, title):
     height = (24/5)
     f.set_size_inches((width, height), forward=False)
     axes.set_title(title)
+    set_limits(axes,xlim,ylim)
     plt.savefig(f'{savepath}/{prefix}learning-curve.png', dpi=100)
+
+def set_limits(axes, xlim,ylim):
+    if ylim is not None:
+        axes.set_ylim(ylim)
+    if xlim is not None:
+        axes.set_xlim(xlim)
 
 def getConfigs(path):
     return list(filter(lambda p: p.endswith(".json"), os.listdir(path)))
@@ -134,15 +142,11 @@ def plotEach(exp_paths, savepath, problem):
 if __name__ == "__main__":
     exp_paths = sys.argv[1:]
     if experiment_is("Baird", exp_paths):
-        problem="Baird"
-        plotMDP(exp_paths, getSavePath(problem), problem)
-
-    if experiment_is("Baird", exp_paths):
         problem = "Baird"
-        plotMDP(exp_paths, getSavePath(problem), problem)
+        plotMDP(exp_paths, getSavePath(problem), problem, xlim=[0, 3000], ylim=[0,4])
     elif experiment_is("Boyan", exp_paths):
         problem = "Boyan"
-        plotMDP(exp_paths, getSavePath(problem), problem)
+        plotMDP(exp_paths, getSavePath(problem), problem, xlim=[0,6000],ylim=[0.1,3.0])
     elif experiment_is("RandomWalk", exp_paths):
         problem = "RandomWalk"
         plotEach(exp_paths, getSavePath(problem), problem)

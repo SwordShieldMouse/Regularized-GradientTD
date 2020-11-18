@@ -88,4 +88,7 @@ nexting:
 mdpPlots:
 	$(foreach setting, batch online, $(foreach exp, Baird Boyan RandomWalk, $(Py) ./analysis/mdp_plots.py $(wildcard ./experiments/$(setting)/$(exp)/*.json);))
 nextingPlots:
-	$(foreach path, $(wildcard ./experiments/online/Nexting/lambda*), $(Py) ./analysis/nexting_plots.py $(wildcard $(path)/*.json);)
+	$(Py) ./analysis/nexting_plots.py $(foreach exp, td tdc tdrc pfcombined_cw cwpfgtd pfgtd gtd2, ./experiments/online/Nexting/lambda0.0/$(exp).json)
+	mv figures/Nexting/lambda0.0 ./figures/Nexting/main
+	$(Py) ./analysis/nexting_plots.py $(foreach exp, gtd2_etaSweep_full gtd2_etaSweep_half gtd2, ./experiments/online/Nexting/lambda0.0/$(exp).json)
+	mv figures/Nexting/lambda0.0 ./figures/Nexting/appendix
