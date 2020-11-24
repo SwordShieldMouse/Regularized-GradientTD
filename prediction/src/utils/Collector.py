@@ -40,6 +40,9 @@ class Collector:
     def getRunData(self, name, run=-1):
         return self.all_data[name][run]
 
+    def getAllData(self, name):
+        return self.all_data[name]
+
     def getStats(self, name: str):
         arr = self.all_data[name]
 
