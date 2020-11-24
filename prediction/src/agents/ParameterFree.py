@@ -160,6 +160,21 @@ class CWPFGTD(ParameterFree):
 
         self._initBets()
 
+class CWPFGTDSH(ParameterFree):
+    """
+    Coordinate-wise Parameter-free GTD with hints
+    """
+    def __init__(self, features: int, actions: int, params: dict):
+        super().__init__(features, actions, params)
+
+        W0 = params['wealth'] / features
+
+        # opt params
+        self.theta = CWParamScalarHint(features, W0, params["hint"], params["beta"])
+        self.y = CWParamScalarHint(features, W0, params["hint"], params["beta"])
+
+        self._initBets()
+
 class COCOBPFGTD(ParameterFree):
     """
     Coordinate-wise Parameter-free GTD with hints

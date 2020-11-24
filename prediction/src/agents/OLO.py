@@ -286,6 +286,55 @@ class CWParam:
         self.W = u
         self.beta = 1.0
 
+class CWParamScalarHint:
+    '''
+    Coordinate-wise parameter-free OLO algorithm with
+    gradient-bound hints
+    '''
+    def __init__(self, features: int, W0: float, g: float, beta:float):
+        self.beta = beta * np.ones(features)
+        self.W = np.ones(features) * W0
+        self.h = g
+
+        # initial bet
+        self.x = np.multiply(self.beta, self.W)
+
+        self.A = np.zeros(features)
+
+        self.eps = 1e-8
+
+        # NOTE: unused for now
+        self.lower_bound = np.finfo(np.float64).min / 1e150
+        self.upper_bound = np.finfo(np.float64).max / 1e150
+
+    def bet(self):
+        self.x = np.multiply(self.beta, self.W)
+        return self.x
+
+    def update(self, g):
+        # NOTE: have completely removed the constraint set for now
+
+        # Incorporate grad bound
+        gradnorm = norm(g)
+        gtrunc = g if gradnorm < self.h else self.h*g / (gradnorm + self.eps)
+        self.h = max(self.h, gradnorm)
+
+        # update betting fraction
+        m = np.divide(gtrunc,  1.0 - np.multiply(self.beta, gtrunc))
+        self.A += np.power(m,2)
+        self.beta = np.maximum(
+            np.minimum(self.beta - 2.0 * np.divide(m, (2.0-np.log(3.0))*self.A + self.eps), 0.5 / self.h),
+            -0.5 / self.h
+        )
+
+        # update wealth
+        self.W -= np.multiply(gtrunc,self.x)
+
+    def initWeights(self, u):
+        assert u.shape == self.W.shape
+        self.W = u
+        self.beta = 1.0
+
 class DiscountedParam:
     '''
     Parameter-free OLO algorithm with gradient-bound hints

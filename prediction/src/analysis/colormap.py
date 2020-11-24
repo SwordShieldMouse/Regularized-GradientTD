@@ -3,6 +3,7 @@ colors = {
     'PFGTD': 'red',
     'COCOBPFGTD':'salmon',
     'CWPFGTD':'salmon',
+    'CWPFGTDSH':'darkred',
     'PFTDC': 'pink',
 
     'PFCombined': 'royalblue',
