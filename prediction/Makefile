@@ -38,7 +38,7 @@ data: online batch nexting
 
 # `make plots` :: make the plots for the experiments
 # using the best parameter settings
-plots: mdpPlots nextingPlots
+plots: barPlot mdpPlots nextingPlots
 
 # `make list`: print out a list of make targets available
 # lol shut up it works fine
@@ -84,7 +84,9 @@ nexting:
 # -----------------------------
 #     BEST PARAMETERS PLOTS	  
 # -----------------------------
-.PHONY : mdpPlots nextingPlots
+.PHONY : mdpPlots nextingPlots barPlot
+barPlot:
+	$(Py) analysis/barplots.py
 mdpPlots:
 	$(foreach setting, batch online, $(foreach exp, Baird Boyan RandomWalk, $(Py) ./analysis/mdp_plots.py $(wildcard ./experiments/$(setting)/$(exp)/*.json);))
 nextingPlots:

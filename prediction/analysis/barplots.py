@@ -16,27 +16,30 @@ from PyExpUtils.utils.arrays import first
 
 def getBairdConfigs():
     return map(lambda alg: os.path.join("./experiments/online/Baird",f"{alg}.json"),["cwpfgtdsh","pfgtd","pfcombined_cwsh","gtd2","tdc","tdrc"])
+    #return map(lambda alg: os.path.join("./experiments/online/Baird",f"{alg}.json"),["cwpfgtd","cwpfgtdsh","pfgtd","pfcombined_cw","pfcombined_cwsh","gtd2","tdc","tdrc"])
 
 def getBoyanConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/Boyan",f"{alg}.json"),["cwpfgtd","pfgtd","pfcombined_cw","gtd2","tdc","tdrc","td"])
+    return map(lambda alg: os.path.join("./experiments/online/Boyan",f"{alg}.json"),["cwpfgtdsh","pfgtd","pfcombined_cwsh","gtd2","tdc","tdrc","td"])
+    #return map(lambda alg: os.path.join("./experiments/online/Boyan",f"{alg}.json"),["cwpfgtd","cwpfgtdsh","pfgtd","pfcombined_cwsh","pfcombined_cw","gtd2","tdc","tdrc","td"])
 
 def getRWConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"),["cwpfgtd","pfgtd","pfcombined_cw","gtd2","tdc","tdrc","td"])
+    return map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"),["cwpfgtdsh","pfgtd","pfcombined_cwsh","gtd2","tdc","tdrc","td"])
+    #return map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"),["cwpfgtd","cwpfgtdsh","pfgtd","pfcombined_cw","pfcombined_cwsh","gtd2","tdc","tdrc","td"])
 
-def getMDPData(exp_paths,fltr):
+def getMDPData(exp_paths,fltr,measure):
     data = {}
 
     def _getBest(results):
         best = first(results)
-        bestVal = np.mean(best.load()[0])
+        bestVal = measure(best.load()[0])
 
         for r in results:
             if not np.isfinite(bestVal):
                 best = r
-                bestVal = np.mean(r.load()[0])
+                bestVal = measure(r.load()[0])
                 continue
             a = r.load()[0]
-            am = np.mean(a)
+            am = measure(a)
             if am < bestVal:
                 best = r
                 bestVal = am
@@ -54,12 +57,30 @@ def getMDPData(exp_paths,fltr):
 
         best = _getBest(results)
         m, s, _ = best.load()
-        data[alg] = (np.mean(m), np.mean(s))
+        data[alg] = (measure(m), measure(s))
 
     return data
 
-def getRWData(exp_paths, fltr):
+def getRWData(exp_paths, fltr,measure):
     data = {}
+
+    def _getBest(results):
+        best = first(results)
+        bestVal = measure(best.load()[0])
+
+        for r in results:
+            if not np.isfinite(bestVal):
+                best = r
+                bestVal = measure(r.load()[0])
+                continue
+            a = r.load()[0]
+            am = measure(a)
+            if am < bestVal:
+                best = r
+                bestVal = am
+
+        print(f"{bestVal} <= {best.params}")
+        return best
 
     def _getData(exp_paths, feats):
         for exp_path in exp_paths:
@@ -74,7 +95,7 @@ def getRWData(exp_paths, fltr):
 
             best = getBest(sub_results)
             m,s,_ = best.load()
-            data[alg] = (np.mean(m), np.mean(s))
+            data[alg] = (measure(m), measure(s))
         return data
 
     alldata = {}
@@ -84,44 +105,49 @@ def getRWData(exp_paths, fltr):
 
 if __name__ == "__main__":
     fltrs = [
-        (None, "bar_plots.pdf"),
-        (lambda r: r.params.get('eta', 1) == 1, "bar_plots_allParams.pdf")
+        (lambda r: r.params.get('eta', 1) == 1, "barplots"),
+        (None, "barplots_allParams"),
+    ]
+    measures = [
+        (np.mean, "AUC"),
+        (lambda d: d[-1], "FinalPerformance")
     ]
 
     for fltr, filename in fltrs:
+        for measure, measurename in measures:
 
-        f, ax = plt.subplots(1)
+            f, ax = plt.subplots(1)
 
-        print("RW...")
-        rwConfigs = getRWConfigs()
-        data=getRWData(rwConfigs, fltr)
+            print("RW...")
+            rwConfigs = getRWConfigs()
+            data=getRWData(rwConfigs, fltr, measure)
 
-        print("Boyan...")
-        boyanConfigs = getBoyanConfigs()
-        data["Boyan"] = getMDPData(boyanConfigs, fltr)
+            print("Boyan...")
+            boyanConfigs = getBoyanConfigs()
+            data["Boyan"] = getMDPData(boyanConfigs, fltr, measure)
 
-        print("Baird...")
-        bairdConfigs = getBairdConfigs()
-        data["Baird"] = getMDPData(bairdConfigs, fltr)
+            print("Baird...")
+            bairdConfigs = getBairdConfigs()
+            data["Baird"] = getMDPData(bairdConfigs, fltr, measure)
 
 
-        ref_alg = 'PFCombined'
-        offset = -3
-        prev = 0
-        for i, problem in enumerate(data.keys()):
-            offset+=3
+            ref_alg = 'PFCombined'
+            offset = -3
+            prev = 0
+            for i, problem in enumerate(data.keys()):
+                offset+=3
 
-            learner_data = data[problem]
-            ref, _ = learner_data[ref_alg]
-            for j, learner in enumerate(learner_data.keys()):
-                x = prev + j + offset
-                val, stderr = learner_data[learner]
-                val, stderr = val / ref, stderr / ref
-                ax.bar(x, val, yerr=stderr, color = colors[learner], tick_label=problem)
-            prev += len(learner_data.keys())
+                learner_data = data[problem]
+                ref, _ = learner_data[ref_alg]
+                for j, learner in enumerate(learner_data.keys()):
+                    x = prev + j + offset
+                    val, stderr = learner_data[learner]
+                    val, stderr = val / ref, stderr / ref
+                    ax.bar(x, val, yerr=stderr, color = colors[learner], tick_label=problem)
+                prev += len(learner_data.keys())
 
-        savepath = "figures/"
-        width = 8
-        height = (24/5)
-        os.makedirs(savepath, exist_ok=True)
-        plt.savefig(f"{savepath}/{filename}.pdf")
+            savepath = "figures/"
+            width = 8
+            height = (24/5)
+            os.makedirs(savepath, exist_ok=True)
+            plt.savefig(f"{savepath}/{filename}_{measurename}.pdf")
