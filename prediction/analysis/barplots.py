@@ -23,7 +23,7 @@ def getBoyanConfigs():
 def getRWConfigs():
     return map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"),["cwpfgtd","pfgtd","pfcombined_cw","gtd2","tdc","tdrc","td"])
 
-def getMDPData(exp_paths):
+def getMDPData(exp_paths,fltr):
     data = {}
 
     def _getBest(results):
@@ -49,7 +49,8 @@ def getMDPData(exp_paths):
         alg = exp.agent
 
         results = loadResults(exp, 'rmspbe_summary.npy')
-        results = filter(lambda r: r.params.get('eta', 1) == 1, results)
+        if fltr is not None:
+            results = filter(fltr, results)
 
         best = _getBest(results)
         m, s, _ = best.load()
@@ -57,7 +58,7 @@ def getMDPData(exp_paths):
 
     return data
 
-def getRWData(exp_paths):
+def getRWData(exp_paths, fltr):
     data = {}
 
     def _getData(exp_paths, feats):
@@ -67,7 +68,9 @@ def getRWData(exp_paths):
 
             results = loadResults(exp, 'rmspbe_summary.npy')
             sub_results = filter(lambda r: r.params["representation"]==feats, results)
-            sub_results = filter(lambda r: r.params.get('eta', 1) == 1, sub_results)
+
+            if fltr is not None:
+                sub_results = filter(fltr, sub_results)
 
             best = getBest(sub_results)
             m,s,_ = best.load()
@@ -80,40 +83,45 @@ def getRWData(exp_paths):
     return alldata
 
 if __name__ == "__main__":
-    offset = 0
-    ax = plt.gca()
-    f = plt.gcf()
+    fltrs = [
+        (None, "bar_plots.pdf"),
+        (lambda r: r.params.get('eta', 1) == 1, "bar_plots_allParams.pdf")
+    ]
 
-    print("RW...")
-    rwConfigs = getRWConfigs()
-    data=getRWData(rwConfigs)
+    for fltr, filename in fltrs:
 
-    print("Boyan...")
-    boyanConfigs = getBoyanConfigs()
-    data["Boyan"] = getMDPData(boyanConfigs)
+        f, ax = plt.subplots(1)
 
-    print("Baird...")
-    bairdConfigs = getBairdConfigs()
-    data["Baird"] = getMDPData(bairdConfigs)
+        print("RW...")
+        rwConfigs = getRWConfigs()
+        data=getRWData(rwConfigs, fltr)
+
+        print("Boyan...")
+        boyanConfigs = getBoyanConfigs()
+        data["Boyan"] = getMDPData(boyanConfigs, fltr)
+
+        print("Baird...")
+        bairdConfigs = getBairdConfigs()
+        data["Baird"] = getMDPData(bairdConfigs, fltr)
 
 
-    ref_alg = 'PFCombined'
-    offset = -3
-    prev = 0
-    for i, problem in enumerate(data.keys()):
-        offset+=3
+        ref_alg = 'PFCombined'
+        offset = -3
+        prev = 0
+        for i, problem in enumerate(data.keys()):
+            offset+=3
 
-        learner_data = data[problem]
-        ref, _ = learner_data[ref_alg]
-        for j, learner in enumerate(learner_data.keys()):
-            x = prev + j + offset
-            val, stderr = learner_data[learner]
-            val, stderr = val / ref, stderr / ref
-            ax.bar(x, val, yerr=stderr, color = colors[learner], tick_label=problem)
-        prev += len(learner_data.keys())
+            learner_data = data[problem]
+            ref, _ = learner_data[ref_alg]
+            for j, learner in enumerate(learner_data.keys()):
+                x = prev + j + offset
+                val, stderr = learner_data[learner]
+                val, stderr = val / ref, stderr / ref
+                ax.bar(x, val, yerr=stderr, color = colors[learner], tick_label=problem)
+            prev += len(learner_data.keys())
 
-    savepath = "figures/"
-    width = 8
-    height = (24/5)
-    os.makedirs(savepath, exist_ok=True)
-    plt.savefig(f"{savepath}/bar_plots.pdf")
+        savepath = "figures/"
+        width = 8
+        height = (24/5)
+        os.makedirs(savepath, exist_ok=True)
+        plt.savefig(f"{savepath}/{filename}.pdf")
