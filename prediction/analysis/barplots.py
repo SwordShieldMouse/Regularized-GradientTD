@@ -15,16 +15,13 @@ from PyExpUtils.results.results import loadResults
 from PyExpUtils.utils.arrays import first
 
 def getBairdConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/Baird",f"{alg}.json"),["cwpfgtdsh","pfgtd","pfcombined_cwsh","gtd2","tdc","tdrc"])
-    #return map(lambda alg: os.path.join("./experiments/online/Baird",f"{alg}.json"),["cwpfgtd","cwpfgtdsh","pfgtd","pfcombined_cw","pfcombined_cwsh","gtd2","tdc","tdrc"])
+    return map(lambda alg: os.path.join("./experiments/online/Baird",f"{alg}.json"),["cwpfgtd","pfgtd","pfcombined_cw","gtd2","tdc","tdrc"])
 
 def getBoyanConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/Boyan",f"{alg}.json"),["cwpfgtdsh","pfgtd","pfcombined_cwsh","gtd2","tdc","tdrc","td"])
-    #return map(lambda alg: os.path.join("./experiments/online/Boyan",f"{alg}.json"),["cwpfgtd","cwpfgtdsh","pfgtd","pfcombined_cwsh","pfcombined_cw","gtd2","tdc","tdrc","td"])
+    return map(lambda alg: os.path.join("./experiments/online/Boyan",f"{alg}.json"),["cwpfgtd","pfgtd","pfcombined_cw","gtd2","tdc","tdrc","td"])
 
 def getRWConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"),["cwpfgtdsh","pfgtd","pfcombined_cwsh","gtd2","tdc","tdrc","td"])
-    #return map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"),["cwpfgtd","cwpfgtdsh","pfgtd","pfcombined_cw","pfcombined_cwsh","gtd2","tdc","tdrc","td"])
+    return map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"),["cwpfgtd","pfgtd","pfcombined_cw","gtd2","tdc","tdrc","td"])
 
 def getMDPData(exp_paths,fltr,measure):
     data = {}
