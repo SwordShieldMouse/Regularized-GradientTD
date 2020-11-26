@@ -96,7 +96,7 @@ def getRWData(exp_paths, fltr,measure):
         return data
 
     alldata = {}
-    for feats in ['tabular','inverted','dependent']:
+    for feats in ['tabular','dependent','inverted']:
         alldata[feats] = _getData(exp_paths,  feats)
     return alldata
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
             data["Baird"] = getMDPData(bairdConfigs, fltr, measure)
 
 
-            ref_alg = 'PFCombined'
+            ref_alg = 'GTD2'
             offset = -3
             prev = 0
             for i, problem in enumerate(data.keys()):
@@ -140,7 +140,7 @@ if __name__ == "__main__":
                     x = prev + j + offset
                     val, stderr = learner_data[learner]
                     val, stderr = val / ref, stderr / ref
-                    ax.bar(x, val, yerr=stderr, color = colors[learner], tick_label=problem)
+                    ax.bar(x, val, yerr=stderr, color = colors[learner], tick_label='')
                 prev += len(learner_data.keys())
 
             savepath = "figures/"
