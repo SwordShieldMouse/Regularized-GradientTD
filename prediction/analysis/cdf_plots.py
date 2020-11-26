@@ -38,13 +38,15 @@ def generate_cdf_plot(ax, exp_paths):
         # plot a cdf where the y-axis is proportion of runs and x-axis is the error
         curve = generate_cdf(collated)    
         
-        ax.plot(curve[:, 1], curve[:, 0],  label=alg, color=colors[alg])
+        ax.semilogx(curve[:, 1], curve[:, 0],  label=alg, color=colors[alg])
 
         # confidence intervals
         # from eq 4 of appendix C of https://arxiv.org/pdf/2006.16958.pdf
         delta = 0.05
         bound = np.sqrt(np.log(2 / delta) / 2 / collated.shape[0])
-        ax.fill_between(curve[:, 1], curve[:, 0] - bound, curve[:, 0] + bound, color = colors[alg], alpha = 0.2)
+        lower = np.clip(curve[:, 0] - bound, 0, 1)
+        upper = np.clip(curve[:, 0] + bound, 0, 1)
+        ax.fill_between(curve[:, 1], lower, upper, color = colors[alg], alpha = 0.2)
 
 
 
@@ -74,6 +76,6 @@ if __name__ == "__main__":
     height = (24/5)
     f.set_size_inches((width, height), forward=False)
     axes.set_ylabel("Cumulative Probability")
-    axes.set_xlabel("Average Error")
+    axes.set_xlabel("Log Average Error")
     axes.legend()
     plt.savefig(f'{save_path}/cdf-allRuns.pdf')
