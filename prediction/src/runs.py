@@ -17,9 +17,11 @@ if len(sys.argv) < 3:
     print('python3 src/main.py <runs> <path/to/description.json> <idx>')
     sys.exit(1)
 
-runs = int(sys.argv[1])
+total_runs = int(sys.argv[1])
 exp = ExperimentModel.load(sys.argv[2])
 idx = int(sys.argv[3])
+
+runs = total_runs // exp.numPermutations()
 
 EVERY = 100
 
@@ -75,10 +77,20 @@ for run in range(runs):
     # tell the collector to start a new run
     collector.reset()
 
+# Get matrix of learning curves. rows = runs, cols = MSPBE curve
 rmspbe_data = np.array(collector.getAllData('rmspbe'), dtype='object')
+
+# summary stats
+auc = np.mean(rmspbe_data, axis=1)
+half_auc = np.mean(rmspbe_data[:,rmspbe_data.shape[1]//2:], axis=1)
+median = np.median(rmspbe_data, axis=1)
+final = rmspbe_data[:,-1]
 
 # save results to disk
 save_context = exp.buildSaveContext(idx, base="./")
 save_context.ensureExists()
 
-np.save(save_context.resolve('rmspbe.npy'), rmspbe_data)
+np.save(save_context.resolve('auc.npy'), auc)
+np.save(save_context.resolve('half_auc.npy'), half_auc)
+np.save(save_context.resolve('median.npy'), median)
+np.save(save_context.resolve('final_rmspbe.npy'), final)
