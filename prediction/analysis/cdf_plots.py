@@ -20,25 +20,28 @@ def collate_results(results):
         m = r.load()
 
         # get the auc
-        collated_m.append(m.mean(1))
+        collated_m.append(m)
 
     return np.concatenate(collated_m)
 
 
 # for each alg, collate all the results
-def generate_cdf_plot(ax, exp_paths):
+def generate_cdf_plot(ax, exp_paths, stat_name):
     for exp_path in exp_paths:
         exp = ExperimentModel.load(exp_path)
         alg = exp.agent
 
-        results = loadResults(exp, 'rmspbe.npy')
+        print(f"alg = {alg}")
+
+        # results = loadResults(exp, 'rmspbe.npy')
+        results = loadResults(exp, f'{stat_name}.npy')
 
         collated = collate_results(results)
         
         # plot a cdf where the y-axis is proportion of runs and x-axis is the error
         curve = generate_cdf(collated)    
         
-        ax.semilogx(curve[:, 1], curve[:, 0],  label=alg, color=colors[alg])
+        ax.plot(curve[:, 1], curve[:, 0],  label=alg, color=colors[alg])
 
         # confidence intervals
         # from eq 4 of appendix C of https://arxiv.org/pdf/2006.16958.pdf
@@ -63,19 +66,22 @@ def generate_cdf(arr):
 
 
 if __name__ == "__main__":
-    f, axes = plt.subplots(1)
-
     exp_paths = sys.argv[1:]
 
-    generate_cdf_plot(axes, exp_paths)
+    for stat_name in ["auc", "half_auc", "final_rmspbe", "median"]:
+        f, axes = plt.subplots(1)
+        print(f"stat = {stat_name}")
+        generate_cdf_plot(axes, exp_paths, stat_name)
 
-    save_path = 'figures'
-    os.makedirs(save_path, exist_ok=True)
+        save_path = 'figures'
+        os.makedirs(save_path, exist_ok=True)
 
-    width = 8
-    height = (24/5)
-    f.set_size_inches((width, height), forward=False)
-    axes.set_ylabel("Cumulative Probability")
-    axes.set_xlabel("Log Average Error")
-    axes.legend()
-    plt.savefig(f'{save_path}/cdf-allRuns.pdf')
+        width = 8
+        height = (24/5)
+        f.set_size_inches((width, height), forward=False)
+        axes.set_ylabel("Cumulative Probability")
+        axes.set_xlabel("Average Error")
+        axes.set_title(f"{stat_name}")
+        axes.legend()
+        plt.savefig(f'{save_path}/{stat_name}-cdf-allRuns.pdf')
+        plt.clf()
