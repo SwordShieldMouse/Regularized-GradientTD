@@ -37,7 +37,6 @@ def generate_cdf_plot(ax, exp_paths, stat_name):
         results = loadResults(exp, f'{stat_name}.npy')
 
         collated = collate_results(results)
-        
         # plot a cdf where the y-axis is proportion of runs and x-axis is the error
         curve = generate_cdf(collated)    
         
@@ -58,7 +57,7 @@ def generate_cdf(arr):
     # output is a list of tuples of the form (proportion_of_runs, error_obtained)
 
     # sort by increasing error and then do a cumulative sum
-    cdf = np.cumsum(sorted(arr))
+    cdf = sorted(arr)
     n_total_runs = arr.shape[0]
     proportions = (np.arange(n_total_runs) + 1) / n_total_runs
     return np.array(list(zip(proportions, cdf)))
