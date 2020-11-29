@@ -12,16 +12,14 @@ from src.problems.registry import getProblem
 from src.utils.errors import partiallyApplyMSPBE, MSPBE
 from src.utils.Collector import Collector
 
-if len(sys.argv) < 3:
+if len(sys.argv) < 2:
     print('run again with:')
     print('python3 src/main.py <runs> <path/to/description.json> <idx>')
     sys.exit(1)
 
-total_runs = int(sys.argv[1])
+runs = int(sys.argv[1])
 exp = ExperimentModel.load(sys.argv[2])
-idx = int(sys.argv[3])
-
-runs = total_runs // exp.numPermutations()
+idx = 0
 
 EVERY = 100
 
@@ -36,6 +34,12 @@ for run in range(runs):
     env = problem.getEnvironment()
     rep = problem.getRepresentation()
     agent = problem.getAgent()
+
+    if 'alpha' in problem.params.keys():
+        # HACK: the alpha in the config specifies the lower bound on
+        # stepsize 2.0^-N, which the agent is instantiated with when Problem(exp,idx)
+        # is called. Here we sample the step-size for algorithms which require tuning.
+        agent.alpha = 2.0 ** np.random.uniform(agent.alpha, 0.0)
 
     mu = problem.behavior
     pi = problem.target
