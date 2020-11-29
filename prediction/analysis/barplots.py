@@ -14,14 +14,17 @@ from src.experiment import ExperimentModel
 from PyExpUtils.results.results import loadResults
 from PyExpUtils.utils.arrays import first
 
+ALL_ALGS = ["cwpfgtd","pfgtd","pfcombined_cw","cwpfgtdsh","pfcombined_cwsh","gtd2","tdc","tdrc", "td"]
+BAIRD_ALGS = ALL_ALGS[:-1]
+
 def getBairdConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/Baird",f"{alg}.json"),["cwpfgtd","pfgtd","pfcombined_cw","gtd2","tdc","tdrc"])
+    return map(lambda alg: os.path.join("./experiments/online/Baird",f"{alg}.json"), BAIRD_ALGS)
 
 def getBoyanConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/Boyan",f"{alg}.json"),["cwpfgtd","pfgtd","pfcombined_cw","gtd2","tdc","tdrc","td"])
+    return map(lambda alg: os.path.join("./experiments/online/Boyan",f"{alg}.json"), ALL_ALGS)
 
 def getRWConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"),["cwpfgtd","pfgtd","pfcombined_cw","gtd2","tdc","tdrc","td"])
+    return map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"), ALL_ALGS)
 
 def getMDPData(exp_paths,fltr,measure):
     data = {}
