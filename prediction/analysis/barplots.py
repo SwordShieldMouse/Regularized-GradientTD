@@ -14,20 +14,20 @@ from src.experiment import ExperimentModel
 from PyExpUtils.results.results import loadResults
 from PyExpUtils.utils.arrays import first
 
-ALL_ALGS = ["cwpfgtd","pfgtd","pfcombined_cw","cwpfgtdsh","pfcombined_cwsh","gtd2","tdc","tdrc", "td"]
+#ALL_ALGS = ["cwpfgtd","pfgtd","pfcombined_cw","pfgtd+","gtd2","tdc","tdrc", "td"]
+ALL_ALGS = ["cwpfgtd","pfgtd","pfgtd+","gtd2","tdc","tdrc", "td"]
 BAIRD_ALGS = ALL_ALGS[:-1]
 
 def getBairdConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/Baird",f"{alg}.json"), BAIRD_ALGS)
+    return list(map(lambda alg: os.path.join("./experiments/online/Baird",f"{alg}.json"), BAIRD_ALGS))
 
 def getBoyanConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/Boyan",f"{alg}.json"), ALL_ALGS)
+    return list(map(lambda alg: os.path.join("./experiments/online/Boyan",f"{alg}.json"), ALL_ALGS))
 
 def getRWConfigs():
-    return map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"), ALL_ALGS)
+    return list(map(lambda alg: os.path.join("./experiments/online/RandomWalk",f"{alg}.json"), ALL_ALGS))
 
 def getMDPData(exp_paths,fltr,measure):
-    data = {}
 
     def _getBest(results):
         best = first(results)
@@ -47,6 +47,7 @@ def getMDPData(exp_paths,fltr,measure):
         print(f"{bestVal} <= {best.params}")
         return best
 
+    data = {}
     for exp_path in exp_paths:
         exp = ExperimentModel.load(exp_path)
         alg = exp.agent
@@ -62,9 +63,8 @@ def getMDPData(exp_paths,fltr,measure):
     return data
 
 def getRWData(exp_paths, fltr,measure):
-    data = {}
 
-    def _getBest(results):
+    def _getRWBest(results):
         best = first(results)
         bestVal = measure(best.load()[0])
 
@@ -82,7 +82,8 @@ def getRWData(exp_paths, fltr,measure):
         print(f"{bestVal} <= {best.params}")
         return best
 
-    def _getData(exp_paths, feats):
+    def _getRWData(exp_paths, feats):
+        data={}
         for exp_path in exp_paths:
             exp = ExperimentModel.load(exp_path)
             alg = exp.agent
@@ -93,17 +94,17 @@ def getRWData(exp_paths, fltr,measure):
             if fltr is not None:
                 sub_results = filter(fltr, sub_results)
 
-            best = getBest(sub_results)
+            best = _getRWBest(sub_results)
             m,s,_ = best.load()
             data[alg] = (measure(m), measure(s))
         return data
 
     alldata = {}
     for feats in ['tabular','dependent','inverted']:
-        alldata[feats] = _getData(exp_paths,  feats)
+        alldata[feats] = _getRWData(exp_paths,  feats)
     return alldata
 
-if __name__ == "__main__":
+def main():
     fltrs = [
         (lambda r: r.params.get('eta', 1) == 1, "barplots"),
         (None, "barplots_allParams"),
@@ -126,12 +127,12 @@ if __name__ == "__main__":
             boyanConfigs = getBoyanConfigs()
             data["Boyan"] = getMDPData(boyanConfigs, fltr, measure)
 
-            print("Baird...")
-            bairdConfigs = getBairdConfigs()
-            data["Baird"] = getMDPData(bairdConfigs, fltr, measure)
+            # print("Baird...")
+            # bairdConfigs = getBairdConfigs()
+            # data["Baird"] = getMDPData(bairdConfigs, fltr, measure)
 
 
-            ref_alg = 'GTD2'
+            ref_alg = 'PFGTD+'
             offset = -3
             prev = 0
             for i, problem in enumerate(data.keys()):
@@ -150,4 +151,7 @@ if __name__ == "__main__":
             width = 8
             height = (24/5)
             os.makedirs(savepath, exist_ok=True)
-            plt.savefig(f"{savepath}/{filename}_{measurename}.pdf")
+            plt.savefig(f"{savepath}/{filename}_{measurename}.png")
+
+if __name__ == "__main__":
+    main()

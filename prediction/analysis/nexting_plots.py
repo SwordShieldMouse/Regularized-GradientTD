@@ -191,8 +191,8 @@ if __name__ == "__main__":
     }
 
 
-    #datatypes = ["mse","nmse","smape"]
-    datatypes = ['smape', ]
+    datatypes = ["mse","nmse","smape"]
+    #datatypes = ['smape', ]
     for datatype in datatypes:
         SUMMARY = f"{datatype}_summary.npy"
         print(f"plotting {datatype}...")
@@ -201,16 +201,16 @@ if __name__ == "__main__":
         f.set_size_inches((width, height), forward=False)
         plt.savefig(f'{save_path}/{datatype}-medians-nexting.pdf')
 
-        # f, axes = generateMeanPlot(exp_paths, ylim=mean_ylims[datatype])
-        # f.set_size_inches((width, height), forward=False)
-        # plt.savefig(f'{save_path}/{datatype}-means-nexting.png', dpi=100)
+        f, axes = generateMeanPlot(exp_paths, ylim=mean_ylims[datatype])
+        f.set_size_inches((width, height), forward=False)
+        plt.savefig(f'{save_path}/{datatype}-means-nexting.png', dpi=100)
 
         f, axes = generateMedianAndAllSensorsPlots(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width*len(exp_paths), height), forward=False)
         plt.savefig(f'{save_path}/{datatype}-allSensors-median-nexting.pdf')
 
-        # f, axes = generateMeanAndAllSensorsPlots(exp_paths, ylim=mean_ylims[datatype])
-        # f.set_size_inches((width*len(exp_paths), height), forward=False)
-        # plt.savefig(f'{save_path}/{datatype}-allSensors-mean-nexting.png', dpi=100)
+        f, axes = generateMeanAndAllSensorsPlots(exp_paths, ylim=mean_ylims[datatype])
+        f.set_size_inches((width*len(exp_paths), height), forward=False)
+        plt.savefig(f'{save_path}/{datatype}-allSensors-mean-nexting.png', dpi=100)
 
     print("done!")
