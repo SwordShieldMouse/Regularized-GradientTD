@@ -65,17 +65,20 @@ class Param:
     def initWeights(self, u):
         unorm = norm(u)
         self.u = u if unorm <=1 else u/unorm
-        self.W = 1.0 if unorm <= 1.0 else unorm
-        self.beta = 1.0
+        # arbitrary; bet 1/10 of wealth if we have to
+        # be initialized to something other than 0
+        self.W = 2.0*unorm
+        self.beta = 0.5
 
-class HalfCWParam:
+class VectorHintsParam:
     '''
     Parameter-free OLO algorithm with gradient-bound hints
     '''
     def __init__(self, features: int, W0: float, g: float, beta: float):
         self.beta = beta
-        self.W = W0 / features
-        self.h = g
+        self.W = W0
+        self.vec_h = np.ones(features)*g
+        self.h = norm(self.vec_h)
 
         # initial bet
         self.v = self.beta * self.W
@@ -86,7 +89,7 @@ class HalfCWParam:
         self.u = u if normu<=1 else u/normu
 
         self.A = 0.0
-        self.G = np.zeros(features)
+        self.G = 0.0
 
         self.eps = 1e-5
 
@@ -102,9 +105,16 @@ class HalfCWParam:
         # NOTE: have completely removed the constraint set for now
 
         # Incorporate grad bound
-        gradnorm = norm(g)
-        gtrunc = g if gradnorm < self.h else self.h*g / (gradnorm + self.eps)
-        self.h = max(self.h, gradnorm)
+        gradnorm = np.abs(g)
+
+        # Truncate g coordinate-wise with a vector of hints
+        gtrunc = g.copy()
+        truncIdx = np.argwhere(gradnorm > self.vec_h)
+        gtrunc[truncIdx] = np.multiply(self.vec_h[truncIdx], g[truncIdx]) / (gradnorm[truncIdx] + self.eps)
+        self.vec_h = np.maximum(self.vec_h, gradnorm)
+
+        # pass norm of vector hint
+        self.h = norm(self.vec_h)
 
         # update betting fraction
         s = np.dot(gtrunc, self.u)
@@ -119,8 +129,8 @@ class HalfCWParam:
         self.W -= s*self.v
 
         # update directional weights
-        self.G += np.power(gtrunc, 2)
-        u = self.u - np.sqrt(2)*np.divide(gtrunc, np.sqrt(self.G) + self.eps)
+        self.G += norm(gtrunc)**2
+        u = self.u - np.sqrt(2)/(2*np.sqrt(self.G) + self.eps) * gtrunc
 
         unorm = norm(u)
         self.u = u if unorm<=1 else u / unorm
@@ -128,8 +138,8 @@ class HalfCWParam:
     def initWeights(self, u):
         unorm = norm(u)
         self.u = u if unorm <=1 else u/unorm
-        self.W = 1.0 if unorm <= 1.0 else unorm
-        self.beta = 1.0
+        self.W = unorm*2.0
+        self.beta = 0.5
 
 '''
 Parameter-free OLO algorithms used to construct
@@ -283,8 +293,8 @@ class CWParam:
 
     def initWeights(self, u):
         assert u.shape == self.W.shape
-        self.W = u
-        self.beta = 1.0
+        self.W = u*2.0
+        self.beta = 0.5
 
 class CWParamScalarHint:
     '''

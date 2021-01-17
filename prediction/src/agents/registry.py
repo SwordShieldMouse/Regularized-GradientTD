@@ -28,8 +28,12 @@ def getAgent(name):
 
     elif name == 'PFGTD':
         return PFGTD
+    elif name == 'PFGTDVectorHints':
+        return PFGTDVectorHints
     elif name == 'PFGTDMP':
         return PFGTDMP
+    elif name == "PFGTD+":
+        return PFGTDPlus
     elif name == 'PFGTDHalfCW':
         return PFGTDHalfCW
     elif name == 'MultiDiscountPFGTD':

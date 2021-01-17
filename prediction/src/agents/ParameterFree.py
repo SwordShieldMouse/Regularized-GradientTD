@@ -92,6 +92,19 @@ class PFGTD(ParameterFree):
 
         self._initBets()
 
+class PFGTDVectorHints(ParameterFree):
+    """
+    Parameter-free GTD with hints
+    """
+    def __init__(self, features: int, actions, params: dict):
+        super().__init__(features, actions, params)
+
+        # opt params
+        self.theta = VectorHintsParam(features, params["wealth"], params["hint"], params["beta"])
+        self.y = VectorHintsParam(features, params["wealth"], params["hint"], params["beta"])
+
+        self._initBets()
+
 class PFGTDHalfCW(ParameterFree):
     """
     Parameter-free GTD with hints
@@ -242,6 +255,12 @@ class PFCombined(ParameterFree):
         p = params.copy()
         p['wealth'] = params['wealth'] / 2
         return p
+
+class PFGTDPlus(PFCombined):
+    def __init__(self, features, actions, params):
+        params["algA"] = "PFGTDVectorHints"
+        params["algB"] = "CWPFGTD"
+        super().__init__(features, actions, params)
 
 class PFResidual(PFCombined):
     def __init__(self, features, actions, params):

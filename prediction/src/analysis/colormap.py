@@ -7,6 +7,8 @@ colors = {
     'PFTDC': 'pink',
 
     'PFCombined': 'royalblue',
+    'PFGTD+': 'royalblue',
+    'PFGTDVectorHints': 'hotpink',
     'PFResidual': 'blue',
 
     # New Baselines
