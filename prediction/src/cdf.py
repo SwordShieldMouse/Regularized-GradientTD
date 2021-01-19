@@ -22,6 +22,7 @@ exp = ExperimentModel.load(sys.argv[2])
 idx = 0
 
 EVERY = 100
+MAX_EVAL = 10000
 
 collector = Collector()
 for run in range(runs):
@@ -39,7 +40,7 @@ for run in range(runs):
         # HACK: the alpha in the config specifies the lower bound on
         # stepsize 2.0^-N, which the agent is instantiated with when Problem(exp,idx)
         # is called. Here we sample the step-size for algorithms which require tuning.
-        agent.alpha = 2.0 ** np.random.uniform(agent.alpha, 0.0)
+        agent.alpha = 2.0 ** np.random.uniform(agent.alpha, -2)
 
     mu = problem.behavior
     pi = problem.target
@@ -70,7 +71,8 @@ for run in range(runs):
         r, o, a, t = glue.step()
 
         mspbe = MSPBE(agent.getWeights(), *AbC)
-        collector.collect('rmspbe', np.sqrt(mspbe))
+        rmspbe = np.sqrt(mspbe) if np.isfinite(mspbe) else MAX_EVAL
+        collector.collect('rmspbe', rmspbe)
         if step % EVERY == 0:
             print(np.sqrt(mspbe))
 

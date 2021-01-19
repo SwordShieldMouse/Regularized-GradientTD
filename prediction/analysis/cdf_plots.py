@@ -1,6 +1,7 @@
 import os
 import sys
 import glob
+from functools import reduce
 import numpy as np
 import matplotlib.pyplot as plt
 sys.path.append(os.getcwd())
@@ -22,12 +23,15 @@ def collate_results(results):
         # get the auc
         collated_m.append(m)
 
-    return np.concatenate(collated_m)
+    arr = np.concatenate(collated_m)
+    broken = np.argwhere(filter(lambda a: not np.isfinite(a) or np.isnan(a) , arr))
+    arr[broken] = 1e6
+    return  arr
 
 
 # for each alg, collate all the results
-def generate_cdf_plot(ax, exp_paths, stat_name):
-    for exp_path in exp_paths:
+def generate_cdf_plot(ax, exp_paths, stat_name, fltr=None):
+    for i,exp_path in enumerate(exp_paths):
         exp = ExperimentModel.load(exp_path)
         alg = exp.agent
 
@@ -36,19 +40,39 @@ def generate_cdf_plot(ax, exp_paths, stat_name):
         # results = loadResults(exp, 'rmspbe.npy')
         results = loadResults(exp, f'{stat_name}.npy')
 
+        if fltr is not None:
+            results = filter(fltr, results)
+
         collated = collate_results(results)
+
+        lt1 = np.argwhere(collated>=10000)
+        collated[lt1] = 10000
+        #acceptable_data = collated[lt1].flatten()
+
+        # plt.scatter(i + 0.5*(np.random.rand(len(acceptable_data))-0.5), acceptable_data, label=alg, facecolors='none',edgecolors=colors[alg])
+        # print(f"{alg}: {1.0 - len(acceptable_data)/len(collated)}")
+
         # plot a cdf where the y-axis is proportion of runs and x-axis is the error
-        curve = generate_cdf(collated)    
-        
-        ax.plot(curve[:, 1], curve[:, 0],  label=alg, color=colors[alg])
+        curve = generate_cdf(collated)
+        probs = curve[:,0]
+        values = curve[:,1]
+
+        finite = np.argwhere(np.isfinite(values))
+        probs = probs[finite].flatten()
+        values = values[finite].flatten()
+
+        ax.plot(values, probs,  label=alg, color=colors[alg])
+
 
         # confidence intervals
         # from eq 4 of appendix C of https://arxiv.org/pdf/2006.16958.pdf
         delta = 0.05
         bound = np.sqrt(np.log(2 / delta) / 2 / collated.shape[0])
-        lower = np.clip(curve[:, 0] - bound, 0, 1)
-        upper = np.clip(curve[:, 0] + bound, 0, 1)
-        ax.fill_between(curve[:, 1], lower, upper, color = colors[alg], alpha = 0.2)
+        lower = probs - bound
+        #lower = np.minimum(np.maximum(lower,0),1)
+        upper = probs + bound
+        #upper = np.minimum(np.maximum(probs + bound,0),1)
+        ax.fill_between(values, lower, upper, color = colors[alg], alpha = 0.2)
 
 
 
@@ -64,23 +88,63 @@ def generate_cdf(arr):
 
 
 
+def experiment_is(name, exp_paths):
+    return reduce(lambda prev, path: prev and name in path, exp_paths)
+
+def get_exp(exp_paths):
+    for name in ["Baird","Boyan", "RandomWalk"]:
+        if experiment_is(name, exp_paths):
+            return name
+    raise Exception("get_exp( ... ): experiment name not found!")
+
+XLIM = {
+    "Baird": [0,2]
+}
+
 if __name__ == "__main__":
     exp_paths = sys.argv[1:]
 
+    exp_name = get_exp(exp_paths)
     for stat_name in ["auc", "half_auc", "final_rmspbe", "median"]:
-        f, axes = plt.subplots(1)
-        print(f"stat = {stat_name}")
-        generate_cdf_plot(axes, exp_paths, stat_name)
+        if exp_name != "RandomWalk":
+            f, axes = plt.subplots(1)
+            print(f"stat = {stat_name}")
+            generate_cdf_plot(axes, exp_paths, stat_name)
 
-        save_path = 'figures'
-        os.makedirs(save_path, exist_ok=True)
+            save_path = 'figures'
+            os.makedirs(save_path, exist_ok=True)
 
-        width = 8
-        height = (24/5)
-        f.set_size_inches((width, height), forward=False)
-        axes.set_ylabel("Cumulative Probability")
-        axes.set_xlabel("Average Error")
-        axes.set_title(f"{stat_name}")
-        axes.legend()
-        plt.savefig(f'{save_path}/{stat_name}-cdf-allRuns.pdf')
-        plt.clf()
+            width = 8
+            height = (24/5)
+            f.set_size_inches((width, height), forward=False)
+            axes.set_ylabel("Cumulative Probability")
+            axes.set_xlabel("Average Error")
+            axes.set_title(f"{exp_name} {stat_name}")
+            #axes.set_yscale("log")
+            #axes.set_xscale('log')
+            axes.set_xlim(XLIM[exp_name])
+            axes.legend()
+            plt.savefig(f'{save_path}/{exp_name}-{stat_name}-cdf-allRuns.png')
+            plt.clf()
+        else:
+            for feats in ["tabular", "dependent", "inverted"]:
+                f, axes = plt.subplots(1)
+                print(f"stat = {stat_name}")
+
+                fltr = lambda r: r.params['representation'] == feats
+                generate_cdf_plot(axes, exp_paths, stat_name, fltr = fltr)
+
+                save_path = 'figures'
+                os.makedirs(save_path, exist_ok=True)
+
+                width = 8
+                height = (24/5)
+                f.set_size_inches((width, height), forward=False)
+                axes.set_ylabel("Cumulative Probability")
+                axes.set_xlabel("Average Error")
+                axes.set_title(f"{exp_name} ({feats}) {stat_name}")
+                xlim = [0.01, 10]
+                axes.set_xlim(xlim)
+                axes.legend()
+                plt.savefig(f'{save_path}/{exp_name}-{feats}-{stat_name}-cdf-allRuns.png')
+                plt.clf()
