@@ -64,7 +64,7 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
     f.set_size_inches((width, height), forward=False)
     axes.set_title(title)
     set_limits(axes,xlim,ylim)
-    plt.savefig(f'{savepath}/{prefix}learning-curve-allParams.pdf')
+    plt.savefig(f'{savepath}/{prefix}learning-curve-allParams.png')
 
     f, axes = plt.subplots(1)
 
@@ -80,7 +80,7 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
     f.set_size_inches((width, height), forward=False)
     axes.set_title(title)
     set_limits(axes,xlim,ylim)
-    plt.savefig(f'{savepath}/{prefix}learning-curve.pdf')
+    plt.savefig(f'{savepath}/{prefix}learning-curve.png')
 
 def set_limits(axes, xlim,ylim):
     if ylim is not None:
@@ -137,7 +137,7 @@ def plotEach(exp_paths, savepath, problem):
         f.set_size_inches((width, height), forward=False)
 
         axes.set_title(f"{problem} ({feats})")
-        plt.savefig(f'{savepath}/{feats}-learning-curve.pdf')
+        plt.savefig(f'{savepath}/{feats}-learning-curve.png')
 
 if __name__ == "__main__":
     exp_paths = sys.argv[1:]

@@ -1,14 +1,15 @@
 colors = {
     # Parameter-free Baselines
     'PFGTD': 'red',
+    'PFGTDVectorHints': 'hotpink',
     'COCOBPFGTD':'salmon',
     'CWPFGTD':'salmon',
     'CWPFGTDSH':'darkred',
     'PFTDC': 'pink',
 
-    'PFCombined': 'royalblue',
+    'PFCombined': 'blue',
     'PFGTD+': 'royalblue',
-    'PFGTDVectorHints': 'hotpink',
+    'PFGTD+Scalar': 'indigo',
     'PFResidual': 'blue',
 
     # New Baselines

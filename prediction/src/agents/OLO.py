@@ -77,7 +77,7 @@ class VectorHintsParam:
     def __init__(self, features: int, W0: float, g: float, beta: float):
         self.beta = beta
         self.W = W0
-        self.vec_h = np.ones(features)*g
+        self.vec_h = np.ones(features)*g/np.sqrt(features)
         self.h = norm(self.vec_h)
 
         # initial bet
@@ -251,7 +251,7 @@ class CWParam:
     '''
     def __init__(self, features: int, W0: float, g: float, beta:float):
         self.beta = beta * np.ones(features)
-        self.W = np.ones(features) * W0
+        self.W = np.ones(features) * W0 / features
         self.h = g * np.ones(features)
 
         # initial bet
@@ -303,7 +303,7 @@ class CWParamScalarHint:
     '''
     def __init__(self, features: int, W0: float, g: float, beta:float):
         self.beta = beta * np.ones(features)
-        self.W = np.ones(features) * W0
+        self.W = np.ones(features) * W0 / features
         self.h = g
 
         # initial bet

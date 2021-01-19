@@ -87,8 +87,9 @@ class PFGTD(ParameterFree):
         super().__init__(features, actions, params)
 
         # opt params
-        self.theta = Param(features, params["wealth"], params["hint"], params["beta"])
-        self.y = Param(features, params["wealth"], params["hint"], params["beta"])
+        W0 = params['wealth'] / 2
+        self.theta = Param(features, W0, params["hint"], params["beta"])
+        self.y = Param(features, W0, params["hint"], params["beta"])
 
         self._initBets()
 
@@ -100,8 +101,9 @@ class PFGTDVectorHints(ParameterFree):
         super().__init__(features, actions, params)
 
         # opt params
-        self.theta = VectorHintsParam(features, params["wealth"], params["hint"], params["beta"])
-        self.y = VectorHintsParam(features, params["wealth"], params["hint"], params["beta"])
+        W0 = params['wealth'] / 2
+        self.theta = VectorHintsParam(features, W0, params["hint"], params["beta"])
+        self.y = VectorHintsParam(features, W0, params["hint"], params["beta"])
 
         self._initBets()
 
@@ -165,7 +167,7 @@ class CWPFGTD(ParameterFree):
     def __init__(self, features: int, actions: int, params: dict):
         super().__init__(features, actions, params)
 
-        W0 = params['wealth'] / features
+        W0 = params['wealth'] / 2
 
         # opt params
         self.theta = CWParam(features, W0, params["hint"], params["beta"])
@@ -180,7 +182,7 @@ class CWPFGTDSH(ParameterFree):
     def __init__(self, features: int, actions: int, params: dict):
         super().__init__(features, actions, params)
 
-        W0 = params['wealth'] / features
+        W0 = params['wealth'] / 2
 
         # opt params
         self.theta = CWParamScalarHint(features, W0, params["hint"], params["beta"])
@@ -195,7 +197,7 @@ class COCOBPFGTD(ParameterFree):
     def __init__(self, features: int, actions: int, params: dict):
         super().__init__(features, actions, params)
 
-        W0 = params['wealth']/features
+        W0 = params['wealth']/2
 
         # opt params
         self.theta = COCOBParam(features, W0, params["hint"], params["beta"])
@@ -260,6 +262,12 @@ class PFGTDPlus(PFCombined):
     def __init__(self, features, actions, params):
         params["algA"] = "PFGTDVectorHints"
         params["algB"] = "CWPFGTD"
+        super().__init__(features, actions, params)
+
+class PFGTDPlusScalar(PFCombined):
+    def __init__(self, features, actions, params):
+        params["algA"] = "PFGTD"
+        params["algB"] = "CWPFGTDSH"
         super().__init__(features, actions, params)
 
 class PFResidual(PFCombined):
