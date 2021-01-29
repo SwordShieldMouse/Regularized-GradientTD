@@ -93,6 +93,20 @@ class PFGTD(ParameterFree):
 
         self._initBets()
 
+class PFGTDMaxHint(ParameterFree):
+    """
+    Parameter-free GTD with hints
+    """
+    def __init__(self, features: int, actions, params: dict):
+        super().__init__(features, actions, params)
+
+        # opt params
+        W0 = params['wealth'] / 2
+        self.theta = ParamMaxHint(features, W0, params["hint"], params["beta"])
+        self.y = ParamMaxHint(features, W0, params["hint"], params["beta"])
+
+        self._initBets()
+
 class PFGTDVectorHints(ParameterFree):
     """
     Parameter-free GTD with hints
@@ -172,6 +186,21 @@ class CWPFGTD(ParameterFree):
         # opt params
         self.theta = CWParam(features, W0, params["hint"], params["beta"])
         self.y = CWParam(features, W0, params["hint"], params["beta"])
+
+        self._initBets()
+
+class CWPFGTDMaxHint(ParameterFree):
+    """
+    Coordinate-wise Parameter-free GTD with hints
+    """
+    def __init__(self, features: int, actions: int, params: dict):
+        super().__init__(features, actions, params)
+
+        W0 = params['wealth'] / 2
+
+        # opt params
+        self.theta = CWParamMaxHint(features, W0, params["hint"], params["beta"])
+        self.y = CWParamMaxHint(features, W0, params["hint"], params["beta"])
 
         self._initBets()
 
@@ -268,6 +297,12 @@ class PFGTDPlusScalar(PFCombined):
     def __init__(self, features, actions, params):
         params["algA"] = "PFGTD"
         params["algB"] = "CWPFGTDSH"
+        super().__init__(features, actions, params)
+
+class PFGTDPlusMax(PFCombined):
+    def __init__(self, features, actions, params):
+        params["algA"] = "PFGTDMaxHint"
+        params["algB"] = "CWPFGTDMaxHint"
         super().__init__(features, actions, params)
 
 class PFResidual(PFCombined):

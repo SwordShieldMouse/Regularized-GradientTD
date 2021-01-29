@@ -19,7 +19,7 @@ if len(sys.argv) < 2:
 
 runs = int(sys.argv[1])
 exp = ExperimentModel.load(sys.argv[2])
-idx = 0
+idx = 0 if len(sys.argv) < 3 else int(sys.argv[3])
 
 EVERY = 100
 MAX_EVAL = 10000

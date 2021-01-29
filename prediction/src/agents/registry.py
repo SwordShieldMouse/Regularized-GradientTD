@@ -34,6 +34,10 @@ def getAgent(name):
         return PFGTDMP
     elif name == "PFGTD+":
         return PFGTDPlus
+    elif name == "PFGTD+Max":
+        return PFGTDPlusMax
+    elif name == 'CWPFGTDMaxHint':
+        return CWPFGTDMaxHint
     elif name == 'PFGTDHalfCW':
         return PFGTDHalfCW
     elif name == 'MultiDiscountPFGTD':

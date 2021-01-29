@@ -5,11 +5,13 @@ colors = {
     'COCOBPFGTD':'salmon',
     'CWPFGTD':'salmon',
     'CWPFGTDSH':'darkred',
+    'CWPFGTDMaxHint':'darkred',
     'PFTDC': 'pink',
 
     'PFCombined': 'blue',
     'PFGTD+': 'royalblue',
     'PFGTD+Scalar': 'indigo',
+    'PFGTD+Max': 'indigo',
     'PFResidual': 'blue',
 
     # New Baselines
