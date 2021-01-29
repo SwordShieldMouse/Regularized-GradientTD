@@ -13,8 +13,13 @@ from PyExpUtils.results.results import loadResults
 from PyExpUtils.utils.arrays import first
 
 
+def sample(data, num):
+    return data[np.random.permutation(np.arange(0,data.shape[0]))[:num(data)]]
 
-def collate_results(results):
+def collate_results(results, num=None):
+    if num is None:
+        num = lambda d: 250
+
     collated_m = []
     for r in results:
         # for Boyan's chain, rows are the runs, columns are the mspbe over time
@@ -24,9 +29,65 @@ def collate_results(results):
         collated_m.append(m)
 
     arr = np.concatenate(collated_m)
+    arr = sample(arr, num)
     broken = np.argwhere(filter(lambda a: not np.isfinite(a) or np.isnan(a) , arr))
     arr[broken] = 1e6
     return  arr
+
+
+def generate_best_cdf_plot(ax, exp_paths, stat_name):
+    def _getBest(results):
+        best = first(results)
+        bestVal = np.mean(best.load()[0])
+
+        for r in results:
+            if not np.isfinite(bestVal):
+                best = r
+                bestVal = np.mean(r.load()[0])
+                continue
+            a = r.load()[0]
+            am = np.mean(a)
+            if am < bestVal:
+                best = r
+                bestVal = am
+
+        print(f"{bestVal} <= {best.params}")
+        return best
+
+    for i,exp_path in enumerate(exp_paths):
+        exp = ExperimentModel.load(exp_path)
+        alg = exp.agent
+
+        print(f"alg = {alg}")
+
+        # results = loadResults(exp, 'rmspbe.npy')
+        results = loadResults(exp, f'{stat_name}.npy')
+        results = _getBest(results)
+
+        collated = collate_results(results, lambda d: d.shape[0])
+
+        thresh=1
+        bad = np.argwhere(collated>=thresh)
+        collated[bad] = thresh+1
+
+        plt.scatter(i + 0.5*(np.random.rand(len(collated))-0.5), collated, label=alg, facecolors='none',edgecolors=colors[alg])
+        print(f"% bad: {len(bad) / len(collated)}")
+        print()
+
+        # plot a cdf where the y-axis is proportion of runs and x-axis is the error
+        #curve = generate_cdf(collated)
+
+
+        #ax.scatter(curve[:, 1], curve[:, 0],  label=alg, color=colors[alg])
+
+        # confidence intervals
+        # from eq 4 of appendix C of https://arxiv.org/pdf/2006.16958.pdf
+        # delta = 0.05
+        # bound = np.sqrt(np.log(2 / delta) / 2 / collated.shape[0])
+        # lower =curve[:, 0] - bound
+        # upper =curve[:, 0] + bound
+        # ax.fill_between(curve[:, 1], lower, upper, color = colors[alg], alpha = 0.2)
+    print("---")
 
 
 # for each alg, collate all the results
@@ -91,48 +152,27 @@ def get_exp(exp_paths):
             return name
     raise Exception("get_exp( ... ): experiment name not found!")
 
+ALL_STATS = ["auc", "half_auc", "final_rmspbe", "median"]
 
 if __name__ == "__main__":
     exp_paths = sys.argv[1:]
 
     exp_name = get_exp(exp_paths)
-    for stat_name in ["auc", "half_auc", "final_rmspbe", "median"]:
-        if exp_name != "RandomWalk":
-            f, axes = plt.subplots(1)
-            print(f"stat = {stat_name}")
-            generate_cdf_plot(axes, exp_paths, stat_name)
+    for stat_name in ['auc','final_rmspbe']:
+        f, axes = plt.subplots(1)
+        print(f"stat = {stat_name}")
+        generate_cdf_plot(axes, exp_paths, stat_name)
 
-            save_path = 'figures'
-            os.makedirs(save_path, exist_ok=True)
+        save_path = 'figures'
+        os.makedirs(save_path, exist_ok=True)
 
-            width = 8
-            height = (24/5)
-            f.set_size_inches((width, height), forward=False)
-            axes.set_ylabel("Cumulative Probability")
-            axes.set_xlabel("Average Error")
-            axes.set_title(f"{exp_name} {stat_name}")
-            axes.legend()
-            axes.set_yscale("log")
-            plt.savefig(f'{save_path}/{exp_name}-{stat_name}-cdf-allRuns.pdf')
-            plt.clf()
-        else:
-            for feats in ["tabular", "dependent", "inverted"]:
-                f, axes = plt.subplots(1)
-                print(f"stat = {stat_name}")
-
-                fltr = lambda r: r.params['representation'] == feats
-                generate_cdf_plot(axes, exp_paths, stat_name, fltr = fltr)
-
-                save_path = 'figures'
-                os.makedirs(save_path, exist_ok=True)
-
-                width = 8
-                height = (24/5)
-                f.set_size_inches((width, height), forward=False)
-                axes.set_ylabel("Cumulative Probability")
-                axes.set_xlabel("Average Error")
-                axes.set_title(f"{exp_name} ({feats}) {stat_name}")
-                axes.set_yscale('log')
-                axes.legend()
-                plt.savefig(f'{save_path}/{exp_name}-{feats}-{stat_name}-cdf-allRuns.pdf')
-                plt.clf()
+        width = 8
+        height = (24/5)
+        f.set_size_inches((width, height), forward=False)
+        axes.set_ylabel("Cumulative Probability")
+        axes.set_xlabel("Average Error")
+        axes.set_title(f"{exp_name} {stat_name}")
+        axes.legend()
+        axes.set_yscale("log")
+        plt.savefig(f'{save_path}/{exp_name}-{stat_name}-waterfall-allRuns.png')
+        plt.clf()

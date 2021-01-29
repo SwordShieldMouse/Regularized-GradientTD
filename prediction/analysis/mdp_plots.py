@@ -18,6 +18,7 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
     prefix = "batch-" if '/batch/' in paths[0] else ""
     f, axes = plt.subplots(1)
     bounds = []
+    os.makedirs(savepath, exist_ok=True)
 
     def _getBest(results):
         best = first(results)
@@ -55,18 +56,16 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
             bounds.append(b)
 
 
-    _generatePlot(axes, paths, bounds)
 
-    os.makedirs(savepath, exist_ok=True)
+    #_generatePlot(axes, paths, bounds)
+    # width = 8
+    # height = (24/5)
+    # f.set_size_inches((width, height), forward=False)
+    # axes.set_title(title)
+    # set_limits(axes,xlim,ylim)
+    # plt.savefig(f'{savepath}/{prefix}learning-curve-allParams.png')
 
-    width = 8
-    height = (24/5)
-    f.set_size_inches((width, height), forward=False)
-    axes.set_title(title)
-    set_limits(axes,xlim,ylim)
-    plt.savefig(f'{savepath}/{prefix}learning-curve-allParams.png')
-
-    f, axes = plt.subplots(1)
+    # f, axes = plt.subplots(1)
 
     bounds = []
 
@@ -80,7 +79,7 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
     f.set_size_inches((width, height), forward=False)
     axes.set_title(title)
     set_limits(axes,xlim,ylim)
-    plt.savefig(f'{savepath}/{prefix}learning-curve.png')
+    plt.savefig(f'{savepath}/{title}-{prefix}learning-curve.png')
 
 def set_limits(axes, xlim,ylim):
     if ylim is not None:
@@ -92,7 +91,8 @@ def getConfigs(path):
     return list(filter(lambda p: p.endswith(".json"), os.listdir(path)))
 
 def getSavePath(expname):
-    return os.path.join(os.getcwd(),f'figures/{expname}')
+    #return os.path.join(os.getcwd(),f'figures/{expname}')
+    return os.path.join(os.getcwd(),'figures')
 
 def experiment_is(name, exp_paths):
     return reduce(lambda prev, path: prev and name in path, exp_paths)
@@ -121,13 +121,13 @@ def plotEach(exp_paths, savepath, problem):
             bounds.append(b)
 
     for feats in ['tabular','inverted','dependent']:
-        bounds = []
+        # bounds = []
 
-        f, axes = plt.subplots(1)
-        _generatePlot(axes, exp_paths, bounds, feats)
-        f.set_size_inches((width, height), forward=False)
-        axes.set_title(f"{problem} ({feats})")
-        plt.savefig(f'{savepath}/{feats}-learning-curve-allParams')
+        # f, axes = plt.subplots(1)
+        # _generatePlot(axes, exp_paths, bounds, feats)
+        # f.set_size_inches((width, height), forward=False)
+        # axes.set_title(f"{problem} ({feats})")
+        # plt.savefig(f'{savepath}/{feats}-learning-curve-allParams')
 
         bounds = []
 
@@ -137,7 +137,7 @@ def plotEach(exp_paths, savepath, problem):
         f.set_size_inches((width, height), forward=False)
 
         axes.set_title(f"{problem} ({feats})")
-        plt.savefig(f'{savepath}/{feats}-learning-curve.png')
+        plt.savefig(f'{savepath}/RandomWalk-{feats}-learning-curve.png')
 
 if __name__ == "__main__":
     exp_paths = sys.argv[1:]

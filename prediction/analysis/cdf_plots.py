@@ -31,6 +31,7 @@ def collate_results(results):
 
 # for each alg, collate all the results
 def generate_cdf_plot(ax, exp_paths, stat_name, fltr=None):
+    bounds=[]
     for i,exp_path in enumerate(exp_paths):
         exp = ExperimentModel.load(exp_path)
         alg = exp.agent
@@ -74,6 +75,9 @@ def generate_cdf_plot(ax, exp_paths, stat_name, fltr=None):
         #upper = np.minimum(np.maximum(probs + bound,0),1)
         ax.fill_between(values, lower, upper, color = colors[alg], alpha = 0.2)
 
+        bounds.append(np.min(values))
+    return min(bounds)
+
 
 
 def generate_cdf(arr):
@@ -97,19 +101,23 @@ def get_exp(exp_paths):
             return name
     raise Exception("get_exp( ... ): experiment name not found!")
 
-XLIM = {
-    "Baird": [0,2]
+XLIM_U = {
+    "Baird": 2,
+    "Boyan": 1.0,
+    "RandomWalk": 0.2
 }
+
+ALL_STATS = ["auc", "half_auc", "final_rmspbe", "median"]
 
 if __name__ == "__main__":
     exp_paths = sys.argv[1:]
 
     exp_name = get_exp(exp_paths)
-    for stat_name in ["auc", "half_auc", "final_rmspbe", "median"]:
+    for stat_name in ["auc","final_rmspbe"]:
         if exp_name != "RandomWalk":
             f, axes = plt.subplots(1)
             print(f"stat = {stat_name}")
-            generate_cdf_plot(axes, exp_paths, stat_name)
+            minx = generate_cdf_plot(axes, exp_paths, stat_name)
 
             save_path = 'figures'
             os.makedirs(save_path, exist_ok=True)
@@ -122,7 +130,7 @@ if __name__ == "__main__":
             axes.set_title(f"{exp_name} {stat_name}")
             #axes.set_yscale("log")
             #axes.set_xscale('log')
-            axes.set_xlim(XLIM[exp_name])
+            axes.set_xlim([minx,XLIM_U[exp_name]])
             axes.legend()
             plt.savefig(f'{save_path}/{exp_name}-{stat_name}-cdf-allRuns.png')
             plt.clf()
@@ -132,7 +140,7 @@ if __name__ == "__main__":
                 print(f"stat = {stat_name}")
 
                 fltr = lambda r: r.params['representation'] == feats
-                generate_cdf_plot(axes, exp_paths, stat_name, fltr = fltr)
+                xmin=generate_cdf_plot(axes, exp_paths, stat_name, fltr = fltr)
 
                 save_path = 'figures'
                 os.makedirs(save_path, exist_ok=True)
@@ -143,8 +151,7 @@ if __name__ == "__main__":
                 axes.set_ylabel("Cumulative Probability")
                 axes.set_xlabel("Average Error")
                 axes.set_title(f"{exp_name} ({feats}) {stat_name}")
-                xlim = [0.01, 10]
-                axes.set_xlim(xlim)
+                axes.set_xlim([xmin,XLIM_U[exp_name]])
                 axes.legend()
                 plt.savefig(f'{save_path}/{exp_name}-{feats}-{stat_name}-cdf-allRuns.png')
                 plt.clf()

@@ -16,7 +16,7 @@ from PyExpUtils.utils.arrays import first
 
 #ALL_ALGS = ["cwpfgtd","pfgtd","pfcombined_cw","pfgtd+","gtd2","tdc","tdrc", "td"]
 #ALL_ALGS = ["cwpfgtd","pfgtd","pfgtd+","gtd2","tdc","tdrc", "td"]
-ALL_ALGS = ["cwpfgtd","pfgtd","pfcombined_cw","pfgtd+","pfgtd+sc","cwpfgtdsh","pfgtdvh","gtd2","tdc","tdrc", "td"]
+ALL_ALGS = ["cwpfgtd","pfgtd","pfgtd+","gtd2","tdc","tdrc", "td"]
 BAIRD_ALGS = ALL_ALGS[:-1]
 
 def getBairdConfigs():
