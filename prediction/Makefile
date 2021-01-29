@@ -38,7 +38,7 @@ data: online batch nexting
 
 # `make plots` :: make the plots for the experiments
 # using the best parameter settings
-plots: barPlot mdpPlots nextingPlots
+plots: barPlot mdpPlots cdfPlots waterfallPlots nextingPlots
 
 # `make list`: print out a list of make targets available
 # lol shut up it works fine
@@ -84,13 +84,27 @@ nexting:
 # -----------------------------
 #     BEST PARAMETERS PLOTS	  
 # -----------------------------
-.PHONY : mdpPlots nextingPlots barPlot
+
+BAIRD_ALGS = tdc tdrc pfgtd+ cwpfgtd pfgtd gtd2
+ALL_ALGS= td $(BAIRD_ALGS)
+
+#SETTINGS = online batch
+SETTINGS = online
+
+.PHONY : mdpPlots nextingPlots waterfallPlots waterfallPlots cdfPlots
 barPlot:
 	$(Py) analysis/barplots.py
 mdpPlots:
-	$(foreach setting, batch online, $(foreach exp, Baird Boyan RandomWalk, $(Py) ./analysis/mdp_plots.py $(wildcard ./experiments/$(setting)/$(exp)/*.json);))
+	$(foreach setting, $(SETTINGS), $(foreach exp, Boyan RandomWalk, $(Py) ./analysis/mdp_plots.py $(foreach alg, $(ALL_ALGS), ./experiments/$(setting)/$(exp)/$(alg).json);))
+	$(foreach setting, $(SETTINGS), $(Py) ./analysis/mdp_plots.py $(foreach alg, $(BAIRD_ALGS), ./experiments/$(setting)/Baird/$(alg).json);))
+cdfPlots:
+	$(foreach exp, Boyan RandomWalk, $(Py) ./analysis/cdf_plots.py $(foreach alg, $(ALL_ALGS), ./experiments/cdf/$(exp)/$(alg).json);)
+	$(Py) ./analysis/cdf_plots.py $(foreach alg, $(BAIRD_ALGS), ./experiments/cdf/Baird/$(alg).json)
+waterfallPlots:
+	$(foreach exp, Boyan RandomWalk, $(Py) ./analysis/waterfall.py $(foreach alg, $(ALL_ALGS), ./experiments/cdf/$(exp)/$(alg).json);)
+	$(Py) ./analysis/waterfall.py $(foreach alg, $(BAIRD_ALGS), ./experiments/cdf/Baird/$(alg).json)
 nextingPlots:
-	$(Py) ./analysis/nexting_plots.py $(foreach exp, td tdc tdrc pfgtd+ cwpfgtd pfgtd gtd2, ./experiments/online/Nexting/lambda0.0/$(exp).json)
-	mv figures/Nexting/lambda0.0 ./figures/Nexting/main
-	$(Py) ./analysis/nexting_plots.py $(foreach exp, gtd2_etaSweep_full gtd2_etaSweep_half gtd2, ./experiments/online/Nexting/lambda0.0/$(exp).json)
-	mv figures/Nexting/lambda0.0 ./figures/Nexting/appendix
+	$(Py) ./analysis/nexting_plots.py $(foreach exp, $(ALL_ALGS), ./experiments/online/Nexting/lambda0.0/$(exp).json)
+	# mv figures/Nexting/lambda0.0 ./figures/Nexting/main
+	# $(Py) ./analysis/nexting_plots.py $(foreach exp, gtd2_etaSweep_full gtd2_etaSweep_half gtd2, ./experiments/online/Nexting/lambda0.0/$(exp).json)
+	# mv figures/Nexting/lambda0.0 ./figures/Nexting/appendix
