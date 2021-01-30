@@ -15,7 +15,7 @@ from PyExpUtils.utils.arrays import first
 from src.utils.Critterbot import loadReturns, getSensorNum
 
 def _getDiscounts(exp):
-    return [exp._d["metaParameters"]["gamma"][-1],]
+    return [0.9875]
 
 def getResult(r):
     return np.array(r.load(), dtype='float')
@@ -29,24 +29,6 @@ def getResults(exp):
         lmda = exp._d["metaParameters"]["lambda"]
         return {f"{exp.agent}({lmda})": loadResults(exp, SUMMARY)}
     return {f"{exp.agent}": loadResults(exp, SUMMARY)}
-
-def getBest(results):
-    best = first(results)
-    bestVal = np.mean(getResult(best))
-
-    for r in results:
-        if not np.isfinite(bestVal):
-           best = r
-           bestVal = np.mean(getResult(r))
-           continue
-        a = getResult(r)
-        am = np.mean(a)
-        if am < bestVal:
-            best = r
-            bestVal = am
-
-    print(f"{bestVal} <= {best.params}")
-    return best
 
 def generatePlot(ax, exp_path, aggregate, getColor=lambda agent: colors[agent], plotAllSensors=False):
     print(f"Experiment: {exp_path}")
@@ -71,6 +53,7 @@ def generateAggregatePlot(exp_paths, aggregate, ylim):
     return f, axes
 
 def generateSensitivityPlot(exp_paths):
+    exp_paths = list(filter(lambda p: 'alpha' in ExperimentModel.load(p)._d["metaParameters"].keys(), exp_paths))
     f, axes = plt.subplots(1,len(exp_paths))
     for (i,exp_path) in enumerate(exp_paths):
         generateSensitivity(axes if len(exp_paths)==1 else axes[i], exp_path)
@@ -101,7 +84,8 @@ def getBestOverall(exp_path, aggregate):
         means = []
         # Get AUC for each sensor
         for r in results:
-            means.append(np.mean(r.load()))
+            if r.params['sensorIdx']!=43:
+                means.append(np.mean(r.load()[-200:]))
         # Aggregate the AUCs and check if have best aggregate value
         mean = aggregate(means)
         if mean <= best:
@@ -145,7 +129,7 @@ def getSensitivity(exp):
         for r in subresults:
             if r.params['sensorIdx'] != 43:
                 # smape undefined on sensor 43 (all zeros)
-                data.append(getResult(r))
+                data.append(getResult(r)[-200:])
         #full_data.append(np.median(np.array(data), axis=0)[-20000:].mean())
         data=np.array(data)
         full_data.append(np.mean(data, axis=1))
@@ -156,8 +140,10 @@ def generateSensitivity(ax, exp_path):
     if 'alpha' in exp._d["metaParameters"].keys():
         alphas, data = getSensitivity(exp)
         data=np.swapaxes(data,0,1)
-        for datum in data:
-            ax.plot(alphas, datum, color=colors[exp.agent])
+        data = np.median(data, axis=0)
+        ax.plot(alphas, data, color=colors[exp.agent])
+        # for datum in data:
+        #     ax.plot(alphas, datum, color=colors[exp.agent])
         ax.set_title(exp.agent)
         ax.set_xlabel(r"$\alpha$")
         ax.set_xscale('log')
@@ -213,17 +199,17 @@ if __name__ == "__main__":
 
         f, axes = generateMedianPlot(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width, height), forward=False)
-        plt.savefig(f'{save_path}/{datatype}-medians-nexting.png')
+        plt.savefig(f'{save_path}/Nexting-{datatype}-medians.png')
 
         f, axes = generateMedianAndAllSensorsPlots(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width*len(exp_paths), height), forward=False)
-        plt.savefig(f'{save_path}/{datatype}-allSensors-median-nexting.png')
+        plt.savefig(f'{save_path}/Nexting-{datatype}-allSensors-median.png')
 
 
         print("plotting sensitivity...")
         f, axes = generateSensitivityPlot(exp_paths)
-        f.set_size_inches((width*len(exp_paths), height), forward=False)
-        plt.savefig(f'{save_path}/{datatype}-medians-nexting-sensitivity.png')
+        f.set_size_inches((width*len(axes), height), forward=False)
+        plt.savefig(f'{save_path}/Nexting-{datatype}-medians-sensitivity.png')
 
 
     print("done!")
