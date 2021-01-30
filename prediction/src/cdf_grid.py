@@ -19,11 +19,9 @@ if len(sys.argv) < 2:
 
 runs = int(sys.argv[1])
 exp = ExperimentModel.load(sys.argv[2])
+idx = 0 if len(sys.argv) < 3 else sys.argv[3]
 
-stepsizes = [None]
-if 'alpha' in exp._d['metaParameters'].keys():
-    stepsizes = exp._d['metaParameters']["alpha"][0]
-
+stepsizes = exp._d['stepsizes']
 
 EVERY = 100
 MAX_EVAL = 10000
@@ -36,7 +34,6 @@ for stepsize in stepsizes:
         # set random seeds accordingly
         np.random.seed(run)
 
-        idx = 1 #HACK
         Problem = getProblem(exp.problem)
         problem = Problem(exp, idx)
 
