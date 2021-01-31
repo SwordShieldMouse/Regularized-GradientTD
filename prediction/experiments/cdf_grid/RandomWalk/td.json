@@ -8,6 +8,7 @@
         "target": 0.4,
         "behavior": 0.5,
         "representation": ["tabular", "inverted", "dependent"],
+        "alpha": [-1.0]
  
         
     }
