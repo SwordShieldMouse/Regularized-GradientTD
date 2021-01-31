@@ -19,7 +19,7 @@ if len(sys.argv) < 2:
 
 runs = int(sys.argv[1])
 exp = ExperimentModel.load(sys.argv[2])
-idx = 0 if len(sys.argv) < 3 else sys.argv[3]
+idx = 0 if len(sys.argv) < 3 else int(sys.argv[3])
 
 stepsizes = exp._d['stepsizes']
 
