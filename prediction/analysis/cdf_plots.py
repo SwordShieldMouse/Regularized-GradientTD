@@ -109,6 +109,12 @@ XLIM_U = {
 
 ALL_STATS = ["auc", "half_auc", "final_rmspbe", "median"]
 
+def has_grid_exp(exp_paths):
+    for p in exp_paths:
+        if "experiments/cdf_grid"  in p:
+            return True
+    return False
+
 if __name__ == "__main__":
     exp_paths = sys.argv[1:]
 
@@ -132,7 +138,10 @@ if __name__ == "__main__":
             #axes.set_xscale('log')
             axes.set_xlim([minx,XLIM_U[exp_name]])
             axes.legend()
-            plt.savefig(f'{save_path}/{exp_name}-{stat_name}-cdf-allRuns.png')
+
+            outname = f'{save_path}/{exp_name}-{stat_name}-cdf'
+            outname+='-grid.png' if has_grid_exp(exp_paths) else '.png'
+            plt.savefig(outname)
             plt.clf()
         else:
             for feats in ["tabular", "dependent", "inverted"]:
@@ -153,5 +162,8 @@ if __name__ == "__main__":
                 axes.set_title(f"{exp_name} ({feats}) {stat_name}")
                 axes.set_xlim([xmin,XLIM_U[exp_name]])
                 axes.legend()
-                plt.savefig(f'{save_path}/{exp_name}-{feats}-{stat_name}-cdf-allRuns.png')
+
+                outname = f'{save_path}/{exp_name}-{feats}-{stat_name}-cdf'
+                outname+='-grid.png' if has_grid_exp(exp_paths) else '.png'
+                plt.savefig(outname)
                 plt.clf()

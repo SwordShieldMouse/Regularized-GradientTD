@@ -85,8 +85,12 @@ nexting:
 #     BEST PARAMETERS PLOTS	  
 # -----------------------------
 
-BAIRD_ALGS = tdc tdrc pfgtd+ cwpfgtd pfgtd gtd2
-ALL_ALGS= td $(BAIRD_ALGS)
+PF_ALGS = pfgtd+ cwpfgtd pfgtd
+BAIRD_BASELINES = tdc tdrc gtd2
+BASELINES = td $(BAIRD_BASELINES)
+
+BAIRD_ALGS = $(BAIRD_BASELINES) $(PF_ALGS)
+ALL_ALGS = $(BASELINES) $(PF_ALGS)
 
 #SETTINGS = online batch
 SETTINGS = online
@@ -98,8 +102,10 @@ mdpPlots:
 	$(foreach setting, $(SETTINGS), $(foreach exp, Boyan RandomWalk, $(Py) ./analysis/mdp_plots.py $(foreach alg, $(ALL_ALGS), ./experiments/$(setting)/$(exp)/$(alg).json);))
 	$(foreach setting, $(SETTINGS), $(Py) ./analysis/mdp_plots.py $(foreach alg, $(BAIRD_ALGS), ./experiments/$(setting)/Baird/$(alg).json);))
 cdfPlots:
-	$(foreach exp, Boyan RandomWalk, $(Py) ./analysis/cdf_plots.py $(foreach alg, $(ALL_ALGS), ./experiments/cdf/$(exp)/$(alg).json);)
-	$(Py) ./analysis/cdf_plots.py $(foreach alg, $(BAIRD_ALGS), ./experiments/cdf/Baird/$(alg).json)
+	$(foreach exp, Boyan RandomWalk, $(Py) ./analysis/cdf_plots.py $(foreach alg, $(BASELINES), ./experiments/cdf/$(exp)/$(alg).json) $(foreach alg, $(PF_ALGS), ./experiments/cdf/$(exp)/$(alg).json);)
+	$(Py) ./analysis/cdf_plots.py $(foreach alg, $(BAIRD_BASELINES), ./experiments/cdf/Baird/$(alg).json) $(foreach alg, $(PF_ALGS), ./experiments/cdf/Baird/$(alg).json)
+	$(foreach exp, Boyan RandomWalk, $(Py) ./analysis/cdf_plots.py $(foreach alg, $(BASELINES), ./experiments/cdf_grid/$(exp)/$(alg).json) $(foreach alg, $(PF_ALGS), ./experiments/cdf/$(exp)/$(alg).json);)
+	$(Py) ./analysis/cdf_plots.py $(foreach alg, $(BAIRD_BASELINES), ./experiments/cdf_grid/Baird/$(alg).json) $(foreach alg, $(PF_ALGS), ./experiments/cdf/Baird/$(alg).json)
 waterfallPlots:
 	$(foreach exp, Boyan RandomWalk, $(Py) ./analysis/waterfall.py $(foreach alg, $(ALL_ALGS), ./experiments/cdf/$(exp)/$(alg).json);)
 	$(Py) ./analysis/waterfall.py $(foreach alg, $(BAIRD_ALGS), ./experiments/cdf/Baird/$(alg).json)

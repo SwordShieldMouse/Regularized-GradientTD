@@ -52,19 +52,76 @@ def generateAggregatePlot(exp_paths, aggregate, ylim):
     axes.set_title(None)
     return f, axes
 
-def generateSensitivityPlot(exp_paths):
-    exp_paths = list(filter(lambda p: 'alpha' in ExperimentModel.load(p)._d["metaParameters"].keys(), exp_paths))
-    f, axes = plt.subplots(1,len(exp_paths))
-    for (i,exp_path) in enumerate(exp_paths):
-        generateSensitivity(axes if len(exp_paths)==1 else axes[i], exp_path)
-    return f, axes
-
+# Wow fuck this turned into a mess
+# --------------------------------
 def generateAllSensorPlots(exp_paths, aggregate, ylim):
     f, axes = plt.subplots(1, len(exp_paths))
     for i in range(len(exp_paths)):
         ax = axes[i] if len(exp_paths) > 1 else axes
         generatePlot(ax, exp_paths[i], aggregate=aggregate, getColor=lambda agent: 'black', plotAllSensors = True)
         ax.set_ylim(ylim)
+    return f, axes
+
+def generateBestParamPlot(exp_paths, aggregate, ylim):
+    f, axes = plt.subplots()
+    for i in range(len(exp_paths)):
+        generateBestSensorPlot(axes, exp_paths[i], aggregate=aggregate)
+        axes.set_ylim(ylim)
+    return f, axes
+
+def generateAllBestSensorPlots(exp_paths, aggregate, ylim):
+    f, axes = plt.subplots(1, len(exp_paths))
+    for i in range(len(exp_paths)):
+        ax = axes[i] if len(exp_paths) > 1 else axes
+        generateBestSensorPlot(ax, exp_paths[i], aggregate=aggregate, getColor=lambda agent: 'black', plotAllSensors = True)
+        ax.set_ylim(ylim)
+    return f, axes
+
+def getBestForSensor(exp_path, aggregate, sensorIdx):
+    exp = ExperimentModel.load(exp_path)
+    results = whereParametersEqual(loadResults(exp, SUMMARY), {'sensorIdx': sensorIdx})
+    best = None
+    bestval = np.inf
+    for r in results:
+        val = np.mean(r.load()[:300])
+        if val <= bestval:
+            best = r
+            bestval = val
+    if best is None:
+        return np.ones_like(r.load())
+    return best.load()
+
+def generateBestSensorPlot(ax, exp_path, aggregate, getColor=lambda agent: colors[agent], plotAllSensors=False):
+    print(f"Experiment: {exp_path}")
+
+    exp = ExperimentModel.load(exp_path)
+    sensors = exp._d['metaParameters']["sensorIdx"]
+
+    all_data = []
+    for sensorIdx in sensors:
+        best_data = getBestForSensor(exp_path, aggregate, sensorIdx)
+        all_data.append(best_data)
+
+        if plotAllSensors:
+            ax.plot(best_data, color=colors[exp.agent], alpha=0.4)
+    all_data = aggregate(np.array(all_data), axis=0)
+    ax.plot(all_data, color=getColor(exp.agent), linewidth=2.5)
+    ax.set_title(exp.agent)
+    print()
+
+def generateAllSensorPlotsBest(exp_paths, aggregate, ylim):
+    f, axes = plt.subplots(1, len(exp_paths))
+    for i in range(len(exp_paths)):
+        ax = axes[i] if len(exp_paths) > 1 else axes
+        generatePlot(ax, exp_paths[i], aggregate=aggregate, getColor=lambda agent: 'black', plotAllSensors = True)
+        ax.set_ylim(ylim)
+    return f, axes
+
+def generateSensitivityPlot(exp_paths):
+    exp_paths = list(filter(lambda p: 'alpha' in ExperimentModel.load(p)._d["metaParameters"].keys(), exp_paths))
+    f, axes = plt.subplots(1,len(exp_paths))
+    for (i,exp_path) in enumerate(exp_paths):
+        generateSensitivity(axes if len(exp_paths)==1 else axes[i], exp_path)
     return f, axes
 
 def getBestOverall(exp_path, aggregate):
@@ -168,6 +225,11 @@ def generateMedianAndAllSensorsPlots(exp_paths, ylim=None):
 def generateMeanAndAllSensorsPlots(exp_paths, ylim=None):
     return generateAllSensorPlots(exp_paths, Mean, ylim)
 
+def generateBestMedianPlot(exp_paths, ylim=None):
+    return generateBestParamPlot(exp_paths, Median, ylim)
+def generateMedianAndAllBestSensorsPlots(exp_paths, ylim=None):
+    return generateAllBestSensorPlots(exp_paths, Median, ylim)
+
 
 if __name__ == "__main__":
     exp_paths = sys.argv[1:]
@@ -204,6 +266,14 @@ if __name__ == "__main__":
         f, axes = generateMedianAndAllSensorsPlots(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width*len(exp_paths), height), forward=False)
         plt.savefig(f'{save_path}/Nexting-{datatype}-allSensors-median.png')
+
+        f, axes = generateBestMedianPlot(exp_paths, ylim=median_ylims[datatype])
+        f.set_size_inches((width, height), forward=False)
+        plt.savefig(f'{save_path}/Nexting-{datatype}-best-median.png')
+
+        f, axes = generateMedianAndAllBestSensorsPlots(exp_paths, ylim=median_ylims[datatype])
+        f.set_size_inches((width*len(exp_paths), height), forward=False)
+        plt.savefig(f'{save_path}/Nexting-{datatype}-allBestSensors-median.png')
 
 
         print("plotting sensitivity...")
