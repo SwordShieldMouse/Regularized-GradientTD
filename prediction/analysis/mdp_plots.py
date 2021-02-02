@@ -14,7 +14,7 @@ from src.experiment import ExperimentModel
 from PyExpUtils.results.results import loadResults
 from PyExpUtils.utils.arrays import first
 
-plt.rcParams.update({'font.size': 20})
+plt.rcParams.update({'font.size': 20,'legend.fontsize':16})
 
 def plotMDP(paths, savepath, title, xlim=None, ylim=None):
     prefix = "batch-" if '/batch/' in paths[0] else ""
@@ -54,7 +54,7 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
             print('best parameters:', exp_path)
             print(best.params)
 
-            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False,linewidth=4.0)
+            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False,linewidth=5.0)
             bounds.append(b)
 
         B = [np.inf, -np.inf]
@@ -133,7 +133,7 @@ def plotEach(exp_paths, savepath, problem):
             print(best.params)
 
 
-            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False,linewidth=4.0)
+            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False,linewidth=5.0)
             bounds.append(b)
 
         B = [np.inf, -np.inf]
