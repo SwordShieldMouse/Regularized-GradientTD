@@ -19,7 +19,7 @@ def confidenceInterval(mean, stderr):
     return (mean - stderr, mean + stderr)
 
 
-def plotBest(best, ax, window=1, smoothing=0, color=None, label=None, alpha=0.4, alphaMain=1, stderr=True, labelParams=None, dashed=False):
+def plotBest(best, ax, window=1, smoothing=0, color=None, label=None, alpha=0.4, alphaMain=1, stderr=True, labelParams=None, dashed=False,linewidth=2.0):
     label = label if label is not None else best.exp.agent
 
     params = ''
@@ -41,9 +41,11 @@ def plotBest(best, ax, window=1, smoothing=0, color=None, label=None, alpha=0.4,
         dashed = [dashed] * mean.shape[1]
 
     for i in range(mean.shape[1]):
-        lineplot(ax, mean[:, i], stderr=ste[:, i], smoothing=smoothing, window=window, color=color, label=label[i] + params, alpha=alpha, alphaMain=alphaMain, dashed=dashed[i])
+        lineplot(ax, mean[:, i], stderr=ste[:, i], smoothing=smoothing, window=window, color=color, label=label[i] + params, alpha=alpha, alphaMain=alphaMain, dashed=dashed[i], linewidth=linewidth)
 
-def lineplot(ax, mean, window=1, smoothing=0, stderr=None, color=None, label=None, alpha=0.4, alphaMain=1, dashed=None):
+    return [np.min(mean),np.max(mean)]
+
+def lineplot(ax, mean, window=1, smoothing=0, stderr=None, color=None, label=None, alpha=0.4, alphaMain=1, dashed=None,linewidth=2.0):
     if dashed:
         dashes = ':'
     else:
@@ -57,7 +59,7 @@ def lineplot(ax, mean, window=1, smoothing=0, stderr=None, color=None, label=Non
 
     mean = np.array(list(smoothingAverage(mean, smoothing)))
 
-    ax.plot(mean, linestyle=dashes, label=label, color=color, alpha=alphaMain, linewidth=2)
+    ax.plot(mean, linestyle=dashes, label=label, color=color, alpha=alphaMain, linewidth=linewidth)
     if stderr is not None:
         stderr = np.array(list(smoothingAverage(stderr, smoothing)))
         (low_ci, high_ci) = confidenceInterval(mean, stderr)

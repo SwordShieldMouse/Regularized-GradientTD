@@ -140,8 +140,9 @@ if __name__ == "__main__":
             axes.legend()
 
             outname = f'{save_path}/{exp_name}-{stat_name}-cdf'
-            outname+='-grid.png' if has_grid_exp(exp_paths) else '.png'
-            plt.savefig(outname)
+            outname+='-grid' if has_grid_exp(exp_paths) else ''
+            plt.savefig(f'{outname}.png')
+            plt.savefig(f'{outname}.pdf')
             plt.clf()
         else:
             for feats in ["tabular", "dependent", "inverted"]:
@@ -164,6 +165,7 @@ if __name__ == "__main__":
                 axes.legend()
 
                 outname = f'{save_path}/{exp_name}-{feats}-{stat_name}-cdf'
-                outname+='-grid.png' if has_grid_exp(exp_paths) else '.png'
-                plt.savefig(outname)
+                outname+='-grid' if has_grid_exp(exp_paths) else ''
+                plt.savefig(f'{outname}.png')
+                plt.savefig(f'{outname}.pdf')
                 plt.clf()

@@ -63,3 +63,4 @@ if __name__ == "__main__":
     height = (24/5)
     f.set_size_inches((width, height), forward=False)
     plt.savefig(f'{save_path}/learning-curve.png', dpi=100)
+    plt.savefig(f'{save_path}/learning-curve.pdf', dpi=100)

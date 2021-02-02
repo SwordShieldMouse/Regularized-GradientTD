@@ -14,6 +14,8 @@ from src.experiment import ExperimentModel
 from PyExpUtils.results.results import loadResults
 from PyExpUtils.utils.arrays import first
 
+plt.rcParams.update({'font.size': 20})
+
 def plotMDP(paths, savepath, title, xlim=None, ylim=None):
     prefix = "batch-" if '/batch/' in paths[0] else ""
     f, axes = plt.subplots(1)
@@ -52,8 +54,18 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
             print('best parameters:', exp_path)
             print(best.params)
 
-            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False)
+            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False,linewidth=4.0)
             bounds.append(b)
+
+        B = [np.inf, -np.inf]
+        for (mn,mx) in bounds:
+            if mx>=B[1]:
+                B[1]=mx
+            if mn<=B[0]:
+                B[0]=mn
+        ax.set_ylim(B)
+        # for line in ax.get_lines():
+        #     line.set_linewidth(4.0)
 
 
 
@@ -79,7 +91,9 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
     f.set_size_inches((width, height), forward=False)
     axes.set_title(title)
     set_limits(axes,xlim,ylim)
+    #axes.set_yscale('log')
     plt.savefig(f'{savepath}/{title}-{prefix}learning-curve.png')
+    plt.savefig(f'{savepath}/{title}-{prefix}learning-curve.pdf')
 
 def set_limits(axes, xlim,ylim):
     if ylim is not None:
@@ -103,6 +117,7 @@ def plotEach(exp_paths, savepath, problem):
     os.makedirs(savepath, exist_ok=True)
 
     def _generatePlot(ax, exp_paths, bounds, feats, fltr = None):
+        mn,mx=np.inf,-np.inf
         for exp_path in exp_paths:
             exp = ExperimentModel.load(exp_path)
             alg = exp.agent
@@ -117,8 +132,20 @@ def plotEach(exp_paths, savepath, problem):
             print(f'best parameters ({feats}):', exp_path)
             print(best.params)
 
-            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False)
+
+            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False,linewidth=4.0)
             bounds.append(b)
+
+        B = [np.inf, -np.inf]
+        for (mn,mx) in bounds:
+            if mx>=B[1]:
+                B[1]=mx
+            if mn<=B[0]:
+                B[0]=mn
+        ax.set_ylim(B)
+        ax.set_xlim([0,exp._d["steps"]])
+        # for line in ax.get_lines():
+        #     line.set_linewidth(4.0)
 
     for feats in ['tabular','inverted','dependent']:
         # bounds = []
@@ -137,7 +164,9 @@ def plotEach(exp_paths, savepath, problem):
         f.set_size_inches((width, height), forward=False)
 
         axes.set_title(f"{problem} ({feats})")
+        #axes.set_yscale('log')
         plt.savefig(f'{savepath}/RandomWalk-{feats}-learning-curve.png')
+        plt.savefig(f'{savepath}/RandomWalk-{feats}-learning-curve.pdf')
 
 if __name__ == "__main__":
     exp_paths = sys.argv[1:]
@@ -146,7 +175,7 @@ if __name__ == "__main__":
         plotMDP(exp_paths, getSavePath(problem), problem, xlim=[0, 3000], ylim=[0,4])
     elif experiment_is("Boyan", exp_paths):
         problem = "Boyan"
-        plotMDP(exp_paths, getSavePath(problem), problem, xlim=[0,6000],ylim=[0.1,3.0])
+        plotMDP(exp_paths, getSavePath(problem), problem, xlim=[0,6000])
     elif experiment_is("RandomWalk", exp_paths):
         problem = "RandomWalk"
         plotEach(exp_paths, getSavePath(problem), problem)

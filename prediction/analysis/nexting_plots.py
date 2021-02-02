@@ -262,6 +262,7 @@ if __name__ == "__main__":
         f, axes = generateMedianPlot(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width, height), forward=False)
         plt.savefig(f'{save_path}/Nexting-{datatype}-medians.png')
+        plt.savefig(f'{save_path}/Nexting-{datatype}-medians.pdf')
 
         f, axes = generateMedianAndAllSensorsPlots(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width*len(exp_paths), height), forward=False)
@@ -270,16 +271,19 @@ if __name__ == "__main__":
         f, axes = generateBestMedianPlot(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width, height), forward=False)
         plt.savefig(f'{save_path}/Nexting-{datatype}-best-median.png')
+        plt.savefig(f'{save_path}/Nexting-{datatype}-best-median.pdf')
 
         f, axes = generateMedianAndAllBestSensorsPlots(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width*len(exp_paths), height), forward=False)
         plt.savefig(f'{save_path}/Nexting-{datatype}-allBestSensors-median.png')
+        plt.savefig(f'{save_path}/Nexting-{datatype}-allBestSensors-median.pdf')
 
 
         print("plotting sensitivity...")
         f, axes = generateSensitivityPlot(exp_paths)
         f.set_size_inches((width*len(axes), height), forward=False)
         plt.savefig(f'{save_path}/Nexting-{datatype}-medians-sensitivity.png')
+        plt.savefig(f'{save_path}/Nexting-{datatype}-medians-sensitivity.pdf')
 
 
     print("done!")

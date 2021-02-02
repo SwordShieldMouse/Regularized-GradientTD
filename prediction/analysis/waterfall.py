@@ -175,4 +175,5 @@ if __name__ == "__main__":
         axes.legend()
         axes.set_yscale("log")
         plt.savefig(f'{save_path}/{exp_name}-{stat_name}-waterfall-allRuns.png')
+        plt.savefig(f'{save_path}/{exp_name}-{stat_name}-waterfall-allRuns.pdf')
         plt.clf()

@@ -153,6 +153,7 @@ def main():
             height = (24/5)
             os.makedirs(savepath, exist_ok=True)
             plt.savefig(f"{savepath}/{filename}_{measurename}.png")
+            plt.savefig(f"{savepath}/{filename}_{measurename}.pdf")
 
 if __name__ == "__main__":
     main()
