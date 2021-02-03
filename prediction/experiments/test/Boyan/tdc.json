@@ -1,9 +1,0 @@
-{
-    "agent": "TDC",
-    "problem": "Boyan",
-    "steps": 10000,
-    "metaParameters": {
-        "eta": [1.0],
-        "alpha": [ 0.125, 0.0625, 0.03125, 0.015625, 0.0078125]
-    }
-}
