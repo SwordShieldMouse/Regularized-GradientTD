@@ -28,7 +28,6 @@ class ParameterFree(BaseAgent):
 
     def grads(self, x, a, xp, r, gamma, rho):
         if self.lmda > 0:
-            #TODO: check this over; there's a gtd2(lambda) right?
             self.z = gamma * self.lmda * rho * self.z + x
 
             v = self.theta_t.dot(x)
@@ -93,20 +92,6 @@ class PFGTD(ParameterFree):
 
         self._initBets()
 
-class PFGTDMaxHint(ParameterFree):
-    """
-    Parameter-free GTD with hints
-    """
-    def __init__(self, features: int, actions, params: dict):
-        super().__init__(features, actions, params)
-
-        # opt params
-        W0 = params['wealth'] / 2
-        self.theta = ParamMaxHint(features, W0, params["hint"], params["beta"])
-        self.y = ParamMaxHint(features, W0, params["hint"], params["beta"])
-
-        self._initBets()
-
 class PFGTDVectorHints(ParameterFree):
     """
     Parameter-free GTD with hints
@@ -120,59 +105,6 @@ class PFGTDVectorHints(ParameterFree):
         self.y = VectorHintsParam(features, W0, params["hint"], params["beta"])
 
         self._initBets()
-
-class PFGTDHalfCW(ParameterFree):
-    """
-    Parameter-free GTD with hints
-    """
-    def __init__(self, features: int, actions, params: dict):
-        super().__init__(features, actions, params)
-
-        # opt params
-        self.theta = HalfCWParam(features, params["wealth"], params["hint"], params["beta"])
-        self.y = HalfCWParam(features, params["wealth"], params["hint"], params["beta"])
-
-        self._initBets()
-
-class PFGTDUntrunc(PFGTD):
-    """
-    Parameter-free GTD with hints
-    """
-    def __init__(self, features: int, actions: int, params: dict):
-        super().__init__(features, actions, params)
-        self.theta = ParamUntrunc(features, params["wealth"], params["hint"], params["beta"])
-        self.y = ParamUntrunc(features, params["wealth"], params["hint"], params["beta"])
-
-        self._initBets()
-
-class PFTDC(PFGTD):
-    """
-    Parameter-free TDC with hints
-    """
-    def __init__(self, features: int, actions, params: dict):
-        super().__init__(features, actions, params)
-
-    def grads(self, x, a, xp, r, gamma, rho):
-        # Default grads = GTD2
-        delta = r + gamma * np.dot(theta_t,xp) - np.dot(theta_t,x)
-        g_theta = - rho * delta * x + rho*gamma*np.dot(y_t,theta_t)*xp
-
-        d = x - gamma * xp
-        g_y = -rho * delta + np.dot(y_t,x) * x #rho * x * np.dot(d, theta_t) - rho * r * x + x * np.dot(x, y_t)
-        return g_theta, g_y
-
-class SCPFGTD(PFGTD):
-    """
-    Parameter-free GTD with hints and curvature adaptation in
-    the dual variables y
-    """
-    def __init__(self, features: int, actions: int, params: dict):
-        super().__init__(features,actions,params)
-
-        # opt params
-        self.theta = Param(features, params["wealth"], params["hint"], params["beta"])
-        self.y = SCParam(features, params["wealth"], params["hint"], params["beta"])
-
 
 class CWPFGTD(ParameterFree):
     """
@@ -188,66 +120,6 @@ class CWPFGTD(ParameterFree):
         self.y = CWParam(features, W0, params["hint"], params["beta"])
 
         self._initBets()
-
-class CWPFGTDMaxHint(ParameterFree):
-    """
-    Coordinate-wise Parameter-free GTD with hints
-    """
-    def __init__(self, features: int, actions: int, params: dict):
-        super().__init__(features, actions, params)
-
-        W0 = params['wealth'] / 2
-
-        # opt params
-        self.theta = CWParamMaxHint(features, W0, params["hint"], params["beta"])
-        self.y = CWParamMaxHint(features, W0, params["hint"], params["beta"])
-
-        self._initBets()
-
-class CWPFGTDSH(ParameterFree):
-    """
-    Coordinate-wise Parameter-free GTD with hints
-    """
-    def __init__(self, features: int, actions: int, params: dict):
-        super().__init__(features, actions, params)
-
-        W0 = params['wealth'] / 2
-
-        # opt params
-        self.theta = CWParamScalarHint(features, W0, params["hint"], params["beta"])
-        self.y = CWParamScalarHint(features, W0, params["hint"], params["beta"])
-
-        self._initBets()
-
-class COCOBPFGTD(ParameterFree):
-    """
-    Coordinate-wise Parameter-free GTD with hints
-    """
-    def __init__(self, features: int, actions: int, params: dict):
-        super().__init__(features, actions, params)
-
-        W0 = params['wealth']/2
-
-        # opt params
-        self.theta = COCOBParam(features, W0, params["hint"], params["beta"])
-        self.y = COCOBParam(features, W0, params["hint"], params["beta"])
-
-        self._initBets()
-
-
-class DiscountedPFGTD(PFGTD):
-    """
-    Parameter-free GTD with hints
-    """
-    def __init__(self, features: int, actions, params: dict):
-        super().__init__(features, actions, params)
-
-        # opt params
-        self.theta = DiscountedParam(features, params["wealth"], params["hint"], params["beta"], params["discount"])
-        self.y = DiscountedParam(features, params["wealth"], params["hint"], params["beta"], params["discount"])
-
-        self._initBets()
-
 
 class PFCombined(ParameterFree):
     def __init__(self, features, actions, params):
@@ -292,61 +164,3 @@ class PFGTDPlus(PFCombined):
         params["algA"] = "PFGTDVectorHints"
         params["algB"] = "CWPFGTD"
         super().__init__(features, actions, params)
-
-class PFGTDPlusScalar(PFCombined):
-    def __init__(self, features, actions, params):
-        params["algA"] = "PFGTD"
-        params["algB"] = "CWPFGTDSH"
-        super().__init__(features, actions, params)
-
-class PFGTDPlusMax(PFCombined):
-    def __init__(self, features, actions, params):
-        params["algA"] = "PFGTDMaxHint"
-        params["algB"] = "CWPFGTDMaxHint"
-        super().__init__(features, actions, params)
-
-class PFResidual(PFCombined):
-    def __init__(self, features, actions, params):
-        super().__init__(features, actions, params)
-
-        p = self._params(params)
-
-        algA = getattr(sys.modules[__name__], params["algA"])
-        self.A = algA(features, actions, params)
-
-        algB = getattr(sys.modules[__name__], params["algB"])
-        self.B = algB(features+1, actions, params)
-
-        avg_t = getattr(Averages, self.avg_t)
-        self.theta_t, self.y_t = self.bet()
-        self.av_theta = avg_t(self.theta_t)
-
-    def _combine(self, x, yz):
-        return x + yz[:-1] - yz[-1]*x
-
-    def bet(self):
-        theta_t = self._combine(self.A.theta.bet(), self.B.theta.bet())
-        y_t = self._combine(self.A.y.bet(), self.B.y.bet())
-        return theta_t, y_t
-
-    def update(self, x, a, xp, r, gamma, rho):
-        xt_theta = self.A.theta.bet()
-        xt_y = self.A.y.bet()
-
-        self.theta_t, self.y_t = self.bet()
-        gtheta, gy = self.grads(x, a, xp, r, gamma, rho)
-
-        self.A._apply(gtheta, gy)
-
-        gtheta = np.append(gtheta, -np.dot(gtheta, xt_theta))
-        gy = np.append(gy, -np.dot(gy, xt_y))
-        self.B._apply(gtheta, gy)
-
-        self.av_theta.update(self.bet()[0])
-
-    def getWeights(self):
-        return self.av_theta.get()
-
-    def initWeights(self, u):
-        self.A.initWeights(u)
-        self.B.initWeights(np.zeros(u.shape[0]+1))

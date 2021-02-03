@@ -25,41 +25,13 @@ def getAgent(name):
         return Vtrace
     elif name == 'TDRC':
         return TDRC
+    elif name == 'GTD2MP':
+        return GTD2MP
 
     elif name == 'PFGTD':
         return PFGTD
-    elif name == 'PFGTDVectorHints':
-        return PFGTDVectorHints
-    elif name == 'PFGTDMP':
-        return PFGTDMP
     elif name == "PFGTD+":
         return PFGTDPlus
-    elif name == "PFGTD+Max":
-        return PFGTDPlusMax
-    elif name == 'CWPFGTDMaxHint':
-        return CWPFGTDMaxHint
-    elif name == 'PFGTDHalfCW':
-        return PFGTDHalfCW
-    elif name == 'MultiDiscountPFGTD':
-        return MultiDiscountPFGTD
-    elif name == 'DiscountedPFGTD':
-        return DiscountedPFGTD
-    elif name == 'PFTDC':
-        return PFTDC
-    elif name == 'COCOBPFGTD':
-        return COCOBPFGTD
     elif name == 'CWPFGTD':
         return CWPFGTD
-    elif name == 'PFCombined':
-        return PFCombined
-    elif name == 'PFGTD+Scalar':
-        return PFGTDPlusScalar
-    elif name == 'CWPFGTDSH':
-        return CWPFGTDSH
-    elif name == 'PFResidual':
-        return PFResidual
-    elif name == 'PFGTDUntrunc':
-        return PFGTDUntrunc
-    elif name == 'GTD2MP':
-        return GTD2MP
     raise Exception(f'Unexpected agent {name} given')
