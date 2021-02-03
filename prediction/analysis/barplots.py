@@ -14,10 +14,12 @@ from src.experiment import ExperimentModel
 from PyExpUtils.results.results import loadResults
 from PyExpUtils.utils.arrays import first
 
+plt.rcParams.update({'font.size': 20,'legend.fontsize':16})
+
 #ALL_ALGS = ["cwpfgtd","pfgtd","pfcombined_cw","pfgtd+","gtd2","tdc","tdrc", "td"]
 #ALL_ALGS = ["cwpfgtd","pfgtd","pfgtd+","gtd2","tdc","tdrc", "td"]
-ALL_ALGS = ["cwpfgtd","pfgtd","pfgtd+","gtd2","tdc","tdrc", "td"]
-BAIRD_ALGS = ALL_ALGS[:-1]
+ALL_ALGS = ["cwpfgtd","pfgtd","pfgtd+"]
+BAIRD_ALGS = ALL_ALGS
 
 def getBairdConfigs():
     return list(map(lambda alg: os.path.join("./experiments/online/Baird",f"{alg}.json"), BAIRD_ALGS))
@@ -101,14 +103,14 @@ def getRWData(exp_paths, fltr,measure):
         return data
 
     alldata = {}
-    for feats in ['tabular','dependent','inverted']:
+    for feats in ['dependent','inverted']:
         alldata[feats] = _getRWData(exp_paths,  feats)
     return alldata
 
 def main():
     fltrs = [
         (lambda r: r.params.get('eta', 1) == 1, "barplots"),
-        (None, "barplots_allParams"),
+        #(None, "barplots_allParams"),
     ]
     measures = [
         (np.mean, "AUC"),
@@ -128,12 +130,12 @@ def main():
             boyanConfigs = getBoyanConfigs()
             data["Boyan"] = getMDPData(boyanConfigs, fltr, measure)
 
-            # print("Baird...")
-            # bairdConfigs = getBairdConfigs()
-            # data["Baird"] = getMDPData(bairdConfigs, fltr, measure)
+            print("Baird...")
+            bairdConfigs = getBairdConfigs()
+            data["Baird"] = getMDPData(bairdConfigs, fltr, measure)
 
 
-            ref_alg = 'GTD2'
+            ref_alg = 'PFGTD+'
             offset = -3
             prev = 0
             for i, problem in enumerate(data.keys()):

@@ -14,6 +14,8 @@ from src.experiment import ExperimentModel
 from PyExpUtils.utils.arrays import first
 from src.utils.Critterbot import loadReturns, getSensorNum
 
+plt.rcParams.update({'font.size': 20,'legend.fontsize':16})
+
 def _getDiscounts(exp):
     return [0.9875]
 
@@ -39,7 +41,7 @@ def generatePlot(ax, exp_path, aggregate, getColor=lambda agent: colors[agent], 
     if plotAllSensors:
         for line in data:
             ax.plot(line, color=colors[exp.agent], alpha=0.4)
-    ax.plot(aggregate(data,axis=0), color=getColor(exp.agent), linewidth=2.5)
+    ax.plot(aggregate(data,axis=0), color=getColor(exp.agent), linewidth=2.5,label=exp.agent)
     ax.set_title(exp.agent)
     print()
 
@@ -83,7 +85,12 @@ def getBestForSensor(exp_path, aggregate, sensorIdx):
     best = None
     bestval = np.inf
     for r in results:
-        val = np.mean(r.load()[:300])
+        data = np.array(r.load()).flatten()
+        finite=np.all(np.array(list(map(lambda d: np.isfinite(d), data))))
+        if not np.all(finite):
+            val = 1.0
+        else:
+            val = np.mean(data)
         if val <= bestval:
             best = r
             bestval = val
@@ -105,7 +112,7 @@ def generateBestSensorPlot(ax, exp_path, aggregate, getColor=lambda agent: color
         if plotAllSensors:
             ax.plot(best_data, color=colors[exp.agent], alpha=0.4)
     all_data = aggregate(np.array(all_data), axis=0)
-    ax.plot(all_data, color=getColor(exp.agent), linewidth=2.5)
+    ax.plot(all_data, color=getColor(exp.agent), linewidth=2.5, label=exp.agent)
     ax.set_title(exp.agent)
     print()
 
@@ -141,8 +148,12 @@ def getBestOverall(exp_path, aggregate):
         means = []
         # Get AUC for each sensor
         for r in results:
-            if r.params['sensorIdx']!=43:
-                means.append(np.mean(r.load()[-200:]))
+            data = r.load().flatten()
+            finite=np.all(np.array(list(map(lambda d: np.isfinite(d), data))))
+            if not np.all(finite):
+                means.append(1.0)
+            else:
+                means.append(np.mean(r.load()))
         # Aggregate the AUCs and check if have best aggregate value
         mean = aggregate(means)
         if mean <= best:
@@ -198,7 +209,7 @@ def generateSensitivity(ax, exp_path):
         alphas, data = getSensitivity(exp)
         data=np.swapaxes(data,0,1)
         data = np.median(data, axis=0)
-        ax.plot(alphas, data, color=colors[exp.agent])
+        ax.plot(alphas, data, color=colors[exp.agent], label=exp.agent)
         # for datum in data:
         #     ax.plot(alphas, datum, color=colors[exp.agent])
         ax.set_title(exp.agent)
@@ -261,20 +272,24 @@ if __name__ == "__main__":
 
         f, axes = generateMedianPlot(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width, height), forward=False)
+        f.legend()
         plt.savefig(f'{save_path}/Nexting-{datatype}-medians.png')
         plt.savefig(f'{save_path}/Nexting-{datatype}-medians.pdf')
 
         f, axes = generateMedianAndAllSensorsPlots(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width*len(exp_paths), height), forward=False)
+        f.legend()
         plt.savefig(f'{save_path}/Nexting-{datatype}-allSensors-median.png')
 
         f, axes = generateBestMedianPlot(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width, height), forward=False)
+        f.legend()
         plt.savefig(f'{save_path}/Nexting-{datatype}-best-median.png')
         plt.savefig(f'{save_path}/Nexting-{datatype}-best-median.pdf')
 
         f, axes = generateMedianAndAllBestSensorsPlots(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width*len(exp_paths), height), forward=False)
+        f.legend()
         plt.savefig(f'{save_path}/Nexting-{datatype}-allBestSensors-median.png')
         plt.savefig(f'{save_path}/Nexting-{datatype}-allBestSensors-median.pdf')
 
@@ -282,6 +297,7 @@ if __name__ == "__main__":
         print("plotting sensitivity...")
         f, axes = generateSensitivityPlot(exp_paths)
         f.set_size_inches((width*len(axes), height), forward=False)
+        f.legend()
         plt.savefig(f'{save_path}/Nexting-{datatype}-medians-sensitivity.png')
         plt.savefig(f'{save_path}/Nexting-{datatype}-medians-sensitivity.pdf')
 
