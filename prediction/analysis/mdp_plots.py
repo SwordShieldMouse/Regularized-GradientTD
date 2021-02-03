@@ -17,11 +17,6 @@ from PyExpUtils.utils.arrays import first
 plt.rcParams.update({'font.size': 20,'legend.fontsize':16})
 
 def plotMDP(paths, savepath, title, xlim=None, ylim=None):
-    prefix = "batch-" if '/batch/' in paths[0] else ""
-    f, axes = plt.subplots(1)
-    bounds = []
-    os.makedirs(savepath, exist_ok=True)
-
     def _getBest(results):
         best = first(results)
         bestVal = np.mean(best.load()[0])
@@ -54,7 +49,7 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
             print('best parameters:', exp_path)
             print(best.params)
 
-            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=False,linewidth=5.0)
+            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=True if alg=="BatchGTD2" else False,linewidth=5.0)
             bounds.append(b)
 
         B = [np.inf, -np.inf]
@@ -67,17 +62,21 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
         # for line in ax.get_lines():
         #     line.set_linewidth(4.0)
 
+    prefix = "batch-" if '/batch/' in paths[0] else ""
+    f, axes = plt.subplots(1)
+    bounds = []
+    os.makedirs(savepath, exist_ok=True)
 
+    _generatePlot(axes, paths, bounds)
+    width = 8
+    height = (24/5)
+    f.set_size_inches((width, height), forward=False)
+    axes.set_title(title)
+    set_limits(axes,xlim,ylim)
+    plt.savefig(f'{savepath}/{title}-{prefix}learning-curve-allParams.png')
+    plt.savefig(f'{savepath}/{title}-{prefix}learning-curve-allParams.pdf')
 
-    #_generatePlot(axes, paths, bounds)
-    # width = 8
-    # height = (24/5)
-    # f.set_size_inches((width, height), forward=False)
-    # axes.set_title(title)
-    # set_limits(axes,xlim,ylim)
-    # plt.savefig(f'{savepath}/{prefix}learning-curve-allParams.png')
-
-    # f, axes = plt.subplots(1)
+    f, axes = plt.subplots(1)
 
     bounds = []
 
@@ -148,13 +147,14 @@ def plotEach(exp_paths, savepath, problem):
         #     line.set_linewidth(4.0)
 
     for feats in ['tabular','inverted','dependent']:
-        # bounds = []
+        bounds = []
 
-        # f, axes = plt.subplots(1)
-        # _generatePlot(axes, exp_paths, bounds, feats)
-        # f.set_size_inches((width, height), forward=False)
-        # axes.set_title(f"{problem} ({feats})")
-        # plt.savefig(f'{savepath}/{feats}-learning-curve-allParams')
+        f, axes = plt.subplots(1)
+        _generatePlot(axes, exp_paths, bounds, feats)
+        f.set_size_inches((width, height), forward=False)
+        axes.set_title(f"{problem} ({feats})")
+        plt.savefig(f'{savepath}/{feats}-learning-curve-allParams.png')
+        plt.savefig(f'{savepath}/{feats}-learning-curve-allParams.pdf')
 
         bounds = []
 

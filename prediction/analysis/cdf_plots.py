@@ -13,6 +13,7 @@ from PyExpUtils.results.results import loadResults
 from PyExpUtils.utils.arrays import first
 
 
+plt.rcParams.update({'font.size': 20,'legend.fontsize':16})
 
 def collate_results(results):
     collated_m = []
@@ -62,7 +63,7 @@ def generate_cdf_plot(ax, exp_paths, stat_name, fltr=None):
         probs = probs[finite].flatten()
         values = values[finite].flatten()
 
-        ax.plot(values, probs,  label=alg, color=colors[alg])
+        ax.plot(values, probs,  label=alg, color=colors[alg], linewidth=5.0)
 
 
         # confidence intervals
@@ -159,7 +160,6 @@ if __name__ == "__main__":
                 height = (24/5)
                 f.set_size_inches((width, height), forward=False)
                 axes.set_ylabel("Cumulative Probability")
-                axes.set_xlabel("Average Error")
                 axes.set_title(f"{exp_name} ({feats}) {stat_name}")
                 axes.set_xlim([xmin,XLIM_U[exp_name]])
                 axes.legend()

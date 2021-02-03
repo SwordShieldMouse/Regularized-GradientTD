@@ -43,7 +43,7 @@ def getMaxY(arr):
 
     return m
 
-def plotBest(best, ax, window=1, smoothing=0, color=None, label=None, alpha=0.4, alphaMain=1, stderr=True, labelParams=None, dashed=False):
+def plotBest(best, ax, window=1, smoothing=0, color=None, label=None, alpha=0.4, alphaMain=1, stderr=True, labelParams=None, dashed=False, skip=1):
     label = label if label is not None else best.exp.agent
 
     params = ''
@@ -91,12 +91,12 @@ def lineplot(ax, mean, window=1, smoothing=0, stderr=None, color=None, label=Non
     if window > 1 and stderr is not None:
         stderr = windowAverage(stderr, window)
 
-    mean = np.array(list(smoothingAverage(mean, smoothing)))
+    mean = np.array(list(smoothingAverage(mean, smoothing)))[::skip]
 
     ax.plot(mean, linestyle=dashes, label=label, color=color, alpha=alphaMain, linewidth=2)
     if stderr is not None:
         stderr = np.array(list(smoothingAverage(stderr, smoothing)))
         (low_ci, high_ci) = confidenceInterval(mean, stderr)
-        ax.fill_between(range(mean.shape[0]), low_ci, high_ci, color=color, alpha=alpha * alphaMain)
+        ax.fill_between(range(mean.shape[0]), low_ci[::skip], high_ci[::skip], color=color, alpha=alpha * alphaMain)
 
     ax.legend()

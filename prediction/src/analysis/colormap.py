@@ -16,7 +16,7 @@ colors = {
 
     # New Baselines
     'GTD2MP': 'black',
-    'BatchGTD2': 'grey',
+    'BatchGTD2': 'yellowgreen',
     'BatchTDC': 'cyan',
 
     # Baselines from TDRC
