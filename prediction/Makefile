@@ -71,11 +71,11 @@ RunNexting = $(Py) ./scripts/local.py ./src/nexting.py 1 ./results
 # -------------------
 .PHONY : online batch nexting
 online:
-	$(Run) $(foreach exp, Baird Boyan RandomWalk, $(wildcard ./experiments/online/$(path)/*.json))
+	$(Run) $(foreach exp, Baird Boyan RandomWalk, $(wildcard ./experiments/online/$(exp)/*.json))
 batch:
-	$(RunBatch) $(foreach exp, Baird Boyan RandomWalk, $(wildcard ./experiments/batch/$(path)/*.json)
+	$(RunBatch) $(foreach exp, Baird Boyan RandomWalk, $(wildcard ./experiments/batch/$(exp)/*.json)
 nexting:
-	$(RunNexting) $(wildcard ./experiments/online/Nexting/*/*.json) $(wildcard ./experiments/*/*/*.json)
+	$(RunNexting) $(wildcard ./experiments/online/Nexting/lambda0.0/*.json)
 
 # ----------------
 # --- PLOTTING ---
@@ -111,6 +111,3 @@ waterfallPlots:
 	$(Py) ./analysis/waterfall.py $(foreach alg, $(BAIRD_ALGS), ./experiments/cdf/Baird/$(alg).json)
 nextingPlots:
 	$(Py) ./analysis/nexting_plots.py $(foreach exp, $(ALL_ALGS), ./experiments/online/Nexting/lambda0.0/$(exp).json)
-	# mv figures/Nexting/lambda0.0 ./figures/Nexting/main
-	# $(Py) ./analysis/nexting_plots.py $(foreach exp, gtd2_etaSweep_full gtd2_etaSweep_half gtd2, ./experiments/online/Nexting/lambda0.0/$(exp).json)
-	# mv figures/Nexting/lambda0.0 ./figures/Nexting/appendix
