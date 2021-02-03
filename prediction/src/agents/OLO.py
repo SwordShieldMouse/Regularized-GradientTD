@@ -27,10 +27,6 @@ class Param:
 
         self.eps = 1e-5
 
-        # NOTE: unused for now
-        self.lower_bound = np.finfo(np.float64).min / 1e150
-        self.upper_bound = np.finfo(np.float64).max / 1e150
-
     def bet(self):
         self.v = self.beta * self.W
         return self.v * self.u
@@ -93,10 +89,6 @@ class VectorHintsParam:
 
         self.eps = 1e-5
 
-        # NOTE: unused for now
-        self.lower_bound = np.finfo(np.float64).min / 1e150
-        self.upper_bound = np.finfo(np.float64).max / 1e150
-
     def bet(self):
         self.v = self.beta * self.W
         return self.v * self.u
@@ -157,10 +149,6 @@ class CWParam:
         self.A = np.zeros(features)
 
         self.eps = 1e-8
-
-        # NOTE: unused for now
-        self.lower_bound = np.finfo(np.float64).min / 1e150
-        self.upper_bound = np.finfo(np.float64).max / 1e150
 
     def bet(self):
         self.x = np.multiply(self.beta, self.W)
