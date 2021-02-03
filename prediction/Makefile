@@ -85,7 +85,7 @@ nexting:
 #     BEST PARAMETERS PLOTS	  
 # -----------------------------
 
-PF_ALGS =  cwpfgtd pfgtd pfgtd+
+PF_ALGS =  cwpfgtd pfgtd pfgtd+ 
 BAIRD_BASELINES = tdc tdrc gtd2
 BASELINES = td $(BAIRD_BASELINES)
 
