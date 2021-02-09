@@ -16,30 +16,38 @@ class ParameterFree(BaseAgent):
         self.lmda = params.get("lambda", 0.0)
         self.avg_t = params.get("averaging", "Uniform")
 
-    def update(self, x, a, xp, r, gamma, rho):
 
+    def update(self, x, a, xp, r, gamma, rho):
         g_theta, g_y  = self.grads(x, a, xp, r, gamma, rho)
+
+        g_theta, self.h_theta = self.constrain_and_clip(g_theta, self.h_theta, self.theta_t, self.theta_t_hat)
+        g_y, self.h_y = self.constrain_and_clip(g_y, self.h_y, self.y_t, self.y_t_hat)
+
         self._apply(g_theta, g_y)
 
+    def constrain_and_clip(self, g, h, w, hatw):
+        gtrunc, h = self.clip(g, h)
+
+        vt = (w-hatw)/norm(w-hatw) if norm(w)>self.D else np.zeros_like(w)
+        gtilde = gtrunc if np.dot(gtrunc, w) >= np.dot(gtrunc,hatw) else gtrunc-np.dot(gtrunc,vt)*vt
+
+        return gtilde, h
+
+
+    def clip(self, g, h):
+        raise NotImplementedError("ParameterFree.clip not implemented")
+
     def _apply(self, g_theta, g_y):
-        self.theta.update(g_theta); self.y.update(g_y)
+
+        self.theta.update(g_theta, self.h_theta)
+        self.y.update(g_y, self.h_y)
+
         self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
-        self.av_theta.update(self.theta_t); self.av_y.update(self.y_t)
+        self.theta_t_hat, self.y_t_hat = self.proj(self.theta_t), self.proj(self.y_t)
+        self.av_theta.update(self.theta_t_hat)
+        self.av_y.update(self.y_t_hat)
 
     def grads(self, x, a, xp, r, gamma, rho):
-        if self.lmda > 0:
-            self.z = gamma * self.lmda * rho * self.z + x
-
-            v = self.theta_t.dot(x)
-            vp=self.theta_t.dot(xp)
-            g = r + gamma * vp
-            delta = r + gamma*vp - v
-
-            gtheta = - rho * self.z.dot(self.y_t)*(x-gamma*xp)
-            gy = - rho*delta*self.z + x.dot(self.y_t)*x
-
-            return gtheta, gy
-
         # ================================
         # --- EFFICIENT IMPLEMENTATION ---
         # ================================
@@ -47,8 +55,8 @@ class ParameterFree(BaseAgent):
         #  the outerproduct op
         # --------------------------------
         d = x - gamma * xp
-        g_theta = - rho * d * np.dot(x, self.y_t)
-        g_y = rho * x * np.dot(d, self.theta_t) - rho * r * x + x * np.dot(x, self.y_t)
+        g_theta = - rho * d * np.dot(x, self.y_t_hat)
+        g_y = rho * x * np.dot(d, self.theta_t_hat) - rho * r * x + x * np.dot(x, self.y_t_hat)
 
         # ===========================
         # --- Slow implementation ---
@@ -71,12 +79,14 @@ class ParameterFree(BaseAgent):
         u = np.array(u, dtype='float64')
         self.theta.initWeights(u)
         self.theta_t = self.theta.bet()
-        self.av_theta.reset(self.theta_t)
+        self.theta_t_hat = self.proj(self.theta_t)
+        self.av_theta.reset(self.theta_t_hat)
 
     def _initBets(self):
         avg_t = getattr(Averages, self.avg_t)
         self.theta_t, self.y_t = self.theta.bet(), self.y.bet()
-        self.av_theta, self.av_y = avg_t(self.theta_t), avg_t(self.y_t)
+        self.theta_t_hat, self.y_t_hat = self.proj(self.theta_t), self.proj(self.y_t)
+        self.av_theta, self.av_y = avg_t(self.theta_t_hat), avg_t(self.y_t_hat)
 
 class PFGTD(ParameterFree):
     """
@@ -87,24 +97,21 @@ class PFGTD(ParameterFree):
 
         # opt params
         W0 = params['wealth'] / 2
-        self.theta = Param(features, W0, params["hint"], params["beta"])
-        self.y = Param(features, W0, params["hint"], params["beta"])
+        self.theta = Param(features, W0, params["beta"])
+        self.y = Param(features, W0, params["beta"])
+
+        self.h_theta = params['hint']
+        self.h_y = params['hint']
 
         self._initBets()
 
-class PFGTDVectorHints(ParameterFree):
-    """
-    Parameter-free GTD with hints
-    """
-    def __init__(self, features: int, actions, params: dict):
-        super().__init__(features, actions, params)
+    def clip(self, g, h):
 
-        # opt params
-        W0 = params['wealth'] / 2
-        self.theta = VectorHintsParam(features, W0, params["hint"], params["beta"])
-        self.y = VectorHintsParam(features, W0, params["hint"], params["beta"])
-
-        self._initBets()
+        # Incorporate grad bound
+        gradnorm = norm(g)
+        gtrunc = g if gradnorm < h else h*g / gradnorm
+        h = max(h, gradnorm)
+        return gtrunc, h
 
 class CWPFGTD(ParameterFree):
     """
@@ -116,51 +123,46 @@ class CWPFGTD(ParameterFree):
         W0 = params['wealth'] / 2
 
         # opt params
-        self.theta = CWParam(features, W0, params["hint"], params["beta"])
-        self.y = CWParam(features, W0, params["hint"], params["beta"])
+        self.theta = CWParam(features, W0, params["beta"])
+        self.y = CWParam(features, W0, params["beta"])
+
+        self.h_theta = params['hint'] * np.ones(features)
+        self.h_y = params['hint'] * np.ones(features)
 
         self._initBets()
 
-class PFCombined(ParameterFree):
+    def clip(self, g, vec_h):
+
+        # Incorporate grad bound
+        gradnorm = np.abs(g)
+
+        gtrunc = g.copy()
+        truncIdx = np.argwhere(gradnorm > vec_h)
+        gtrunc[truncIdx] = np.multiply(vec_h[truncIdx], g[truncIdx]) / gradnorm[truncIdx]
+        vec_h = np.maximum(vec_h, gradnorm)
+        return gtrunc, vec_h
+
+
+class PFGTDPlus(ParameterFree):
     def __init__(self, features, actions, params):
         super().__init__(features, actions, params)
 
-        p = self._params(params)
+        W0 = params['wealth']/2
+        self.theta = PFPlus(features, W0, params['beta'])
+        self.y = PFPlus(features, W0, params['beta'])
 
-        algA = getattr(sys.modules[__name__], params['algA'])
-        self.A = algA(features, actions, p)
+        self.h_theta = np.ones(features)*params['hint']
+        self.h_y = np.ones(features)*params['hint']
 
-        algB = getattr(sys.modules[__name__], params['algB'])
-        self.B = algB(features, actions, p)
+        self._initBets()
 
-    def bet(self):
-        theta_t = self.A.theta.bet()+self.B.theta.bet()
-        y_t = self.A.y.bet() + self.B.y.bet()
-        return theta_t, y_t
+    def clip(self, g, vec_h):
 
-    def update(self, x, a, xp, r, gamma, rho):
-        self.theta_t, self.y_t = self.bet()
+        # Incorporate grad bound
+        gradnorm = np.abs(g)
 
-        gtheta, gy = self.grads(x, a, xp, r, gamma, rho)
-        self.A._apply(gtheta, gy)
-        self.B._apply(gtheta, gy)
-
-    def getWeights(self):
-        return self.A.getWeights() + self.B.getWeights()
-
-    def initWeights(self, u):
-        self.A.initWeights(u/2)
-        self.B.initWeights(u/2)
-
-    def _params(self, params):
-        # For now let's just assume that both players get the same
-        # wealth
-        p = params.copy()
-        p['wealth'] = params['wealth'] / 2
-        return p
-
-class PFGTDPlus(PFCombined):
-    def __init__(self, features, actions, params):
-        params["algA"] = "PFGTDVectorHints"
-        params["algB"] = "CWPFGTD"
-        super().__init__(features, actions, params)
+        gtrunc = g.copy()
+        truncIdx = np.argwhere(gradnorm > vec_h)
+        gtrunc[truncIdx] = np.multiply(vec_h[truncIdx], g[truncIdx]) / gradnorm[truncIdx]
+        vec_h = np.maximum(vec_h, gradnorm)
+        return gtrunc, vec_h

@@ -172,7 +172,7 @@ if __name__ == "__main__":
     exp_paths = sys.argv[1:]
     if experiment_is("Baird", exp_paths):
         problem = "Baird"
-        plotMDP(exp_paths, getSavePath(problem), problem, xlim=[0, 3000], ylim=[0,4])
+        plotMDP(exp_paths, getSavePath(problem), problem, xlim=[0, 3000], ylim=[0,1])
     elif experiment_is("Boyan", exp_paths):
         problem = "Boyan"
         plotMDP(exp_paths, getSavePath(problem), problem, xlim=[0,6000])

@@ -9,15 +9,14 @@ class Param:
     '''
     Parameter-free OLO algorithm with gradient-bound hints
     '''
-    def __init__(self, features: int, W0: float, g: float, beta: float):
+    def __init__(self, features: int, W0: float, beta: float):
         self.beta = beta
         self.W = W0
-        self.h = g
 
         # initial bet
         self.v = self.beta * self.W
 
-        # random initial direction and normalize
+        # arbitrary
         u = np.ones(features)
         normu = norm(u)
         self.u = u if normu<=1 else u/normu
@@ -25,27 +24,20 @@ class Param:
         self.A = 0.0
         self.G = 0.0
 
-        self.eps = 1e-5
+        self.eps=1e-5
 
     def bet(self):
         self.v = self.beta * self.W
         return self.v * self.u
 
-    def update(self, g):
-        # NOTE: have completely removed the constraint set for now
-
-        # Incorporate grad bound
-        gradnorm = norm(g)
-        gtrunc = g if gradnorm < self.h else self.h*g / (gradnorm + self.eps)
-        self.h = max(self.h, gradnorm)
-
+    def update(self, gtrunc, h):
         # update betting fraction
         s = np.dot(gtrunc, self.u)
         m = s / (1.0 - self.beta * s)
         self.A += m**2
         self.beta = max(
-            min(self.beta - 2.0*m / ((2.0-np.log(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
-            -0.5 / (self.h + self.eps)
+            min(self.beta - 2.0*m / ((2.0-np.log(3.0))*self.A + self.eps), 0.5 / h),
+            -0.5 / h
         )
 
         # update wealth
@@ -70,11 +62,9 @@ class VectorHintsParam:
     '''
     Parameter-free OLO algorithm with gradient-bound hints
     '''
-    def __init__(self, features: int, W0: float, g: float, beta: float):
+    def __init__(self, features: int, W0: float, beta: float):
         self.beta = beta
         self.W = W0 * features
-        self.vec_h = np.ones(features)*g/np.sqrt(features)
-        self.h = norm(self.vec_h)
 
         # initial bet
         self.v = self.beta * self.W
@@ -93,28 +83,18 @@ class VectorHintsParam:
         self.v = self.beta * self.W
         return self.v * self.u
 
-    def update(self, g):
-        # NOTE: have completely removed the constraint set for now
-
-        # Incorporate grad bound
-        gradnorm = np.abs(g)
-
-        # Truncate g coordinate-wise with a vector of hints
-        gtrunc = g.copy()
-        truncIdx = np.argwhere(gradnorm > self.vec_h)
-        gtrunc[truncIdx] = np.multiply(self.vec_h[truncIdx], g[truncIdx]) / (gradnorm[truncIdx] + self.eps)
-        self.vec_h = np.maximum(self.vec_h, gradnorm)
+    def update(self, gtrunc, vec_h):
 
         # pass norm of vector hint
-        self.h = norm(self.vec_h)
+        h = norm(vec_h)
 
         # update betting fraction
         s = np.dot(gtrunc, self.u)
         m = s / (1.0 - self.beta * s)
         self.A += m**2
         self.beta = max(
-            min(self.beta - 2.0*m / ((2.0-np.log(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
-            -0.5 / (self.h + self.eps)
+            min(self.beta - 2.0*m / ((2.0-np.log(3.0))*self.A + self.eps), 0.5 / h ),
+            -0.5 / h 
         )
 
         # update wealth
@@ -138,10 +118,9 @@ class CWParam:
     Coordinate-wise parameter-free OLO algorithm with
     gradient-bound hints
     '''
-    def __init__(self, features: int, W0: float, g: float, beta:float):
+    def __init__(self, features: int, W0: float, beta:float):
         self.beta = beta * np.ones(features)
         self.W = np.ones(features) * W0
-        self.h = g * np.ones(features)
 
         # initial bet
         self.x = np.multiply(self.beta, self.W)
@@ -154,23 +133,14 @@ class CWParam:
         self.x = np.multiply(self.beta, self.W)
         return self.x
 
-    def update(self, g):
-        # NOTE: have completely removed the constraint set for now
-
-        # Incorporate grad bound
-        gradnorm = np.abs(g)
-
-        gtrunc = g.copy()
-        truncIdx = np.argwhere(gradnorm > self.h)
-        gtrunc[truncIdx] = np.multiply(self.h[truncIdx], g[truncIdx]) / (gradnorm[truncIdx] + self.eps)
-        self.h = np.maximum(self.h, gradnorm)
+    def update(self, gtrunc, vec_h):
 
         # update betting fraction
         m = np.divide(gtrunc,  1.0 - np.multiply(self.beta, gtrunc))
         self.A += np.power(m,2)
         self.beta = np.maximum(
-            np.minimum(self.beta - 2.0 * np.divide(m, (2.0-np.log(3.0))*self.A + self.eps), 0.5 / (self.h + self.eps)),
-            -0.5 / (self.h + self.eps)
+            np.minimum(self.beta - 2.0 * np.divide(m, (2.0-np.log(3.0))*self.A + self.eps), 0.5 / vec_h),
+            -0.5 / vec_h
         )
 
         # update wealth
@@ -181,3 +151,19 @@ class CWParam:
         self.W = u*2.0
         self.beta = 0.5
 
+
+class PFPlus:
+    def __init__(self, features: int, W0: float, beta:float):
+        self.A = VectorHintsParam(features, W0, beta)
+        self.B = CWParam(features, W0,  beta)
+
+    def bet(self):
+        return self.A.bet()+self.B.bet()
+
+    def initWeights(self, u):
+        self.A.initWeights(u/2)
+        self.B.initWeights(u/2)
+
+    def update(self, gtrunc, h):
+        self.A.update(gtrunc, h)
+        self.B.update(gtrunc, h)

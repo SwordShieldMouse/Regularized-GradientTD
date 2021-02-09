@@ -32,7 +32,7 @@ class LastIterate(WeightedAverage):
         super().__init__(x0)
 
     def update(self, x):
-        self.x = x
+        self.x = x.copy()
 
     def reset(self, x):
         self.update(x)

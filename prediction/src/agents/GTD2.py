@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.linalg import norm
 
 from src.agents.BaseAgent import BaseAgent
 
@@ -8,6 +9,7 @@ class GTD2(BaseAgent):
 
         self.alpha = params['alpha']
         self.eta = params.get('eta', 1)
+        self.D = params.get('D', np.inf)
 
         self.theta = np.zeros(features)
         self.y = np.zeros(features)
@@ -25,8 +27,13 @@ class GTD2(BaseAgent):
 
     def _apply(self, dtheta, dy):
         # apply the gradient. Used for batch updates
-        self.theta = self.theta + self.alpha * dtheta
-        self.y = self.y + self.eta * self.alpha * dy
+        self.theta = self.proj(self.theta + self.alpha * dtheta)
+        self.y = self.proj(self.y + self.eta * self.alpha * dy)
+
+    def proj(self, x):
+        normx = norm(x)
+        return x if norm(x)<=self.D else (x/normx)*self.D
+
 
     def update(self, x, a, xp, r, gamma, rho):
         dtheta, dy = self.grads(x, a, xp, r, gamma, rho)
