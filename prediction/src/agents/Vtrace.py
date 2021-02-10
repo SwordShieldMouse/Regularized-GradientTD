@@ -23,7 +23,7 @@ class Vtrace(TD):
         self.w = self.proj(self.w + self.alpha * dw)
 
     def initWeights(self, u):
-        self.w = u
+        self.w = self.proj(u)
 
     def getWeights(self):
         return self.w

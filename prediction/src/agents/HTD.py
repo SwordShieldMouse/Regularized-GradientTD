@@ -26,11 +26,11 @@ class HTD(BaseAgent):
         self._apply(dw, dh)
 
     def _apply(self, dw, dh):
-        self.w = self.w + self.alpha * dw
-        self.h = self.h + self.eta * self.alpha * dh
+        self.w = self.proj(self.w + self.alpha * dw)
+        self.h = self.proj(self.h + self.eta * self.alpha * dh)
 
     def getWeights(self):
         return self.w
 
     def initWeights(self, u):
-        self.w = u
+        self.w = self.proj(u)

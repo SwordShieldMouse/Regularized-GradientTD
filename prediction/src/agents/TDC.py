@@ -20,8 +20,8 @@ class BatchTDC(TDRC):
         self.av_w += 1.0 / self.t * (self.w - self.av_w)
 
     def initWeights(self, u):
-        self.w = u
-        self.av_w = u
+        self.w = self.proj(u)
+        self.av_w = self.w.copy()
 
     def getWeights(self):
         return self.av_w

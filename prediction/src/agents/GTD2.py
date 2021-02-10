@@ -40,7 +40,7 @@ class GTD2(BaseAgent):
         self._apply(dtheta, dy)
 
     def initWeights(self, u):
-        self.theta = u
+        self.theta = self.proj(u)
 
     def getWeights(self):
         return self.theta
@@ -62,8 +62,8 @@ class BatchGTD2(GTD2):
 
     def initWeights(self, u):
         u = np.array(u, dtype='float64')
-        self.theta = u
-        self.av_theta = u
+        self.theta = self.proj(u)
+        self.av_theta = self.theta.copy()
 
     def getWeights(self):
         return self.av_theta

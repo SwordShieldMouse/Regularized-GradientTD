@@ -36,4 +36,4 @@ class TDRC(BaseAgent):
         return self.w
 
     def initWeights(self, u):
-        self.w = u
+        self.w = self.proj(u)

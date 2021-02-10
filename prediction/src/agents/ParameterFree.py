@@ -78,8 +78,8 @@ class ParameterFree(BaseAgent):
     def initWeights(self, u):
         u = np.array(u, dtype='float64')
         self.theta.initWeights(u)
-        self.theta_t = self.theta.bet()
-        self.theta_t_hat = self.proj(self.theta_t)
+        self.theta_t = self.proj(self.theta.bet())
+        self.theta_t_hat = self.theta_t.copy()
         self.av_theta.reset(self.theta_t_hat)
 
     def _initBets(self):

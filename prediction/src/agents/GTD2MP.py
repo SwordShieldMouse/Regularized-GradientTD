@@ -34,5 +34,5 @@ class GTD2MP(GTD2):
         return self.av_theta
 
     def initWeights(self, u):
-        self.theta = u
+        self.theta = self.proj(u)
         self.av_theta = u
