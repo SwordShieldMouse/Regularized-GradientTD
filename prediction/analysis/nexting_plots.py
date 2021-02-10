@@ -280,6 +280,7 @@ if __name__ == "__main__":
         f.set_size_inches((width*len(exp_paths), height), forward=False)
         f.legend()
         plt.savefig(f'{save_path}/Nexting-{datatype}-allSensors-median.png')
+        plt.savefig(f'{save_path}/Nexting-{datatype}-allSensors-median.pdf')
 
         f, axes = generateBestMedianPlot(exp_paths, ylim=median_ylims[datatype])
         f.set_size_inches((width, height), forward=False)

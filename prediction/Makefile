@@ -81,10 +81,6 @@ nexting:
 # --- PLOTTING ---
 # ----------------
 
-# -----------------------------
-#     BEST PARAMETERS PLOTS	  
-# -----------------------------
-
 PF_ALGS =  cwpfgtd pfgtd pfgtd+ 
 BAIRD_BASELINES = tdc tdrc gtd2
 BASELINES = td $(BAIRD_BASELINES)
@@ -92,7 +88,6 @@ BASELINES = td $(BAIRD_BASELINES)
 BAIRD_ALGS = $(BAIRD_BASELINES) $(PF_ALGS)
 ALL_ALGS = $(BASELINES) $(PF_ALGS)
 
-#SETTINGS = online batch
 SETTINGS = online
 
 .PHONY : mdpPlots nextingPlots waterfallPlots waterfallPlots cdfPlots
