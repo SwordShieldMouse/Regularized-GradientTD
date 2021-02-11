@@ -2,7 +2,7 @@ from src.agents.TD import TD
 from src.agents.TDC import TDC, BatchTDC
 from src.agents.HTD import HTD
 from src.agents.GTD2 import GTD2, BatchGTD2
-from src.agents.TDRC import TDRC
+from src.agents.TDRC import TDRC, BatchTDRC
 from src.agents.Vtrace import Vtrace
 
 from src.agents.ParameterFree import *
@@ -15,6 +15,8 @@ def getAgent(name):
         return TDC
     elif name == 'BatchTDC':
         return BatchTDC
+    elif name == 'BatchTDRC':
+        return BatchTDRC
     elif name == 'HTD':
         return HTD
     elif name == 'GTD2':

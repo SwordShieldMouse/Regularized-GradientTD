@@ -16,13 +16,14 @@ colors = {
 
     # New Baselines
     'GTD2MP': 'black',
-    'BatchGTD2': 'yellowgreen',
-    'BatchTDC': 'cyan',
 
     # Baselines from TDRC
     'TDC': 'green',
+    'BatchTDC': 'green',
     'GTD2': 'yellowgreen',
+    'BatchGTD2': 'yellowgreen',
     'TDRC': 'orange',
+    'BatchTDRC': 'orange',
     'TD': 'thistle',
     'Vtrace': 'plum',
     'HTD': 'purple',

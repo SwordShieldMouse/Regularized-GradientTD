@@ -37,3 +37,22 @@ class TDRC(BaseAgent):
 
     def initWeights(self, u):
         self.w = self.proj(u)
+
+class BatchTDRC(TDRC):
+    def __init__(self, features, actions, params):
+        # TDC is just an instance of TDRC where beta = 0
+        super().__init__(features, actions, params)
+        self.t = 0.0
+        self.av_w = np.zeros(features)
+
+    def update(self, x, a, xp, r, gamma, rho):
+        self.t+=1.0
+        super().update(x, a, xp, r, gamma, rho)
+        self.av_w += 1.0 / self.t * (self.w - self.av_w)
+
+    def initWeights(self, u):
+        self.w = self.proj(u)
+        self.av_w = self.w.copy()
+
+    def getWeights(self):
+        return self.av_w

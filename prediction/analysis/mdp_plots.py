@@ -49,7 +49,7 @@ def plotMDP(paths, savepath, title, xlim=None, ylim=None):
             print('best parameters:', exp_path)
             print(best.params)
 
-            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=True if alg=="BatchGTD2" else False,linewidth=5.0)
+            b = plotBest(best, ax, label=alg, color=colors[alg], dashed=True if alg.startswith("Batch") else False,linewidth=5.0)
             bounds.append(b)
 
         B = [np.inf, -np.inf]
